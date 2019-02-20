@@ -1,0 +1,3 @@
+Sub route file name should not same to namespace name
+For ex: provider.routes --> provider namespace cause prefix without definition error
+

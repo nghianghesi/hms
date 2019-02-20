@@ -1,6 +1,6 @@
 // @GENERATOR:play-routes-compiler
 // @SOURCE:D:/MUM/HMS/service/conf/routes
-// @DATE:Mon Feb 18 11:54:37 ICT 2019
+// @DATE:Tue Feb 19 02:01:26 ICT 2019
 
 import play.api.routing.JavaScriptReverseRoute
 

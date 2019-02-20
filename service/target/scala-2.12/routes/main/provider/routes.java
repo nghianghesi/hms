@@ -1,10 +1,10 @@
 // @GENERATOR:play-routes-compiler
-// @SOURCE:D:/MUM/HMS/service/conf/provider.routes
-// @DATE:Mon Feb 18 11:55:42 ICT 2019
+// @SOURCE:D:/MUM/HMS/service/conf/p.routes
+// @DATE:Tue Feb 19 02:02:01 ICT 2019
 
 package provider;
 
-import provider.RoutesPrefix;
+import p.RoutesPrefix;
 
 public class routes {
   

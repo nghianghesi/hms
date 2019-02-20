@@ -1,0 +1,2 @@
+# Routes
+GET		/	provider.ProviderController.index()

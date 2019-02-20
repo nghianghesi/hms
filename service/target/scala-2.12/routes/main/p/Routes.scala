@@ -1,8 +1,8 @@
 // @GENERATOR:play-routes-compiler
-// @SOURCE:D:/MUM/HMS/service/conf/provider.routes
-// @DATE:Mon Feb 18 11:55:42 ICT 2019
+// @SOURCE:D:/MUM/HMS/service/conf/p.routes
+// @DATE:Tue Feb 19 02:02:01 ICT 2019
 
-package provider
+package p
 
 import play.core.routing._
 import play.core.routing.HandlerInvokerFactory._
@@ -27,7 +27,7 @@ class Routes(
 
   def withPrefix(addPrefix: String): Routes = {
     val prefix = play.api.routing.Router.concatPrefix(addPrefix, this.prefix)
-    provider.RoutesPrefix.setPrefix(prefix)
+    p.RoutesPrefix.setPrefix(prefix)
     new Routes(errorHandler, ProviderController_0, prefix)
   }
 
@@ -51,13 +51,13 @@ class Routes(
   private[this] lazy val provider_ProviderController_index0_invoker = createInvoker(
     ProviderController_0.index(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
-      "provider",
+      "p",
       "provider.ProviderController",
       "index",
       Nil,
       "GET",
       this.prefix + """""",
-      """""",
+      """ Routes""",
       Seq()
     )
   )

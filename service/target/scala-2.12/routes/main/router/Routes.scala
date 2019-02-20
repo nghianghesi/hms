@@ -1,6 +1,6 @@
 // @GENERATOR:play-routes-compiler
 // @SOURCE:D:/MUM/HMS/service/conf/routes
-// @DATE:Mon Feb 18 11:54:37 ICT 2019
+// @DATE:Tue Feb 19 02:01:26 ICT 2019
 
 package router
 
@@ -19,7 +19,7 @@ class Routes(
   // @LINE:9
   Assets_0: controllers.Assets,
   // @LINE:13
-  provider_routes_0: provider.routes,
+  p_Routes_0: p.Routes,
   val prefix: String
 ) extends GeneratedRouter {
 
@@ -30,13 +30,13 @@ class Routes(
     // @LINE:9
     Assets_0: controllers.Assets,
     // @LINE:13
-    provider_routes_0: provider.routes
-  ) = this(errorHandler, HomeController_1, Assets_0, provider_routes_0, "/")
+    p_Routes_0: p.Routes
+  ) = this(errorHandler, HomeController_1, Assets_0, p_Routes_0, "/")
 
   def withPrefix(addPrefix: String): Routes = {
     val prefix = play.api.routing.Router.concatPrefix(addPrefix, this.prefix)
     router.RoutesPrefix.setPrefix(prefix)
-    new Routes(errorHandler, HomeController_1, Assets_0, provider_routes_0, prefix)
+    new Routes(errorHandler, HomeController_1, Assets_0, p_Routes_0, prefix)
   }
 
   private[this] val defaultPrefix: String = {
@@ -46,7 +46,7 @@ class Routes(
   def documentation = List(
     ("""GET""", this.prefix, """controllers.HomeController.index"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """assets/""" + "$" + """file<.+>""", """controllers.Assets.versioned(path:String = "/public", file:Asset)"""),
-    prefixed_provider_routes_0_2.router.documentation,
+    prefixed_p_Routes_0_2.router.documentation,
     Nil
   ).foldLeft(List.empty[(String,String,String)]) { (s,e) => e.asInstanceOf[Any] match {
     case r @ (_,_,_) => s :+ r.asInstanceOf[(String,String,String)]
@@ -91,7 +91,7 @@ class Routes(
   )
 
   // @LINE:13
-  private[this] val prefixed_provider_routes_0_2 = Include(provider_routes_0.withPrefix(this.prefix + (if (this.prefix.endsWith("/")) "" else "/") + "provider"))
+  private[this] val prefixed_p_Routes_0_2 = Include(p_Routes_0.withPrefix(this.prefix + (if (this.prefix.endsWith("/")) "" else "/") + "provider"))
 
 
   def routes: PartialFunction[RequestHeader, Handler] = {
@@ -109,6 +109,6 @@ class Routes(
       }
   
     // @LINE:13
-    case prefixed_provider_routes_0_2(handler) => handler
+    case prefixed_p_Routes_0_2(handler) => handler
   }
 }

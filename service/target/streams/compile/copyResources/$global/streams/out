@@ -1,4 +1,5 @@
 [0m[[0m[0mdebug[0m] [0m[0mCopy resource mappings: [0m
 [0m[[0m[0mdebug[0m] [0m[0m	(D:\MUM\HMS\service\conf\application.conf,D:\MUM\HMS\service\target\scala-2.12\classes\application.conf)[0m
 [0m[[0m[0mdebug[0m] [0m[0m	(D:\MUM\HMS\service\conf\logback.xml,D:\MUM\HMS\service\target\scala-2.12\classes\logback.xml)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(D:\MUM\HMS\service\conf\p.routes,D:\MUM\HMS\service\target\scala-2.12\classes\p.routes)[0m
 [0m[[0m[0mdebug[0m] [0m[0m	(D:\MUM\HMS\service\conf\routes,D:\MUM\HMS\service\target\scala-2.12\classes\routes)[0m
