@@ -1,7 +1,72 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/java"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_201"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/DTO"/>
-	<classpathentry kind="output" path="bin"/>
+  <classpathentry kind="src" path="src\main\java"/>
+  <classpathentry kind="src" path="src\test\java"/>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\retrofit\srcs\retrofit-2.5.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\retrofit\jars\retrofit-2.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\retrofit\docs\retrofit-2.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.squareup.okhttp3\okhttp\srcs\okhttp-3.12.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.squareup.okhttp3\okhttp\jars\okhttp-3.12.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.okhttp3\okhttp\docs\okhttp-3.12.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.squareup.okio\okio\srcs\okio-1.15.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.squareup.okio\okio\jars\okio-1.15.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.okio\okio\docs\okio-1.15.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.json4s\json4s-native_2.11\srcs\json4s-native_2.11-3.6.4-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.json4s\json4s-native_2.11\jars\json4s-native_2.11-3.6.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.json4s\json4s-native_2.11\docs\json4s-native_2.11-3.6.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.json4s\json4s-core_2.11\srcs\json4s-core_2.11-3.6.4-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.json4s\json4s-core_2.11\jars\json4s-core_2.11-3.6.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.json4s\json4s-core_2.11\docs\json4s-core_2.11-3.6.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.json4s\json4s-ast_2.11\srcs\json4s-ast_2.11-3.6.4-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.json4s\json4s-ast_2.11\jars\json4s-ast_2.11-3.6.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.json4s\json4s-ast_2.11\docs\json4s-ast_2.11-3.6.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.json4s\json4s-scalap_2.11\srcs\json4s-scalap_2.11-3.6.4-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.json4s\json4s-scalap_2.11\jars\json4s-scalap_2.11-3.6.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.json4s\json4s-scalap_2.11\docs\json4s-scalap_2.11-3.6.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.thoughtworks.paranamer\paranamer\srcs\paranamer-2.8-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.thoughtworks.paranamer\paranamer\bundles\paranamer-2.8.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.thoughtworks.paranamer\paranamer\docs\paranamer-2.8-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.json4s\json4s_2.11\srcs\json4s_2.11-3.2.11-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.json4s\json4s_2.11\jars\json4s_2.11-3.2.11.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.json4s\json4s_2.11\docs\json4s_2.11-3.2.11-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\junit\junit\srcs\junit-4.12-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\junit\junit\jars\junit-4.12.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\junit\junit\docs\junit-4.12-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\srcs\hamcrest-core-1.3-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\jars\hamcrest-core-1.3.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\docs\hamcrest-core-1.3-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\srcs\junit-interface-0.11-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\jars\junit-interface-0.11.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\docs\junit-interface-0.11-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\srcs\test-interface-1.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\jars\test-interface-1.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\docs\test-interface-1.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="output" path="bin"/>
 </classpath>
