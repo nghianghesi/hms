@@ -1,0 +1,7 @@
+Sub route file name should not same to namespace name
+For ex: provider.routes --> provider namespace cause prefix without definition error
+
+
+Define multiple project sbt build https://pbassiner.github.io/blog/defining_multi-project_builds_with_sbt.html
+	- Need clean up project, build.sbt in sub project folders.
+Sbt scala version vs lib version on maven

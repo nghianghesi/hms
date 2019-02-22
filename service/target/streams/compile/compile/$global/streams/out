@@ -1,7 +1,0 @@
-[0m[[0m[31merror[0m] [0m[0mD:\MUM\HMS\service\conf\routes:13:1: type routes is not a member of package provider[0m
-[0m[[0m[31merror[0m] [0m[0m->     /provider                    provider.routes[0m
-[0m[[0m[31merror[0m] [0m[0mD:\MUM\HMS\service\conf\routes:13:1: type routes is not a member of package provider[0m
-[0m[[0m[31merror[0m] [0m[0m->     /provider                    provider.routes[0m
-[0m[[0m[31merror[0m] [0m[0mD:\MUM\HMS\service\conf\routes:13:1: type routes is not a member of package provider[0m
-[0m[[0m[31merror[0m] [0m[0m->     /provider                    provider.routes[0m
-[0m[[0m[31merror[0m] [0m[0mthree errors found[0m

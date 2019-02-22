@@ -1,26 +1,7 @@
 <classpath>
   <classpathentry kind="src" path="src\main\java"/>
   <classpathentry kind="src" path="src\test\java"/>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\junit\junit\srcs\junit-4.12-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\junit\junit\jars\junit-4.12.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\junit\junit\docs\junit-4.12-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\srcs\hamcrest-core-1.3-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\jars\hamcrest-core-1.3.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\docs\hamcrest-core-1.3-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\srcs\junit-interface-0.11-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\jars\junit-interface-0.11.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\docs\junit-interface-0.11-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\srcs\test-interface-1.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\jars\test-interface-1.0.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\docs\test-interface-1.0-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
   <classpathentry kind="output" path="bin"/>
 </classpath>
