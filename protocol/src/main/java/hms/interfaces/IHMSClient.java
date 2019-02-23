@@ -1,5 +1,5 @@
 package hms.interfaces;
 
 public interface IHMSClient {
-	void TrackingProvider(hms.dto.ProviderTracking tracking);	
+	void trackingProvider(hms.dto.ProviderTracking tracking);	
 }
