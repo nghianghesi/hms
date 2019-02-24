@@ -26,7 +26,12 @@ lazy val client = (project in file("./client"))
   
 lazy val service = (project in file("./service"))
 	.enablePlugins(PlayJava)
-	.settings(libraryDependencies ++=  Seq(guice))
+	.settings(libraryDependencies ++=  Seq(
+		guice,
+		"org.mongodb" % "mongo-java-driver" % "3.10.1",
+		"xyz.morphia.morphia" % "core" % "1.4.0",
+		"org.modelmapper" % "modelmapper" % "2.3.0"
+	))
 	.dependsOn(protocol)	  
 	
 lazy val global = project
