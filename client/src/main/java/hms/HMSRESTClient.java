@@ -28,7 +28,7 @@ public class HMSRESTClient implements IHMSClient{
 	
 	public void trackingProvider(ProviderTracking tracking) {
 		try {			
-			System.out.print(this.serviceIntegration.trackingProvider(tracking).execute().body().string());
+			this.serviceIntegration.trackingProvider(tracking).execute().body().string();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
