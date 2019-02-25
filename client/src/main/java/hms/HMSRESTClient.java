@@ -1,6 +1,7 @@
 package hms;
 
-import java.io.IOException;
+
+import org.slf4j.Logger;
 
 import hms.dto.ProviderTracking;
 import okhttp3.ResponseBody;
@@ -20,29 +21,37 @@ public class HMSRESTClient{
 	}
 	
 	private HMSServiceIntegration serviceIntegration;
-	public HMSRESTClient(String Url) {
+	private Logger logger;
+	private String serviceURL;
+	private void buildIntegration() {
 		Retrofit retrofit = new Retrofit.Builder()
-			    .baseUrl(Url)
+			    .baseUrl(serviceURL)
 			    .addConverterFactory(GsonConverterFactory.create())
 			    .build();
+		
 		this.serviceIntegration = retrofit.create(HMSServiceIntegration.class);
+	}
+	
+	public HMSRESTClient(String Url, Logger logger) {
+		this.serviceURL = Url;
+		this.logger = logger;
+		buildIntegration();
 	}
 	
 	public void trackingProvider(ProviderTracking tracking) {
 		try {			
 			this.serviceIntegration.trackingProvider(tracking).execute().body().string();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Tracking Provider", e);
 		}
 	}	
 
 	public void clearProvider() {
 		try {			
 			this.serviceIntegration.clearProvider().execute().body().string();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
+		} catch (Exception e) {
+			logger.error("Tracking Provider", e);
 		}
 	}
 }

@@ -19,8 +19,8 @@ lazy val client = (project in file("./client"))
       "com.novocode" % "junit-interface" % "0.11" % "test",
 	  "com.squareup.retrofit2" % "converter-gson" % "2.5.0",
       "com.squareup.retrofit2" % "retrofit" % "2.5.0",
-	  "org.json4s" %% "json4s-native" % "3.6.4",
-	  "org.json4s" %% "json4s" % "3.2.11"))
+	  "org.slf4j" % "slf4j-api" % "1.7.25",
+	  "org.slf4j" % "slf4j-log4j12" % "1.7.25"))
   .dependsOn(protocol)	
   
   
