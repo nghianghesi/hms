@@ -2,6 +2,9 @@ package provider.dataaccess;
 
 import java.util.UUID;
 import javax.inject.Inject;
+
+import com.mongodb.DBCollection;
+
 import it.unifi.cerm.playmorphia.PlayMorphia;
 import provider.models.ProviderTracking;
 
@@ -24,7 +27,15 @@ public class ProviderRepository implements IProviderRepository {
 	
 	@Override
 	public void Save(ProviderTracking tracking) {
-        morphia.datastore().save(tracking);        
+        morphia.datastore().save(tracking);               
+	}	
+	
+	@Override
+	public void clear() {
+		DBCollection collection=morphia.datastore().getCollection(ProviderTracking.class);
+        if(collection!=null) {
+        	collection.drop();        
+        }
 	}
 	
 	private provider.models.ProviderTracking InternalLoadById(UUID id){

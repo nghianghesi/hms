@@ -6,9 +6,15 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 
 import xyz.morphia.annotations.Entity;
-import xyz.morphia.annotations.Id;
+import xyz.morphia.annotations.Field;
+import xyz.morphia.annotations.Index;
+import xyz.morphia.annotations.Indexes;
+import xyz.morphia.annotations.IndexOptions;
 
 @Entity(value = "ProviderTracking")
+@Indexes({
+    @Index(fields = @Field("id"), options = @IndexOptions(name = "indexing_id"))
+})
 public class ProviderTracking{
     private UUID id;
 	public double latitude;
@@ -35,6 +41,18 @@ public class ProviderTracking{
 	
 	
 	private static final ModelMapper modelMapper = new ModelMapper();
+	static {
+		modelMapper.addMappings(new PropertyMap<hms.dto.ProviderTracking, ProviderTracking>() {			
+			@Override
+			protected void configure() {
+				// TODO Auto-generated method stub
+				map().setId(source.id);
+				map().setLatitude(source.latitude);
+				map().setLongitude(source.longitude);
+			}
+		});		
+		
+	}
 	
 	public static void MapDtoToModel(hms.dto.ProviderTracking source, ProviderTracking  dest) {	
 		modelMapper.map(source, dest);

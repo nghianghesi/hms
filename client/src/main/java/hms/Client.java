@@ -22,8 +22,9 @@ public class Client {
 	private static final double LONGITUDE_MOVE = 0.01;
 	private static final double LATITUDE_MOVE = 0.01;
 	
-	private static final int NUM_OF_THREAD = 100;
+	private static final int NUM_OF_THREAD = 5;
 	private static final int THREAD_DELAY = 100;
+	private static final int ITEM_PER_THREAD=NUM_OF_PROVIDER/NUM_OF_THREAD;
 	
 	private static double getRandomLatitude() {
 		return MIN_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, MAX_LATITUDE - MIN_LATITUDE);
@@ -57,20 +58,19 @@ public class Client {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				int startidx= groupidx * NUM_OF_THREAD;
-				int endidx = (groupidx + 1) * NUM_OF_THREAD;
+				int startidx = groupidx * ITEM_PER_THREAD;
+				int endidx = (groupidx + 1) * ITEM_PER_THREAD;
 				for(int idx = startidx; idx < endidx && idx < list.size(); idx++) {
 					ProviderTracking tracking = list.get(idx);
 					randomMove(tracking);
 					client.trackingProvider(tracking);
-					//System.out.println(""+idx);
-					try {
-						Thread.sleep(THREAD_DELAY);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}			
 				}
+				try {
+					Thread.sleep(THREAD_DELAY);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}												
 			}	
 		};	
 	}
@@ -78,17 +78,22 @@ public class Client {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		List<ProviderTracking> list = new ArrayList<ProviderTracking>();
-		HMSRESTClient client = new HMSRESTClient("http://localhost:9000/");
+		String serviceUrl = "http://localhost:9000/";
+		HMSRESTClient client = new HMSRESTClient(serviceUrl);
 
+		client.clearProvider();
 		initProvider(client, list);
 
 		Map<Integer, CompletableFuture<Void>> groupThreads = new HashMap<Integer,CompletableFuture<Void>>();
+		Map<Integer, HMSRESTClient> groupClients = new HashMap<Integer,HMSRESTClient>();
+		
 		for(int loop = 0;loop < 10; loop+=1) {
-			for(int groupidx = 0; groupidx < (NUM_OF_PROVIDER + NUM_OF_THREAD - 1) / NUM_OF_THREAD; groupidx++) {
+			for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) {
 				if(groupThreads.containsKey(groupidx)) {
-					groupThreads.get(groupidx).thenRunAsync(buildUpdateProviderRunnable(client, list, groupidx));
+					groupThreads.get(groupidx).thenRunAsync(buildUpdateProviderRunnable(groupClients.get(groupidx), list, groupidx));
 				}else {
-					groupThreads.put(groupidx, CompletableFuture.runAsync(buildUpdateProviderRunnable(client, list, groupidx)));
+					groupClients.put(groupidx, new HMSRESTClient(serviceUrl)); 
+					groupThreads.put(groupidx, CompletableFuture.runAsync(buildUpdateProviderRunnable(groupClients.get(groupidx), list, groupidx)));
 				}
 			}
 		}

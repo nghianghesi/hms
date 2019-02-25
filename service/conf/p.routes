@@ -1,3 +1,4 @@
 # Routes
 GET			/			provider.controllers.ProviderController.index()
+GET			/clear		provider.controllers.ProviderController.clear()
 POST		/tracking	provider.controllers.ProviderController.tracking(request:Request)
