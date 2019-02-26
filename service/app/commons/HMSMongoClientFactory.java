@@ -13,14 +13,16 @@ public class HMSMongoClientFactory extends MongoClientFactory  {
 
     public HMSMongoClientFactory(Config config) {
         super(config);
-        this.config = config;
+        this.config = config;        
     }
 
     public MongoClient createClient() throws Exception {
-         return new MongoClient(Arrays.asList(
+    	MongoClient client= new MongoClient(Arrays.asList(
                  new ServerAddress(config.getString("playmorphia.host"), config.getInt("playmorphia.port"))
                  )
          );
+    	
+    	return client;
      }
 
     public String getDBName() {

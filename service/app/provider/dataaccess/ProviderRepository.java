@@ -3,8 +3,10 @@ package provider.dataaccess;
 import java.util.UUID;
 import javax.inject.Inject;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 
+import commons.HMSPlayMorphia;
 import it.unifi.cerm.playmorphia.PlayMorphia;
 import provider.models.ProviderTracking;
 
@@ -12,7 +14,7 @@ public class ProviderRepository implements IProviderRepository {
 	
 	private PlayMorphia morphia;
 	@Inject
-	public ProviderRepository(PlayMorphia morphia) {
+	public ProviderRepository(HMSPlayMorphia morphia) {
 		this.morphia=morphia;
 	}	
 
@@ -34,13 +36,14 @@ public class ProviderRepository implements IProviderRepository {
 	public void clear() {
 		DBCollection collection=morphia.datastore().getCollection(ProviderTracking.class);
         if(collection!=null) {
-        	collection.drop();        
+        	BasicDBObject document = new BasicDBObject();
+        	collection.remove(document);
         }
 	}
 	
 	private provider.models.ProviderTracking InternalLoadById(UUID id){
 		return this.morphia.datastore()
-					.createQuery(ProviderTracking.class).field("id").equal(id)
+					.createQuery(ProviderTracking.class).filter("providerid == ", id)
 					.get();
 		
 	}
