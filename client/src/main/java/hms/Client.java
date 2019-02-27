@@ -18,11 +18,17 @@ import java.util.concurrent.ForkJoinPool;
 public class Client {
 	private static final int NUM_OF_PROVIDER = 15000;
 	
-	private static final double MIN_LATITUDE = 33.587882;	
-	private static final double MAX_LATITUDE = 34.185252;
+	private static final double MAX_LATITUDE = 90;		
+	private static final double MIN_LATITUDE = -90;	
+	
+	private static final double MAX_LONGITUDE = 180;		
+	private static final double MIN_LONGITUDE = -180;
+	
+	private static final double START_RANGE_LATITUDE = 33.587882;	
+	private static final double END_RANGE_LATITUDE = 34.185252;
 
-	private static final double MIN_LONGITUDE = -118.178919;	
-	private static final double MAX_LONGITUDE = -117.959664;
+	private static final double START_RANGE_LONGITUDE = -118.178919;	
+	private static final double END_RANGE_LONGITUDE = -117.959664;
 	
 	private static final double LONGITUDE_MOVE = 0.01;
 	private static final double LATITUDE_MOVE = 0.01;
@@ -36,18 +42,33 @@ public class Client {
     
 
 	private static double getRandomLatitude() {
-		return MIN_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, MAX_LATITUDE - MIN_LATITUDE);
+		return START_RANGE_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LATITUDE - START_RANGE_LATITUDE);
 	}
 	
 	private static double getRandomLongitude() {
-		return MIN_LONGITUDE + ThreadLocalRandom.current().nextDouble(0.0, MAX_LONGITUDE - MIN_LONGITUDE);
+		return START_RANGE_LONGITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LONGITUDE - START_RANGE_LONGITUDE);
 	}
 	
 	private static void randomMove(ProviderTracking tracking) {
 		double latDiff = ThreadLocalRandom.current().nextDouble(0,1) > 0.5 ? LATITUDE_MOVE : -LATITUDE_MOVE;
 		double longDiff = ThreadLocalRandom.current().nextDouble(0,1) > 0.5 ? LONGITUDE_MOVE : -LONGITUDE_MOVE;
 		tracking.latitude += latDiff;
+		if(tracking.latitude < MIN_LATITUDE) {
+			tracking.latitude = MIN_LATITUDE;
+		}
+		
+		if(tracking.latitude > MAX_LATITUDE) {
+			tracking.latitude = MAX_LATITUDE;
+		}
+		
 		tracking.longitude += longDiff;
+		if(tracking.longitude < MIN_LONGITUDE) {
+			tracking.longitude = MIN_LONGITUDE;
+		}
+		
+		if(tracking.longitude > MAX_LONGITUDE) {
+			tracking.longitude = MAX_LONGITUDE;
+		}		
 	}
 	
 	private static void initProvider(HMSRESTClient client, List<ProviderTracking> list) {

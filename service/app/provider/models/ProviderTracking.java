@@ -24,6 +24,7 @@ public class ProviderTracking{
 	@Id
     private ObjectId id;
     private UUID providerid;
+    private UUID hubid;
     private Point location;
 	
 	public ObjectId getId() {
@@ -55,6 +56,13 @@ public class ProviderTracking{
 	public void setLocation(hms.dto.ProviderTracking dto) {
 		this.location = xyz.morphia.geo.GeoJson.point(dto.latitude, dto.longitude);
 	}	
+
+	public UUID getHubid() {
+		return hubid;
+	}
+	public void setHubid(UUID hubid) {
+		this.hubid = hubid;
+	}
 
 	private static final ModelMapper modelMapper = new ModelMapper();
 	static {

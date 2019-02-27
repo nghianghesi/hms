@@ -1,59 +1,69 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/java"/>
-	<classpathentry kind="src" path="src/test/java"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/protocol"/>
-	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/com.squareup.retrofit2/converter-gson/jars/converter-gson-2.5.0.jar" sourcepath="C:/Users/Admin/.ivy2/cache/com.squareup.retrofit2/converter-gson/srcs/converter-gson-2.5.0-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\converter-gson\docs\converter-gson-2.5.0-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/com.squareup.retrofit2/retrofit/jars/retrofit-2.5.0.jar" sourcepath="C:/Users/Admin/.ivy2/cache/com.squareup.retrofit2/retrofit/srcs/retrofit-2.5.0-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\retrofit\docs\retrofit-2.5.0-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/com.squareup.okhttp3/okhttp/jars/okhttp-3.12.0.jar" sourcepath="C:/Users/Admin/.ivy2/cache/com.squareup.okhttp3/okhttp/srcs/okhttp-3.12.0-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.okhttp3\okhttp\docs\okhttp-3.12.0-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/com.squareup.okio/okio/jars/okio-1.15.0.jar" sourcepath="C:/Users/Admin/.ivy2/cache/com.squareup.okio/okio/srcs/okio-1.15.0-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.okio\okio\docs\okio-1.15.0-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/com.google.code.gson/gson/jars/gson-2.8.2.jar" sourcepath="C:/Users/Admin/.ivy2/cache/com.google.code.gson/gson/srcs/gson-2.8.2-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\docs\gson-2.8.2-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.25.jar" sourcepath="C:/Users/Admin/.ivy2/cache/org.slf4j/slf4j-api/srcs/slf4j-api-1.7.25-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-api\docs\slf4j-api-1.7.25-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/junit/junit/jars/junit-4.12.jar" sourcepath="C:/Users/Admin/.ivy2/cache/junit/junit/srcs/junit-4.12-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\junit\junit\docs\junit-4.12-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/org.hamcrest/hamcrest-core/jars/hamcrest-core-1.3.jar" sourcepath="C:/Users/Admin/.ivy2/cache/org.hamcrest/hamcrest-core/srcs/hamcrest-core-1.3-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\docs\hamcrest-core-1.3-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/com.novocode/junit-interface/jars/junit-interface-0.11.jar" sourcepath="C:/Users/Admin/.ivy2/cache/com.novocode/junit-interface/srcs/junit-interface-0.11-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\docs\junit-interface-0.11-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Admin/.ivy2/cache/org.scala-sbt/test-interface/jars/test-interface-1.0.jar" sourcepath="C:/Users/Admin/.ivy2/cache/org.scala-sbt/test-interface/srcs/test-interface-1.0-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\docs\test-interface-1.0-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="bin"/>
+  <classpathentry kind="src" path="src\main\java"/>
+  <classpathentry kind="src" path="src\main\resources"/>
+  <classpathentry kind="src" path="src\test\java"/>
+  <classpathentry kind="src" path="/protocol" exported="true" combineaccessrules="false"/>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\converter-gson\srcs\converter-gson-2.5.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\converter-gson\jars\converter-gson-2.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\converter-gson\docs\converter-gson-2.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\retrofit\srcs\retrofit-2.5.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\retrofit\jars\retrofit-2.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\retrofit\docs\retrofit-2.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.squareup.okhttp3\okhttp\srcs\okhttp-3.12.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.squareup.okhttp3\okhttp\jars\okhttp-3.12.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.okhttp3\okhttp\docs\okhttp-3.12.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.squareup.okio\okio\srcs\okio-1.15.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.squareup.okio\okio\jars\okio-1.15.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.okio\okio\docs\okio-1.15.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\srcs\gson-2.8.2-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\jars\gson-2.8.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\docs\gson-2.8.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-api\srcs\slf4j-api-1.7.25-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-api\jars\slf4j-api-1.7.25.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-api\docs\slf4j-api-1.7.25-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-log4j12\srcs\slf4j-log4j12-1.7.25-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-log4j12\jars\slf4j-log4j12-1.7.25.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-log4j12\docs\slf4j-log4j12-1.7.25-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\log4j\log4j\srcs\log4j-1.2.17-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\log4j\log4j\bundles\log4j-1.2.17.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\log4j\log4j\docs\log4j-1.2.17-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\junit\junit\srcs\junit-4.12-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\junit\junit\jars\junit-4.12.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\junit\junit\docs\junit-4.12-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\srcs\hamcrest-core-1.3-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\jars\hamcrest-core-1.3.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.hamcrest\hamcrest-core\docs\hamcrest-core-1.3-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\srcs\junit-interface-0.11-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\jars\junit-interface-0.11.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.novocode\junit-interface\docs\junit-interface-0.11-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\srcs\test-interface-1.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\jars\test-interface-1.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.scala-sbt\test-interface\docs\test-interface-1.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="output" path="bin"/>
 </classpath>
