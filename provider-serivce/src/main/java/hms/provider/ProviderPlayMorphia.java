@@ -1,4 +1,4 @@
-package commons;
+package hms.provider;
 
 import javax.inject.Inject;
 
@@ -11,16 +11,13 @@ import play.inject.ApplicationLifecycle;
 
 import javax.inject.Singleton;
 
-/**
- * Created by morelli on 21/02/19.
- */
 @Singleton
-public class HMSPlayMorphia extends PlayMorphia{
+public class ProviderPlayMorphia extends PlayMorphia{
 	@Inject
-    public HMSPlayMorphia(ApplicationLifecycle lifecycle, Environment env, Config config) {
+    public ProviderPlayMorphia(ApplicationLifecycle lifecycle, Environment env, Config config) {
 		super(lifecycle, env, config);
 
-        this.morphia().map(provider.models.ProviderTracking.class);        
+        this.morphia().map(hms.provider.entities.ProviderTrackingEntity.class);        
         this.datastore().ensureIndexes();    
 	}
 }

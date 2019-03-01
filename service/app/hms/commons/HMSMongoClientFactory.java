@@ -1,4 +1,4 @@
-package commons;
+package hms.commons;
 
 import java.util.Arrays;
 
@@ -20,8 +20,7 @@ public class HMSMongoClientFactory extends MongoClientFactory  {
     	MongoClient client= new MongoClient(Arrays.asList(
                  new ServerAddress(config.getString("playmorphia.host"), config.getInt("playmorphia.port"))
                  )
-         );
-    	
+         );    	
     	return client;
      }
 

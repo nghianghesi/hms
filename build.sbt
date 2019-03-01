@@ -9,7 +9,7 @@ scalacOptions in ThisBuild := Seq("-Xexperimental", "-Xlint:_", "-unchecked", "-
 // javacOptions in ThisBuild := Seq("-Xlint:all")
 
 resolvers += "Local Cached Maven Repository" at Path.userHome.asFile.toURI.toURL + ".ivy2/cache"
-
+unmanagedBase := baseDirectory.value / "lib"
 
 lazy val dependencies =
   new {
@@ -24,16 +24,38 @@ lazy val dependencies =
 	var modelmapper = "org.modelmapper" % "modelmapper" % "2.3.0"
   }
   
-
 lazy val protocol = (project in file("./protocol"))
 
-lazy val hubservice = (project in file("./hubservice"))
-  .settings(libraryDependencies ++=  Seq(	    
+unmanagedJars in Compile += file("jar-lib/play-morphia.jar")
+
+lazy val servicecommon = (project in file("./service-common"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice,  
 		dependencies.mongodb,
 		dependencies.morphia,
 		dependencies.modelmapper,
 	  dependencies.slf4japi,	  
 	  dependencies.slf4jimpl))
+	  
+lazy val hubservice = (project in file("./hubservice"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice,  
+		dependencies.mongodb,
+		dependencies.morphia,
+		dependencies.modelmapper,
+	  dependencies.slf4japi,	  
+	  dependencies.slf4jimpl))
+  .dependsOn(servicecommon)
+  
+ lazy val providerserivce = (project in file("./provider-serivce"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice,  
+		dependencies.mongodb,
+		dependencies.morphia,
+		dependencies.modelmapper,
+	  dependencies.slf4japi,	  
+	  dependencies.slf4jimpl))
+  .dependsOn(servicecommon)
 
 lazy val client = (project in file("./client"))
   .settings(libraryDependencies ++=  Seq(
@@ -54,7 +76,7 @@ lazy val service = (project in file("./service"))
 		dependencies.morphia,
 		dependencies.modelmapper
 	))
-	.dependsOn(protocol,hubservice)	  
+	.dependsOn(protocol,servicecommon,hubservice)	  
 	
 lazy val global = project
   .in(file("."))
@@ -62,5 +84,6 @@ lazy val global = project
     protocol,
     client,
 	hubservice,
+	providerserivce,
     service
   )

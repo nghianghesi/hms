@@ -1,4 +1,4 @@
-package provider.controllers;
+package hms.provider.controllers;
 
 import javax.inject.Inject;
 
@@ -7,12 +7,12 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import hms.provider.models.ProviderModel;
+import hms.provider.repositories.IProviderRepository;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import provider.dataaccess.IProviderRepository;
-import provider.models.ProviderTracking;
 
 public class ProviderController  extends Controller {
     private static final Logger logger = LoggerFactory.getLogger(ProviderController.class);
@@ -34,11 +34,11 @@ public class ProviderController  extends Controller {
     public Result tracking(Http.Request request) {
     	JsonNode json = request.body().asJson();
     	hms.dto.ProviderTracking trackingdto = Json.fromJson(json, hms.dto.ProviderTracking.class);
-    	ProviderTracking tracking = this.repo.LoadById(trackingdto.id);
+    	ProviderModel tracking = this.repo.LoadById(trackingdto.id);
     	if(tracking==null) {
-    		tracking = new ProviderTracking();
+    		tracking = new ProviderModel();
     	}
-    	ProviderTracking.MapDtoToModel(trackingdto, tracking);
+    	ProviderModel.MapDtoToModel(trackingdto, tracking);
     	this.repo.Save(tracking);
         return ok("Provider tracking");
     }

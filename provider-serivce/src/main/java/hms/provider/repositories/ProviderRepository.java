@@ -1,4 +1,4 @@
-package provider.dataaccess;
+package hms.provider.repositories;
 
 import java.util.UUID;
 import javax.inject.Inject;
@@ -6,20 +6,20 @@ import javax.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 
-import commons.HMSPlayMorphia;
+import hms.provider.ProviderPlayMorphia;
+import hms.provider.models.ProviderModel;
 import it.unifi.cerm.playmorphia.PlayMorphia;
-import provider.models.ProviderTracking;
 
 public class ProviderRepository implements IProviderRepository {
 	
 	private PlayMorphia morphia;
 	@Inject
-	public ProviderRepository(HMSPlayMorphia morphia) {
+	public ProviderRepository(ProviderPlayMorphia morphia) {
 		this.morphia=morphia;
 	}	
 
 	@Override
-	public ProviderTracking LoadById(UUID id){
+	public ProviderModel LoadById(UUID id){
 		if(id!=null) {
 			return this.InternalLoadById(id);
 		}else {
@@ -28,22 +28,22 @@ public class ProviderRepository implements IProviderRepository {
 	}
 	
 	@Override
-	public void Save(ProviderTracking tracking) {
-        morphia.datastore().save(tracking);               
+	public void Save(hms.provider.entities.ProviderEntity provider) {
+        morphia.datastore().save(provider);               
 	}	
 	
 	@Override
 	public void clear() {
-		DBCollection collection=morphia.datastore().getCollection(ProviderTracking.class);
+		DBCollection collection = morphia.datastore().getCollection(ProviderModel.class);
         if(collection!=null) {
         	BasicDBObject document = new BasicDBObject();
         	collection.remove(document);
         }
 	}
 	
-	private provider.models.ProviderTracking InternalLoadById(UUID id){
+	private hms.provider.models.ProviderModel InternalLoadById(UUID id){
 		return this.morphia.datastore()
-					.createQuery(ProviderTracking.class).filter("providerid == ", id)
+					.createQuery(ProviderModel.class).filter("providerid == ", id)
 					.get();
 		
 	}
