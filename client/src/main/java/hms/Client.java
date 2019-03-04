@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 
 public class Client {
-	private static final int NUM_OF_PROVIDER = 10;//15000;
+	private static final int NUM_OF_PROVIDER = 15000;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	

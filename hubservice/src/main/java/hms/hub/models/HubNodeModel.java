@@ -17,6 +17,7 @@ public class HubNodeModel {
 	private List<HubNodeModel> subHubs = new ArrayList<HubNodeModel>();
     
     public HubNodeModel() { // default constructor for root hub
+    	this.entity.setHubid(UUID.randomUUID());
     	this.entity.setLocation(GeoJson.point(0, 0));
     	this.entity.setLatitudeRange(DEFAULT_LATITUDE_RANGE);
     	this.entity.setLongitudeRange(DEFAULT_LONGITUDE_RANGE);

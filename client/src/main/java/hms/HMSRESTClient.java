@@ -43,7 +43,7 @@ public class HMSRESTClient{
 	
 	public void trackingProvider(ProviderTracking tracking) {
 		try {			
-			//this.serviceIntegration.trackingProvider(tracking).execute().body().string();
+			this.serviceIntegration.trackingProvider(tracking).execute().body().string();
 		} catch (Exception e) {
 			logger.error("Tracking Provider", e);
 		}

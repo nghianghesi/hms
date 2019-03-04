@@ -12,20 +12,37 @@ import xyz.morphia.annotations.IndexOptions;
 import xyz.morphia.annotations.Indexes;
 import xyz.morphia.annotations.NotSaved;
 import xyz.morphia.annotations.Transient;
+import xyz.morphia.geo.Point;
 
 @Indexes({
     @Index(fields = {@Field("providerid")}, options = @IndexOptions(unique = true, name = "provider_indexing_providerid")),
 })
 @Entity(value = "Provider")
 public class ProviderEntity {	
+	public static class ProviderTrackingStruct{
+	    private UUID hubid;
+	    public UUID getHubid() {
+			return hubid;
+		}
+		public void setHubid(UUID hubid) {
+			this.hubid = hubid;
+		}
+		public Point getLocation() {
+			return location;
+		}
+		public void setLocation(Point location) {
+			this.location = location;
+		}
+		private Point location;
+	}
 	@Id
 	private ObjectId _id;
 	private UUID providerid;
 	private String name;
-	private ProviderTrackingEntity currentTracking;
+	private ProviderTrackingStruct currentTracking;
 	@Transient
 	@NotSaved
-	private ProviderTrackingEntity previousTracking;
+	private ProviderTrackingStruct previousTracking;
 	
 	public UUID getProviderid() {
 		return providerid;
@@ -43,15 +60,26 @@ public class ProviderEntity {
 		this.name = name;
 	}
 
-	public ProviderTrackingEntity getCurrentTracking() {
+	public ProviderTrackingStruct getCurrentTracking() {
 		return currentTracking;
 	}	
 	
-	public ProviderTrackingEntity getPreviousTracking() {
+	public ProviderTrackingEntity getCurrentTrackingEntity() {
+		if(this.currentTracking!=null) {
+			ProviderTrackingEntity tracking =new ProviderTrackingEntity();
+			tracking.setProviderid(this.providerid);
+			tracking.setHubid(this.currentTracking.getHubid());
+			tracking.setLocation(this.currentTracking.getLocation());
+			return tracking;
+		}
+		return null;
+	}
+	
+	public ProviderTrackingStruct getPreviousTracking() {
 		return this.previousTracking;
 	}
 	
-	public void setCurrentTracking(ProviderTrackingEntity currentTracking) {
+	public void setCurrentTracking(ProviderTrackingStruct currentTracking) {
 		if(this.previousTracking == null) {
 			this.previousTracking = this.currentTracking;
 		}

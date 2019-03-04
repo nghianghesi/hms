@@ -37,7 +37,7 @@ public class ProviderRepository implements IProviderRepository {
 		}
 	}
 	
-	private boolean isSameHub(ProviderTrackingEntity entity, ProviderTrackingEntity other) {
+	private boolean isSameHub(ProviderEntity.ProviderTrackingStruct entity, ProviderEntity.ProviderTrackingStruct other) {
 		return entity == other
 				|| (entity != null && other!=null && entity.getHubid() == other.getHubid());
 	}
@@ -50,29 +50,26 @@ public class ProviderRepository implements IProviderRepository {
 	@Override
 	public void SaveTracking(ProviderModel provider) {
 		ProviderEntity entity = provider.persistance();
-		ProviderTrackingEntity previousTracking = entity.getPreviousTracking();
-		ProviderTrackingEntity currentTracking = entity.getCurrentTracking();
+		ProviderEntity.ProviderTrackingStruct previousTracking = entity.getPreviousTracking();
+		ProviderEntity.ProviderTrackingStruct currentTracking = entity.getCurrentTracking();
 
-		if(!isSameHub(previousTracking, currentTracking)) {
-			if(previousTracking!=null) {
-				Query<ProviderTrackingEntity> query =	this.morphia.datastore()
+		if(!isSameHub(previousTracking, currentTracking)
+				&& previousTracking!=null) {
+				Query<ProviderTrackingEntity> query = this.morphia.datastore()
 						.createQuery(ProviderTrackingEntity.class).field("hubid").equal(previousTracking.getHubid())
-						.field("providerid").equal(previousTracking.getProviderid()); 
+						.field("providerid").equal(provider.getProviderid()); 
 				this.morphia.datastore().findAndDelete(query);
-			}
-			
-			if(currentTracking!=null) {
-				this.morphia.datastore().save(currentTracking);
-			}
-		}else if(currentTracking!=null) {
+		}
+
+		if(currentTracking != null) {
 			Query<ProviderTrackingEntity> query = this.morphia.datastore()
 					.createQuery(ProviderTrackingEntity.class)
-						.field("hubid").equal(previousTracking.getHubid())
-						.field("providerid").equal(previousTracking.getProviderid());
+						.field("hubid").equal(currentTracking.getHubid())
+						.field("providerid").equal(provider.getProviderid());
 			UpdateOperations<ProviderTrackingEntity> update = this.morphia.datastore().createUpdateOperations(ProviderTrackingEntity.class)
 					.set("location", currentTracking.getLocation());
 			FindAndModifyOptions upsert = new FindAndModifyOptions().upsert(true);
-			this.morphia.datastore().findAndModify(query,update,upsert);
+			this.morphia.datastore().findAndModify(query, update, upsert);
 		}
 	}
 

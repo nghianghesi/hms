@@ -4,9 +4,6 @@ import java.util.UUID;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
-
 import hms.provider.entities.ProviderEntity;
 import xyz.morphia.geo.GeoJson;
 import xyz.morphia.geo.Point;
@@ -15,9 +12,14 @@ public class ProviderModel{
 
 	@Immutable
 	public static class ProviderTrackingModel {
-		private hms.provider.entities.ProviderTrackingEntity entity;
+		private hms.provider.entities.ProviderEntity.ProviderTrackingStruct entity
+		 = new hms.provider.entities.ProviderEntity.ProviderTrackingStruct();
+		public ProviderTrackingModel() {
+			
+		}
 	
 		public ProviderTrackingModel(UUID hubid, double latitude, double longitude) {
+			this.entity = new hms.provider.entities.ProviderEntity.ProviderTrackingStruct();
 			this.entity.setHubid(hubid);
 			this.entity.setLocation(GeoJson.point(latitude,longitude));
 		}
@@ -46,6 +48,10 @@ public class ProviderModel{
 		if(entity != null) {
 			ProviderModel model = new ProviderModel() ;
 			model.entity = entity;
+			if(model.entity.getCurrentTracking()!=null) {
+				model.currentTracking = new ProviderTrackingModel();
+				model.currentTracking.entity = entity.getCurrentTracking();
+			}
 			return model;
 		}else {
 			return null;
@@ -66,7 +72,7 @@ public class ProviderModel{
 	}
 	
 	public void setProviderid(UUID id) {
-		this.entity.getProviderid();
+		this.entity.setProviderid(id);
 	}		
 	
 	public String getName() {
