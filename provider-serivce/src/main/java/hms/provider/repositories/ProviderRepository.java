@@ -5,10 +5,17 @@ import javax.inject.Inject;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.operation.UpdateOperation;
 
+import hms.dto.ProviderTracking;
 import hms.provider.ProviderPlayMorphia;
+import hms.provider.entities.ProviderEntity;
+import hms.provider.entities.ProviderTrackingEntity;
 import hms.provider.models.ProviderModel;
 import it.unifi.cerm.playmorphia.PlayMorphia;
+import xyz.morphia.FindAndModifyOptions;
+import xyz.morphia.query.Query;
+import xyz.morphia.query.UpdateOperations;
 
 public class ProviderRepository implements IProviderRepository {
 	
@@ -21,30 +28,67 @@ public class ProviderRepository implements IProviderRepository {
 	@Override
 	public ProviderModel LoadById(UUID id){
 		if(id!=null) {
-			return this.InternalLoadById(id);
+			ProviderEntity entity = this.morphia.datastore()
+					.createQuery(ProviderEntity.class).field("providerid").equal(id)
+					.get();
+			return ProviderModel.load(entity);
 		}else {
 			return null;
 		}
 	}
 	
+	private boolean isSameHub(ProviderTrackingEntity entity, ProviderTrackingEntity other) {
+		return entity == other
+				|| (entity != null && other!=null && entity.getHubid() == other.getHubid());
+	}
 	@Override
-	public void Save(hms.provider.entities.ProviderEntity provider) {
-        morphia.datastore().save(provider);               
-	}	
+	public void Save(ProviderModel provider) {
+        morphia.datastore().save(provider.persistance());
+        this.SaveTracking(provider);
+    }	
+	
+	@Override
+	public void SaveTracking(ProviderModel provider) {
+		ProviderEntity entity = provider.persistance();
+		ProviderTrackingEntity previousTracking = entity.getPreviousTracking();
+		ProviderTrackingEntity currentTracking = entity.getCurrentTracking();
+
+		if(!isSameHub(previousTracking, currentTracking)) {
+			if(previousTracking!=null) {
+				Query<ProviderTrackingEntity> query =	this.morphia.datastore()
+						.createQuery(ProviderTrackingEntity.class).field("hubid").equal(previousTracking.getHubid())
+						.field("providerid").equal(previousTracking.getProviderid()); 
+				this.morphia.datastore().findAndDelete(query);
+			}
+			
+			if(currentTracking!=null) {
+				this.morphia.datastore().save(currentTracking);
+			}
+		}else if(currentTracking!=null) {
+			Query<ProviderTrackingEntity> query = this.morphia.datastore()
+					.createQuery(ProviderTrackingEntity.class)
+						.field("hubid").equal(previousTracking.getHubid())
+						.field("providerid").equal(previousTracking.getProviderid());
+			UpdateOperations<ProviderTrackingEntity> update = this.morphia.datastore().createUpdateOperations(ProviderTrackingEntity.class)
+					.set("location", currentTracking.getLocation());
+			FindAndModifyOptions upsert = new FindAndModifyOptions().upsert(true);
+			this.morphia.datastore().findAndModify(query,update,upsert);
+		}
+	}
+
 	
 	@Override
 	public void clear() {
-		DBCollection collection = morphia.datastore().getCollection(ProviderModel.class);
+		DBCollection collection = morphia.datastore().getCollection(ProviderEntity.class);
+        if(collection!=null) {
+        	BasicDBObject document = new BasicDBObject();
+        	collection.remove(document);
+        }		
+        
+        collection = morphia.datastore().getCollection(ProviderTrackingEntity.class);
         if(collection!=null) {
         	BasicDBObject document = new BasicDBObject();
         	collection.remove(document);
         }
-	}
-	
-	private hms.provider.models.ProviderModel InternalLoadById(UUID id){
-		return this.morphia.datastore()
-					.createQuery(ProviderModel.class).filter("providerid == ", id)
-					.get();
-		
 	}
 }

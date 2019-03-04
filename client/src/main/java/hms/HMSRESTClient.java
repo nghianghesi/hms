@@ -3,6 +3,7 @@ package hms;
 
 import org.slf4j.Logger;
 
+import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -18,6 +19,8 @@ public class HMSRESTClient{
 		Call<ResponseBody> trackingProvider(@Body ProviderTracking tracking);
 		@GET("/provider/clear")
 		Call<ResponseBody> clearProvider();
+		@POST("/provider/init")
+		Call<ResponseBody> initProvider(@Body Provider provider);
 	}
 	
 	private HMSServiceIntegration serviceIntegration;
@@ -40,11 +43,19 @@ public class HMSRESTClient{
 	
 	public void trackingProvider(ProviderTracking tracking) {
 		try {			
-			this.serviceIntegration.trackingProvider(tracking).execute().body().string();
+			//this.serviceIntegration.trackingProvider(tracking).execute().body().string();
 		} catch (Exception e) {
 			logger.error("Tracking Provider", e);
 		}
 	}	
+	
+	public void initProvider(Provider provider) {
+		try {			
+			this.serviceIntegration.initProvider(provider).execute().body().string();
+		} catch (Exception e) {
+			logger.error("Init Provider", e);
+		}	
+	}
 
 	public void clearProvider() {
 		try {			

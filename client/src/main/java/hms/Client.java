@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 
 public class Client {
-	private static final int NUM_OF_PROVIDER = 15000;
+	private static final int NUM_OF_PROVIDER = 10;//15000;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
@@ -49,40 +49,40 @@ public class Client {
 		return START_RANGE_LONGITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LONGITUDE - START_RANGE_LONGITUDE);
 	}
 	
-	private static void randomMove(ProviderTracking tracking) {
+	private static void randomMove(ProviderTrackingBuilder trackingBuilder) {
 		double latDiff = ThreadLocalRandom.current().nextDouble(0,1) > 0.5 ? LATITUDE_MOVE : -LATITUDE_MOVE;
 		double longDiff = ThreadLocalRandom.current().nextDouble(0,1) > 0.5 ? LONGITUDE_MOVE : -LONGITUDE_MOVE;
-		tracking.latitude += latDiff;
-		if(tracking.latitude < MIN_LATITUDE) {
-			tracking.latitude = MIN_LATITUDE;
+		trackingBuilder.setLatitude(trackingBuilder.getLatitude()+ latDiff);
+		if(trackingBuilder.getLatitude() < MIN_LATITUDE) {
+			trackingBuilder.setLatitude(MIN_LATITUDE);
 		}
 		
-		if(tracking.latitude > MAX_LATITUDE) {
-			tracking.latitude = MAX_LATITUDE;
+		if(trackingBuilder.getLatitude() > MAX_LATITUDE) {
+			trackingBuilder.setLatitude(MAX_LATITUDE);
 		}
 		
-		tracking.longitude += longDiff;
-		if(tracking.longitude < MIN_LONGITUDE) {
-			tracking.longitude = MIN_LONGITUDE;
+		trackingBuilder.setLongitude(trackingBuilder.getLongitude()+ longDiff);
+		if(trackingBuilder.getLongitude() < MIN_LONGITUDE) {
+			trackingBuilder.setLongitude( MIN_LONGITUDE);
 		}
 		
-		if(tracking.longitude > MAX_LONGITUDE) {
-			tracking.longitude = MAX_LONGITUDE;
+		if(trackingBuilder.getLongitude() > MAX_LONGITUDE) {
+			trackingBuilder.setLongitude(MAX_LONGITUDE);
 		}		
 	}
 	
-	private static void initProvider(HMSRESTClient client, List<ProviderTracking> list) {
+	private static void initProvider(HMSRESTClient client, List<ProviderTrackingBuilder> list) {
 		for(int idx = 0; idx < NUM_OF_PROVIDER; idx++) {	
-			ProviderTracking tracking = new ProviderTracking();
-			tracking.id = UUID.randomUUID();	
-			tracking.latitude = getRandomLatitude();
-			tracking.longitude = getRandomLongitude();
-			client.trackingProvider(tracking);
-			list.add(tracking);
+			ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder();
+			trackingBuilder.setProviderid(UUID.randomUUID());	
+			trackingBuilder.setLatitude(getRandomLatitude());
+			trackingBuilder.setLongitude(getRandomLongitude());
+			trackingBuilder.setName("Provider "+idx);
+			client.initProvider(trackingBuilder.buildProvider());
+			client.trackingProvider(trackingBuilder.buildTracking());
+			list.add(trackingBuilder);
 		}
-	}
-	
-	
+	}	
 
 	private static Runnable buildEndGroupRunnable(int groupidx) {
 		return new Runnable(){	
@@ -95,7 +95,7 @@ public class Client {
 
 	private static Runnable buildUpdateProviderRunnable(
 			HMSRESTClient client, 
-			List<ProviderTracking> list, int groupidx) {
+			List<ProviderTrackingBuilder> list, int groupidx) {
 		return new Runnable(){			
 			@Override
 			public void run() {				
@@ -105,10 +105,10 @@ public class Client {
 				for(int loop = 0; loop < NUM_OF_LOOP; loop++) {									
 					logger.info("Running group {}, loop {}", groupidx, loop);
 					for(int idx = startidx; idx < endidx && idx < list.size(); idx++) {					
-						ProviderTracking tracking = list.get(idx);
+						ProviderTrackingBuilder tracking = list.get(idx);
 						randomMove(tracking);	
 						try {
-							client.trackingProvider(tracking);
+							client.trackingProvider(tracking.buildTracking());
 						} catch (Exception e) {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
@@ -126,7 +126,7 @@ public class Client {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		List<ProviderTracking> list = new ArrayList<ProviderTracking>();
+		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>();
 		String serviceUrl = "http://localhost:9000/";
 		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
 

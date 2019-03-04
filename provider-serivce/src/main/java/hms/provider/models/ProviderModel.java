@@ -2,21 +2,59 @@ package hms.provider.models;
 
 import java.util.UUID;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 
 import hms.provider.entities.ProviderEntity;
+import xyz.morphia.geo.GeoJson;
+import xyz.morphia.geo.Point;
 
 public class ProviderModel{	
-	private hms.provider.entities.ProviderEntity entity;
+
+	@Immutable
+	public static class ProviderTrackingModel {
+		private hms.provider.entities.ProviderTrackingEntity entity;
 	
+		public ProviderTrackingModel(UUID hubid, double latitude, double longitude) {
+			this.entity.setHubid(hubid);
+			this.entity.setLocation(GeoJson.point(latitude,longitude));
+		}
+		
+		public UUID getHubid() {
+			return this.entity.getHubid();
+		}
+		
+		public Point getLocation() {
+			return this.entity.getLocation();
+		}
+	}
+
+
+	private hms.provider.entities.ProviderEntity entity;
+	private ProviderTrackingModel previousTracking;
+	private ProviderTrackingModel currentTracking;
+
 	public ProviderModel() {
 		this.entity = new ProviderEntity();
+		this.entity.setProviderid(UUID.randomUUID());
 	}
 	
 	// constructor for loading
-	public ProviderModel(hms.provider.entities.ProviderEntity entity) {
-		this.entity = entity;
+	public static ProviderModel load(hms.provider.entities.ProviderEntity entity) {
+		if(entity != null) {
+			ProviderModel model = new ProviderModel() ;
+			model.entity = entity;
+			return model;
+		}else {
+			return null;
+		}
+	}
+	
+	public void load(hms.dto.Provider dto) {
+		this.setProviderid(dto.getProviderid());
+		this.setName(dto.getName());
 	}
 	
 	public hms.provider.entities.ProviderEntity persistance() {
@@ -34,24 +72,21 @@ public class ProviderModel{
 	public String getName() {
 		return this.entity.getName();
 	}
+	
 	public void setName(String name) {
 		this.entity.setName(name);
 	}
 	
-	private static final ModelMapper modelMapper = new ModelMapper();
-	static {
-		modelMapper.addMappings(new PropertyMap<hms.dto.ProviderTracking, ProviderModel>() {			
-			@Override
-			protected void configure() {
-				map().setProviderid(source.id);
-			}
-		});	
-	}
 	
-	public static void MapDtoToModel(hms.dto.ProviderTracking source, ProviderModel  dest) {	
-		modelMapper.map(source, dest);
-	}	
-	public static void MapModelToDto(ProviderModel source, hms.dto.ProviderTracking dest) {	
-		modelMapper.map(source, dest);
+	public ProviderTrackingModel getCurrentTracking() {
+		return currentTracking;
+	}
+
+	public void setCurrentTracking(ProviderTrackingModel currentTracking) {
+		if(this.previousTracking == null) {
+			this.previousTracking = this.currentTracking;
+		}
+		this.currentTracking = currentTracking;
+		this.entity.setCurrentTracking(currentTracking!=null?currentTracking.entity:null);
 	}
 }

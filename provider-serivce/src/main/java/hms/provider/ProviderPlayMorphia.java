@@ -17,6 +17,8 @@ public class ProviderPlayMorphia extends PlayMorphia{
     public ProviderPlayMorphia(ApplicationLifecycle lifecycle, Environment env, Config config) {
 		super(lifecycle, env, config);
 
+        this.morphia().map(hms.provider.entities.ProviderEntity.class);        
+        this.datastore().ensureIndexes();    
         this.morphia().map(hms.provider.entities.ProviderTrackingEntity.class);        
         this.datastore().ensureIndexes();    
 	}

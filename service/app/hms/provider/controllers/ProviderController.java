@@ -1,5 +1,8 @@
 package hms.provider.controllers;
 
+
+import java.security.InvalidKeyException;
+
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -7,8 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import hms.provider.models.ProviderModel;
-import hms.provider.repositories.IProviderRepository;
+import hms.hub.IProviderService;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -16,30 +18,32 @@ import play.mvc.Result;
 
 public class ProviderController  extends Controller {
     private static final Logger logger = LoggerFactory.getLogger(ProviderController.class);
-    private IProviderRepository repo;
+    private IProviderService providerserivce;
     @Inject
-    public ProviderController(IProviderRepository repo) {
-    	this.repo = repo;
+    public ProviderController(IProviderService providerservice) {
+    	this.providerserivce = providerservice;
     }
     
     public Result index() {
         return ok("Provider services");
     }        
     
-    public Result clear() {
-        this.repo.clear();
-        return ok("Clear");
-    }    
+    public Result initprovider(Http.Request request) {
+    	JsonNode json = request.body().asJson();
+    	hms.dto.Provider providerdto = Json.fromJson(json, hms.dto.Provider.class);
+    	this.providerserivce.initprovider(providerdto);
+        return ok("init provider");
+    }
     
-    public Result tracking(Http.Request request) {
+    public Result clear() {
+        this.providerserivce.clear();
+        return ok("Clear");
+    }
+    
+    public Result tracking(Http.Request request) throws InvalidKeyException {
     	JsonNode json = request.body().asJson();
     	hms.dto.ProviderTracking trackingdto = Json.fromJson(json, hms.dto.ProviderTracking.class);
-    	ProviderModel tracking = this.repo.LoadById(trackingdto.id);
-    	if(tracking==null) {
-    		tracking = new ProviderModel();
-    	}
-    	ProviderModel.MapDtoToModel(trackingdto, tracking);
-    	this.repo.Save(tracking);
+    	this.providerserivce.tracking(trackingdto);
         return ok("Provider tracking");
     }
 }

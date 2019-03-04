@@ -1,8 +1,10 @@
 <classpath>
   <classpathentry kind="src" path="src\main\java"/>
   <classpathentry kind="src" path="/servicecommon" exported="true" combineaccessrules="false"/>
+  <classpathentry kind="src" path="/hubservice" exported="true" combineaccessrules="false"/>
+  <classpathentry kind="src" path="/protocol" exported="true" combineaccessrules="false"/>
   <classpathentry kind="lib" path="..\provider-serivce\lib\play-morphia.jar"/>
-  <classpathentry kind="lib" path="..\service-common\lib\play-morphia.jar"/>
+  <classpathentry kind="lib" path="..\hubservice\lib\play-morphia.jar"/>
   <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.typesafe.play\play-guice_2.11\srcs\play-guice_2.11-2.7.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.typesafe.play\play-guice_2.11\jars\play-guice_2.11-2.7.0.jar">
     <attributes>

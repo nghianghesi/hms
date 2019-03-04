@@ -8,7 +8,9 @@ public interface IProviderRepository {
 
 	ProviderModel LoadById(UUID id);
 
-	void Save(hms.provider.entities.ProviderEntity tracking);
+	void Save(hms.provider.models.ProviderModel provider);
+	
+	void SaveTracking(hms.provider.models.ProviderModel provider);
 	
 	void clear();
 

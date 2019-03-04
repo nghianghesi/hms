@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.bson.types.ObjectId;
+
 import xyz.morphia.annotations.Entity;
 import xyz.morphia.annotations.Field;
+import xyz.morphia.annotations.Id;
 import xyz.morphia.annotations.Index;
 import xyz.morphia.annotations.IndexOptions;
 import xyz.morphia.annotations.Indexes;
@@ -14,11 +17,13 @@ import xyz.morphia.utils.IndexType;
 
 
 @Indexes({
-    @Index(fields = {@Field("hubid")}, options = @IndexOptions(unique = true,name = "indexing_hubid")),
-    @Index(fields = {@Field(value="location", type = IndexType.GEO2DSPHERE)}, options = @IndexOptions(name = "indexing_location"))    
+    @Index(fields = {@Field("hubid")}, options = @IndexOptions(unique = true,name = "hub_indexing_hubid")),
+    @Index(fields = {@Field(value="location", type = IndexType.GEO2DSPHERE)}, options = @IndexOptions(name = "hub_indexing_location"))    
 })
 @Entity(value = "HubNode")
 public class HubNodeEntity {
+	@Id
+	private ObjectId _id;
     private UUID hubid;
     private Point location;   
 

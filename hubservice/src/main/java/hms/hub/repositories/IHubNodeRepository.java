@@ -1,5 +1,7 @@
 package hms.hub.repositories;
 
-public interface IHubNodeRepository {
+import hms.hub.models.HubNodeModel;
 
+public interface IHubNodeRepository {
+	HubNodeModel getRootNode();
 }

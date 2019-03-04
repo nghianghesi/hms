@@ -118,4 +118,6 @@ public class HubNodeModel {
 		}
 		return res != null ? res.getHostingHub(latitude, longitude) : this;
 	}
+	
+	
 }
