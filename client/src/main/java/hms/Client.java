@@ -34,7 +34,7 @@ public class Client {
 	private static final double LATITUDE_MOVE = 0.01;
 	
 	private static final int NUM_OF_LOOP = 10;
-	private static final int NUM_OF_THREAD = 100;
+	private static final int NUM_OF_THREAD = 500;
 	private static final int THREAD_DELAY = 100;
 	private static final int ITEM_PER_THREAD=NUM_OF_PROVIDER/NUM_OF_THREAD;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
@@ -150,6 +150,8 @@ public class Client {
 		for (int groupidx = 0; groupidx < groupRunners.size(); groupidx++) {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
+		
+		logger.info(client.getStats());
 	}
 
 }

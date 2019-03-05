@@ -89,4 +89,12 @@ public class HMSRESTClient{
 			logger.error("Tracking Provider", e);
 		}
 	}
+	
+	public String getStats() {
+		String s = String.format("Response time: max %d", this.maxResponseTime);
+		for(int i=0;i<this.timeLimits.length;i++) {
+			s = String.format("%s, %d - %d", s, this.timeLimits[i], this.coutingRequestByTimeLimits[i]);
+		}
+		return s;
+	}
 }
