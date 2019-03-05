@@ -35,6 +35,28 @@ public class HMSRESTClient{
 		this.serviceIntegration = retrofit.create(HMSServiceIntegration.class);
 	}
 	
+	private long maxResponseTime;
+	private long timeLimits[] = new long[] {1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
+	private long coutingRequestByTimeLimits[] = new long[timeLimits.length] ;
+	
+	private void trackingMaxResponseTime(long elapsedTime) {
+		synchronized(this) {
+			maxResponseTime = Math.max(this.maxResponseTime, elapsedTime);
+		}
+		
+		if(elapsedTime == maxResponseTime) {
+			logger.info("Response time: {}", maxResponseTime);
+		}
+		
+		for(int i=timeLimits.length-1;i>=0;i--) {
+			if(elapsedTime >= timeLimits[i]) {
+				coutingRequestByTimeLimits[i] += 1;
+				logger.info("Response time: max {}, elapsed {}, limit {}, count {}",maxResponseTime, elapsedTime, timeLimits[i], coutingRequestByTimeLimits[i]);
+				break;
+			}
+		}
+	}
+	
 	public HMSRESTClient(String Url, Logger logger) {
 		this.serviceURL = Url;
 		this.logger = logger;
@@ -42,8 +64,11 @@ public class HMSRESTClient{
 	}
 	
 	public void trackingProvider(ProviderTracking tracking) {
-		try {			
+		try {			      
+			long startTime = System.currentTimeMillis();
 			this.serviceIntegration.trackingProvider(tracking).execute().body().string();
+			trackingMaxResponseTime(System.currentTimeMillis() - startTime);
+		    
 		} catch (Exception e) {
 			logger.error("Tracking Provider", e);
 		}
@@ -59,8 +84,7 @@ public class HMSRESTClient{
 
 	public void clearProvider() {
 		try {			
-			this.serviceIntegration.clearProvider().execute().body().string();
-			
+			this.serviceIntegration.clearProvider().execute().body().string();			
 		} catch (Exception e) {
 			logger.error("Tracking Provider", e);
 		}

@@ -34,7 +34,7 @@ public class Client {
 	private static final double LATITUDE_MOVE = 0.01;
 	
 	private static final int NUM_OF_LOOP = 10;
-	private static final int NUM_OF_THREAD = 10;
+	private static final int NUM_OF_THREAD = 100;
 	private static final int THREAD_DELAY = 100;
 	private static final int ITEM_PER_THREAD=NUM_OF_PROVIDER/NUM_OF_THREAD;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
@@ -71,7 +71,9 @@ public class Client {
 		}		
 	}
 	
-	private static void initProvider(HMSRESTClient client, List<ProviderTrackingBuilder> list) {
+	private static void initProvider(HMSRESTClient client, List<ProviderTrackingBuilder> list) {		
+		logger.info("Init Providers:");
+		client.clearProvider();		
 		for(int idx = 0; idx < NUM_OF_PROVIDER; idx++) {	
 			ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder();
 			trackingBuilder.setProviderid(UUID.randomUUID());	
@@ -79,7 +81,7 @@ public class Client {
 			trackingBuilder.setLongitude(getRandomLongitude());
 			trackingBuilder.setName("Provider "+idx);
 			client.initProvider(trackingBuilder.buildProvider());
-			client.trackingProvider(trackingBuilder.buildTracking());
+			//client.trackingProvider(trackingBuilder.buildTracking());
 			list.add(trackingBuilder);
 		}
 	}	
@@ -91,6 +93,14 @@ public class Client {
 				logger.info("End group {}", groupidx);
 			}
 		};
+	}
+	
+	private static void sleepWithoutException(int durationInMilisecond) {		
+		try {
+			Thread.sleep(THREAD_DELAY);
+		} catch (Exception e) {
+			logger.error("Sleep Error {}", e);
+		}			
 	}
 
 	private static Runnable buildUpdateProviderRunnable(
@@ -112,13 +122,11 @@ public class Client {
 						} catch (Exception e) {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
-					}
+						
+						sleepWithoutException(5+ThreadLocalRandom.current().nextInt()%20);
+					}	
 					
-					try {
-						Thread.sleep(THREAD_DELAY);
-					} catch (Exception e) {
-						logger.error("Error Looping: group {}, loop {}", groupidx, loop);
-					}					
+					sleepWithoutException(THREAD_DELAY);
 				}
 			}	
 		};	
@@ -130,9 +138,8 @@ public class Client {
 		String serviceUrl = "http://localhost:9000/";
 		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
 
-		client.clearProvider();
 		initProvider(client, list);
-
+		logger.info("Tracking Providers:");
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
 		
@@ -141,11 +148,7 @@ public class Client {
 		}
 		
 		for (int groupidx = 0; groupidx < groupRunners.size(); groupidx++) {
-			try {
-				groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).get(10, TimeUnit.HOURS);
-			} catch (InterruptedException | ExecutionException | TimeoutException e) {
-				logger.error("End group");
-			}		
+			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
 	}
 
