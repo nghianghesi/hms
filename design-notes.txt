@@ -1,1 +1,2 @@
 Need margin in/out hubnote to reduce provider's moving out of hubnote (change sharding key value)
+micro-service vs normal similar to asyn-js vs syn-js (observable pattern, parallel)

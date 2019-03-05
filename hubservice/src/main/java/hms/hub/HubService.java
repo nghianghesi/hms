@@ -1,6 +1,7 @@
 package hms.hub;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
@@ -14,8 +15,10 @@ public class HubService implements IHubService {
 		this.rootNode = repo.getRootNode();
 	}
 
-	public UUID getHostingHubId(double latitude, double longitude)
+	public CompletableFuture<UUID> getHostingHubId(double latitude, double longitude)
 	{
-		return this.rootNode.getHostingHub(latitude, longitude).getHubid();
+		return CompletableFuture.supplyAsync(()->{
+			return this.rootNode.getHostingHub(latitude, longitude).getHubid();
+		});
 	}
 }

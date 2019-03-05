@@ -56,7 +56,7 @@ lazy val client = (project in file("./client"))
   .dependsOn(protocol)
   
   
-lazy val service = (project in file("./service"))
+lazy val servicegateway = (project in file("./service"))
 	.enablePlugins(PlayJava)
 	.settings(libraryDependencies ++=  Seq(
 		guice,
@@ -73,5 +73,5 @@ lazy val global = project
     client,
 	hubservice,
 	providerserivce,
-    service
+    servicegateway
   )
