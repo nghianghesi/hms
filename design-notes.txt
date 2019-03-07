@@ -1,2 +1,5 @@
 Need margin in/out hubnote to reduce provider's moving out of hubnote (change sharding key value)
 micro-service vs normal similar to asyn-js vs syn-js (observable pattern, parallel)
+start up: create topic if not existing
+setup producer, consumer.
+hub service handler before provider service, then place result message

@@ -18,6 +18,7 @@ public class HubService implements IHubService {
 	public CompletableFuture<UUID> getHostingHubId(double latitude, double longitude)
 	{
 		return CompletableFuture.supplyAsync(()->{
+			//TODO: need return hubid full-path
 			return this.rootNode.getHostingHub(latitude, longitude).getHubid();
 		});
 	}
