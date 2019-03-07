@@ -22,11 +22,17 @@ lazy val dependencies =
 	var slf4jimpl = "org.slf4j" % "slf4j-log4j12" % "1.7.25"
 	var morphia = "xyz.morphia.morphia" % "core" % "1.4.0"
 	var modelmapper = "org.modelmapper" % "modelmapper" % "2.3.0"
+	var kafkaclient = "org.apache.kafka" % "kafka-clients" % "2.1.1" 
+	var kafkastream = "org.apache.kafka" % "kafka-streams" % "2.1.1" 
+	var kafkaadmin = "com.cerner.common.kafka" % "common-kafka-admin" % "1.3"
+	var kafka = "org.apache.kafka" %% "kafka" % "2.1.1"
+	var dslplatform ="com.dslplatform" % "dsl-json-java8" % "1.8.5"
   }
   
 lazy val protocol = (project in file("./protocol"))
 
 lazy val servicecommon = (project in file("./service-common"))
+  .settings(libraryDependencies ++=  Seq(dependencies.dslplatform))
   .dependsOn(protocol)
 	  
 lazy val hubservice = (project in file("./hubservice"))
@@ -37,6 +43,8 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.modelmapper))
   .dependsOn(servicecommon, protocol)
   
+  
+  
  lazy val providerserivce = (project in file("./provider-serivce"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
@@ -44,6 +52,42 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.morphia,
 		dependencies.modelmapper))
   .dependsOn(servicecommon, hubservice, protocol)
+  
+  
+ lazy val kafkaserivcecommon = (project in file("./kafka-service-common"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice,  
+		dependencies.kafkaclient,
+		dependencies.kafka))
+  .dependsOn(servicecommon)   
+  
+ lazy val providerkafkaproducer = (project in file("./provider-kafka-producer"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice,  
+		dependencies.kafkaclient,
+		dependencies.kafka))
+  .dependsOn(servicecommon,kafkaserivcecommon)   
+  
+  lazy val providerkafkacomsumer = (project in file("./provider-kafka-comsumer"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice,  
+		dependencies.kafkaclient,
+		dependencies.kafka))
+  .dependsOn(servicecommon, kafkaserivcecommon, providerserivce)  
+  
+ lazy val hubkafkaproducer = (project in file("./hub-kafka-producer"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice,  
+		dependencies.kafkaclient,
+		dependencies.kafka))
+  .dependsOn(servicecommon, kafkaserivcecommon)   
+  
+  lazy val hubkafkacomsumer = (project in file("./hub-kafka-comsumer"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice,  
+		dependencies.kafkaclient,
+		dependencies.kafka))
+  .dependsOn(servicecommon, kafkaserivcecommon, hubservice)    
 
 lazy val client = (project in file("./client"))
   .settings(libraryDependencies ++=  Seq(
@@ -64,7 +108,7 @@ lazy val servicegateway = (project in file("./service"))
 		dependencies.morphia,
 		dependencies.modelmapper
 	))
-	.dependsOn(protocol,servicecommon,hubservice,providerserivce)	  
+	.dependsOn(protocol,servicecommon,hubservice,providerserivce,providerkafkaproducer)	  
 	
 lazy val global = project
   .in(file("."))
@@ -73,5 +117,9 @@ lazy val global = project
     client,
 	hubservice,
 	providerserivce,
+	providerkafkaproducer,
+	providerkafkacomsumer,
+	hubkafkaproducer,
+	hubkafkacomsumer,	
     servicegateway
   )
