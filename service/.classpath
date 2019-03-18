@@ -6,6 +6,7 @@
   <classpathentry excluding="resources\" kind="src" path="test"/>
   <classpathentry kind="src" path="/protocol" exported="true" combineaccessrules="false"/>
   <classpathentry kind="src" path="/servicecommon" exported="true" combineaccessrules="false"/>
+  <classpathentry kind="src" path="/kafkaserivcecommon" exported="true" combineaccessrules="false"/>
   <classpathentry kind="src" path="/hubservice" exported="true" combineaccessrules="false"/>
   <classpathentry kind="src" path="/providerserivce" exported="true" combineaccessrules="false"/>
   <classpathentry kind="src" path="/providerkafkaproducer" exported="true" combineaccessrules="false"/>
@@ -226,22 +227,6 @@
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.google.inject.extensions\guice-assistedinject\docs\guice-assistedinject-4.2.2-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.mongodb\mongo-java-driver\srcs\mongo-java-driver-3.10.1-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.mongodb\mongo-java-driver\jars\mongo-java-driver-3.10.1.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.mongodb\mongo-java-driver\docs\mongo-java-driver-3.10.1-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\xyz.morphia.morphia\core\srcs\core-1.4.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\xyz.morphia.morphia\core\jars\core-1.4.0.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\xyz.morphia.morphia\core\docs\core-1.4.0-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry kind="lib" path="C:\Users\Admin\.ivy2\cache\com.thoughtworks.proxytoys\proxytoys\jars\proxytoys-1.0.jar"/>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.modelmapper\modelmapper\srcs\modelmapper-2.3.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.modelmapper\modelmapper\jars\modelmapper-2.3.0.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.modelmapper\modelmapper\docs\modelmapper-2.3.0-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.dslplatform\dsl-json-java8\srcs\dsl-json-java8-1.8.5-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.dslplatform\dsl-json-java8\jars\dsl-json-java8-1.8.5.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.dslplatform\dsl-json-java8\docs\dsl-json-java8-1.8.5-javadoc.jar!/"/>
@@ -305,6 +290,22 @@
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.apache.yetus\audience-annotations\srcs\audience-annotations-0.5.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.apache.yetus\audience-annotations\jars\audience-annotations-0.5.0.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.apache.yetus\audience-annotations\docs\audience-annotations-0.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.mongodb\mongo-java-driver\srcs\mongo-java-driver-3.10.1-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.mongodb\mongo-java-driver\jars\mongo-java-driver-3.10.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.mongodb\mongo-java-driver\docs\mongo-java-driver-3.10.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\xyz.morphia.morphia\core\srcs\core-1.4.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\xyz.morphia.morphia\core\jars\core-1.4.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\xyz.morphia.morphia\core\docs\core-1.4.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="C:\Users\Admin\.ivy2\cache\com.thoughtworks.proxytoys\proxytoys\jars\proxytoys-1.0.jar"/>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.modelmapper\modelmapper\srcs\modelmapper-2.3.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.modelmapper\modelmapper\jars\modelmapper-2.3.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.modelmapper\modelmapper\docs\modelmapper-2.3.0-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.typesafe.play\play-server_2.11\srcs\play-server_2.11-2.7.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.typesafe.play\play-server_2.11\jars\play-server_2.11-2.7.0.jar">
