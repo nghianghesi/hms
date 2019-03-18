@@ -1,4 +1,4 @@
-package hms.common.messaging;
+package hms.kafka.messaging;
 
 import java.util.Hashtable;
 import java.util.Map;

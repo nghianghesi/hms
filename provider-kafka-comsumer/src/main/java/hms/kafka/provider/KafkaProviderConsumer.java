@@ -7,8 +7,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
-import hms.common.messaging.MessageBasedServiceManager;
+
 import hms.kafka.KafkaConsumerBase;
+import hms.kafka.messaging.MessageBasedServiceManager;
 import hms.provider.IProviderService;
 
 public class KafkaProviderConsumer extends KafkaConsumerBase{

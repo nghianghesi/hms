@@ -4,11 +4,11 @@ import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import com.typesafe.config.Config;
 
-import hms.common.messaging.MessageBasedReponse;
-import hms.common.messaging.MessageBasedServiceManager;
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import hms.kafka.KafkaProducerBase;
+import hms.kafka.messaging.MessageBasedReponse;
+import hms.kafka.messaging.MessageBasedServiceManager;
 import hms.provider.IProviderService;
 
 

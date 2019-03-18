@@ -1,4 +1,4 @@
-package hms.common.messaging;
+package hms.kafka.messaging;
 
 public class MessageBasedReponse{
 	private long requestId;	

@@ -1,4 +1,4 @@
-package hms.common.messaging;
+package hms.kafka.messaging;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class MessageBasedRequest<T> {
 		this.data = data;
 	}
 	
-	public Map<String, byte[]> getReponsePoints(String point) {
+	Map<String, byte[]> getReponsePoints(String point) {
 		return this.responsePoints;
 	}
 	
