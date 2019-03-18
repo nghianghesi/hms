@@ -29,16 +29,13 @@ public class MessageBasedServiceManager {
 		}
 	}	
 	
-	public <MT> MessageBasedReponse request(java.util.function.Function<MessageBasedRequest,Future<MT>> doRequest, int timeout) {
+	public <T> MessageBasedReponse request(java.util.function.Function<Long,Future<MessageBasedRequest<T>>> doRequest, int timeout) {
 		Long id = this.nextId();
 		MessageBasedReponse waiter = new MessageBasedReponse();
 		waiter.setRequestId(id);
-		this.waiters.put(id, waiter);
-		
+		this.waiters.put(id, waiter);		
 
-		MessageBasedRequest request = new MessageBasedRequest();
-		request.setRequestId(id);
-		if(doRequest.apply(request) != null) {
+		if(doRequest.apply(id) != null) {
 			try {
 				if(waiter.IsWaiting()) {
 					waiter.wait(timeout);

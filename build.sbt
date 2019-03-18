@@ -106,7 +106,7 @@ lazy val servicegateway = (project in file("./service"))
 		dependencies.morphia,
 		dependencies.modelmapper
 	))
-	.dependsOn(protocol,servicecommon,hubservice,providerserivce,providerkafkaproducer)	  
+	.dependsOn(protocol,servicecommon,kafkaserivcecommon,hubservice,providerserivce,providerkafkaproducer)	  
 	
 lazy val global = project
   .in(file("."))

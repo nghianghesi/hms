@@ -9,14 +9,14 @@ import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 
 import hms.kafka.KafkaConsumerBase;
-import hms.kafka.messaging.MessageBasedServiceManager;
+import hms.kafka.messaging.KafkaMessageUtils;
 import hms.provider.IProviderService;
 
 public class KafkaProviderConsumer extends KafkaConsumerBase{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderConsumer.class);
 	private IProviderService productservice;
 	@Inject
-	public KafkaProviderConsumer(Config config, MessageBasedServiceManager messageManager, IProviderService productservice) {
+	public KafkaProviderConsumer(Config config, KafkaMessageUtils messageManager, IProviderService productservice) {
 		super(logger,config,messageManager);
 		this.productservice = productservice;
 	}

@@ -8,7 +8,7 @@ import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import hms.kafka.KafkaProducerBase;
 import hms.kafka.messaging.MessageBasedReponse;
-import hms.kafka.messaging.MessageBasedServiceManager;
+import hms.kafka.messaging.KafkaMessageUtils;
 import hms.provider.IProviderService;
 
 
@@ -21,7 +21,7 @@ public class KafkaProviderProceduer extends KafkaProducerBase implements hms.pro
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderProceduer.class);
 
 	@Inject
-	public KafkaProviderProceduer(Config config, MessageBasedServiceManager messageManager) {
+	public KafkaProviderProceduer(Config config, KafkaMessageUtils messageManager) {
 		super(KafkaProviderProceduer.logger, config, messageManager);
 	}
 	

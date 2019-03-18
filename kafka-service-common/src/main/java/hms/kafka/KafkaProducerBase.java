@@ -23,7 +23,8 @@ import org.slf4j.Logger;
 
 import com.typesafe.config.Config;
 
-import hms.kafka.messaging.MessageBasedServiceManager;
+import hms.kafka.messaging.KafkaMessageUtils;
+import hms.kafka.messaging.MessageKafkaIntegration;
 
 public abstract class KafkaProducerBase {	
 	protected KafkaProducer<String, byte[]> producer;
@@ -33,9 +34,9 @@ public abstract class KafkaProducerBase {
 	protected String groupid;
 	protected String server;
 	protected int timeout = 5000;
-	protected MessageBasedServiceManager messageManager;
+	protected KafkaMessageUtils messageManager;
 	private Logger logger;
-	protected KafkaProducerBase(Logger logger, Config config, MessageBasedServiceManager messageManager) {
+	protected KafkaProducerBase(Logger logger, Config config, KafkaMessageUtils messageManager) {
 		this.logger = logger;
 		this.messageManager = messageManager;
 		this.server = config.getString("kafka.server");
@@ -62,7 +63,7 @@ public abstract class KafkaProducerBase {
 	
 	protected byte[] toRequestBody(Object data) {
 		try {
-			return this.messageManager.convertObjecttoByteArray(data);
+			return MessageKafkaIntegration.convertObjecttoByteArray(data);
 		} catch (IOException e) {
 			logger.error("Building request error");
 			return null;
@@ -70,12 +71,12 @@ public abstract class KafkaProducerBase {
 	}
 	
 	protected <K,V> void setCommonInfo(ProducerRecord<K, V> record, long id) {
-		record.headers().add(this.messageManager.REQUEST_ID_KEY,this.messageManager.longToBytes(id));
+		record.headers().add(this.messageManager.REQUEST_ID_KEY,MessageKafkaIntegration.longToBytes(id));
 		record.headers().add(this.messageManager.RETURN_TOPIC_KEY,this.returnTopic.getBytes());		
 	}
 	
 	protected <K,V> long getRecordRequestId(ConsumerRecord<K, V> record) {		
-		return this.messageManager.bytesToLong(record.headers().lastHeader(this.messageManager.REQUEST_ID_KEY).value());
+		return MessageKafkaIntegration.bytesToLong(record.headers().lastHeader(this.messageManager.REQUEST_ID_KEY).value());
 	}		
 	
 	protected void createProducer() {

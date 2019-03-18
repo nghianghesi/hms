@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 
 import com.typesafe.config.Config;
 
-import hms.kafka.messaging.MessageBasedServiceManager;
+import hms.kafka.messaging.KafkaMessageUtils;
 
 public abstract class KafkaConsumerBase {
 	protected KafkaProducer<String, byte[]> producer;
@@ -32,10 +32,10 @@ public abstract class KafkaConsumerBase {
 	protected String groupid;
 	protected String server;
 	protected int threadPoolSize = 100;
-	protected MessageBasedServiceManager messageManager;
+	protected KafkaMessageUtils messageManager;
 	private Logger logger;
 	private ExecutorService executor;
-	protected KafkaConsumerBase(Logger logger, Config config, MessageBasedServiceManager messageManager) {
+	protected KafkaConsumerBase(Logger logger, Config config, KafkaMessageUtils messageManager) {
 		this.logger = logger;
 		this.messageManager = messageManager;
 		this.server = config.getString("kafka.server");
