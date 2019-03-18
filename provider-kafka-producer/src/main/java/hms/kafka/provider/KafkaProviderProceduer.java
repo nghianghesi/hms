@@ -20,6 +20,11 @@ import org.slf4j.LoggerFactory;
 public class KafkaProviderProceduer extends KafkaProducerBase implements hms.provider.IProviderService{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderProceduer.class);
 
+	@Inject
+	public KafkaProviderProceduer(Config config, MessageBasedServiceManager messageManager) {
+		super(KafkaProviderProceduer.logger, config, messageManager);
+	}
+	
 	@Override
 	protected void loadConfig(Config config) {
 		if(config.hasPath("kafka.provider.groupid")) {
@@ -44,12 +49,7 @@ public class KafkaProviderProceduer extends KafkaProducerBase implements hms.pro
 		}else {
 			this.requestTopic = "hms.provider";
 		}		
-	}
-	
-	@Inject
-	public KafkaProviderProceduer(Config config, MessageBasedServiceManager messageManager) {
-		super(KafkaProviderProceduer.logger, config, messageManager);
-	}
+	}	
 	
 	@Override
 	public CompletableFuture<Boolean> clear() {

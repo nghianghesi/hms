@@ -23,8 +23,6 @@ lazy val dependencies =
 	var morphia = "xyz.morphia.morphia" % "core" % "1.4.0"
 	var modelmapper = "org.modelmapper" % "modelmapper" % "2.3.0"
 	var kafkaclient = "org.apache.kafka" % "kafka-clients" % "2.1.1" 
-	var kafkastream = "org.apache.kafka" % "kafka-streams" % "2.1.1" 
-	var kafkaadmin = "com.cerner.common.kafka" % "common-kafka-admin" % "1.3"
 	var kafka = "org.apache.kafka" %% "kafka" % "2.1.1"
 	var dslplatform ="com.dslplatform" % "dsl-json-java8" % "1.8.5"
   }
@@ -32,7 +30,6 @@ lazy val dependencies =
 lazy val protocol = (project in file("./protocol"))
 
 lazy val servicecommon = (project in file("./service-common"))
-  .settings(libraryDependencies ++=  Seq(dependencies.dslplatform))
   .dependsOn(protocol)
 	  
 lazy val hubservice = (project in file("./hubservice"))
@@ -57,6 +54,7 @@ lazy val hubservice = (project in file("./hubservice"))
  lazy val kafkaserivcecommon = (project in file("./kafka-service-common"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
+		dependencies.dslplatform,
 		dependencies.kafkaclient,
 		dependencies.kafka))
   .dependsOn(servicecommon)   
