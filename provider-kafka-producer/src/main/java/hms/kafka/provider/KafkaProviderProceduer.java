@@ -1,14 +1,17 @@
 package hms.kafka.provider;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import com.typesafe.config.Config;
 
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
-import hms.kafka.KafkaProducerBase;
 import hms.kafka.streamming.KafkaMessageUtils;
+import hms.kafka.streamming.KafkaNodeBase;
 import hms.kafka.streamming.MessageBasedReponse;
+import hms.kafka.streamming.MessageBasedRequest;
+import hms.kafka.streamming.RootStreamManager;
 import hms.provider.IProviderService;
 
 
@@ -17,12 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class KafkaProviderProceduer extends KafkaProducerBase implements hms.provider.IProviderService{
+public class KafkaProviderProceduer extends RootStreamManager implements hms.provider.IProviderService{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderProceduer.class);
 
 	@Inject
-	public KafkaProviderProceduer(Config config, KafkaMessageUtils messageManager) {
-		super(KafkaProviderProceduer.logger, config, messageManager);
+	public KafkaProviderProceduer(Config config) {
+		super(KafkaProviderProceduer.logger, config);
 	}
 	
 	@Override
@@ -54,10 +57,10 @@ public class KafkaProviderProceduer extends KafkaProducerBase implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> clear() {
 		return CompletableFuture.supplyAsync(()->{
-			MessageBasedReponse response = this.messageManager.request((request)->{
+			MessageBasedReponse response = this.startStream((requestid)->{
 				ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(
 						this.requestTopic, IProviderService.ClearMessage, new byte[] {});
-				this.setCommonInfo(record, request.getRequestId());
+				this.setCommonInfo(record, requestid);
 				return this.producer.send(record);
 			}, this.timeout);			
 			return !response.isError();
@@ -67,10 +70,10 @@ public class KafkaProviderProceduer extends KafkaProducerBase implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> initprovider(Provider providerdto) {
 		return CompletableFuture.supplyAsync(()->{
-			MessageBasedReponse response = this.messageManager.request((request)->{		
+			MessageBasedReponse response = this.startStream((requestid)->{		
 				ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(
 						this.requestTopic, IProviderService.InitproviderMessage, new byte[] {});
-				this.setCommonInfo(record, request.getRequestId());
+				this.setCommonInfo(record, requestid);
 				return this.producer.send(record);
 			}, this.timeout);			
 			return !response.isError();
@@ -80,17 +83,25 @@ public class KafkaProviderProceduer extends KafkaProducerBase implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto) {
 		return CompletableFuture.supplyAsync(()->{
-			MessageBasedReponse response = this.messageManager.request((request)->{		
+			MessageBasedReponse response = this.startStream((requestid)->{		
 				byte[] requestBody = this.toRequestBody(trackingdto);
 				if(requestBody != null) {
-					ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(
-							this.requestTopic, IProviderService.TrackingMessage, requestBody);
-					this.setCommonInfo(record, request.getRequestId());
-					return this.producer.send(record);
+					try {					
+						MessageBasedRequest<ProviderTracking> request = new MessageBasedRequest<ProviderTracking>();
+						request.setData(trackingdto);
+						ProducerRecord<String, byte[]> record;
+	
+							record = KafkaMessageUtils.getProcedureRecord(request, this.requestTopic, IProviderService.TrackingMessage);
+						this.setCommonInfo(record, requestid);
+						return this.producer.send(record);
+					} catch (IOException e) {
+						logger.error("Create request error", e.getMessage());
+						return null;
+					}					
 				}else {
 					return null;
 				}
-			}, this.timeout);			
+			}, this.timeout);
 			return !response.isError();
 		});
 	}

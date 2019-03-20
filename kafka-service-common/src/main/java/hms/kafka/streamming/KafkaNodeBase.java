@@ -1,6 +1,5 @@
-package hms.kafka;
+package hms.kafka.streamming;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
@@ -18,15 +17,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
-
 import com.typesafe.config.Config;
 
-import hms.kafka.streamming.KafkaMessageUtils;
-import hms.kafka.streamming.MessageKafkaIntegration;
-
-public abstract class KafkaProducerBase {	
+public abstract class KafkaNodeBase {	
 	protected KafkaProducer<String, byte[]> producer;
 	protected KafkaConsumer<String, byte[]> consumer;
 	protected String requestTopic;
@@ -34,11 +28,9 @@ public abstract class KafkaProducerBase {
 	protected String groupid;
 	protected String server;
 	protected int timeout = 5000;
-	protected KafkaMessageUtils messageManager;
 	private Logger logger;
-	protected KafkaProducerBase(Logger logger, Config config, KafkaMessageUtils messageManager) {
+	protected KafkaNodeBase(Logger logger, Config config) {
 		this.logger = logger;
-		this.messageManager = messageManager;
 		this.server = config.getString("kafka.server");
 		this.loadConfig(config);
 		this.ensureTopic();
@@ -59,25 +51,7 @@ public abstract class KafkaProducerBase {
 		} catch (InterruptedException | ExecutionException e) {
 			logger.error("Create topic error",e);
 		}
-	}
-	
-	protected byte[] toRequestBody(Object data) {
-		try {
-			return MessageKafkaIntegration.convertObjecttoByteArray(data);
-		} catch (IOException e) {
-			logger.error("Building request error");
-			return null;
-		}
-	}
-	
-	protected <K,V> void setCommonInfo(ProducerRecord<K, V> record, long id) {
-		record.headers().add(this.messageManager.REQUEST_ID_KEY,MessageKafkaIntegration.longToBytes(id));
-		record.headers().add(this.messageManager.RETURN_TOPIC_KEY,this.returnTopic.getBytes());		
-	}
-	
-	protected <K,V> long getRecordRequestId(ConsumerRecord<K, V> record) {		
-		return MessageKafkaIntegration.bytesToLong(record.headers().lastHeader(this.messageManager.REQUEST_ID_KEY).value());
-	}		
+	}	
 	
 	protected void createProducer() {
         Properties props = new Properties();
@@ -101,16 +75,13 @@ public abstract class KafkaProducerBase {
             while(true) {
             	ConsumerRecords<String, byte[]> records = this.consumer.poll(Duration.ofMillis(100));
 				for (ConsumerRecord<String, byte[]> record : records) {					
-					long requestid = this.getRecordRequestId(record);
-					this.processResponse(requestid, record.value());
+					this.processRequest(record);
 				}
             }
         });
 	}		
 	
-	protected void processResponse(long requestid, byte[] data) {
-		this.messageManager.handlerResponse(requestid, data);
-	}
+	protected abstract void processRequest(ConsumerRecord<String, byte[]> record) ;
 	
 	protected abstract void loadConfig(Config config);
 }

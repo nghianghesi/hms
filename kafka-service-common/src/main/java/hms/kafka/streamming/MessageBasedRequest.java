@@ -23,6 +23,16 @@ public class MessageBasedRequest<T> {
 			this.data = data;
 		}
 	}
+	
+	public MessageBasedRequest(long requestid) {
+		this.requestId = requestid;
+	}
+	
+	public MessageBasedRequest(long requestid, T reqdata) {
+		this.requestId = requestid;
+		this.data = reqdata;
+	}
+	
 	private long requestId;	
 	private List<BinaryResponsePoint> responsePoints = new ArrayList<>();	
 	private T data;
@@ -55,13 +65,13 @@ public class MessageBasedRequest<T> {
 	}	
 	
 	public <R> void addReponsePoint(String point, R data) throws IOException {
-		this.internalAddReponsePoint(point, MessageKafkaIntegration.convertObjecttoByteArray(data));
+		this.internalAddReponsePoint(point, KafkaMessageUtils.convertObjecttoByteArray(data));
 	}
 	
 	public <R> ResponsePoint<R> popReponsePoint(Class<R> manifest) throws IOException{		
 		BinaryResponsePoint p = this.responsePoints.remove(this.responsePoints.size()-1);
 		if(p.data != null) {
-			return new ResponsePoint<R>(p.point, MessageKafkaIntegration.convertByteArrayToObject(manifest, p.data));
+			return new ResponsePoint<R>(p.point, KafkaMessageUtils.convertByteArrayToObject(manifest, p.data));
 		}else {
 			return new ResponsePoint<R>(p.point, null);
 		}

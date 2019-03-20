@@ -17,6 +17,7 @@ public class KafkaMessageUtils {
 	private static final DslJson<Object> dslJson = new DslJson<>(Settings.withRuntime().allowArrayFormat(true).includeServiceLoader());
 	private static final String ForwarPointdHeaderName = "forward-points";
 	private static final String ForwarDataHeaderName = "forward-data";
+	private static final String RequestIdHeaderName = "forward-data";
 	public static byte[] convertObjecttoByteArray(Object data) throws IOException {
 		if(data != null) {
 			JsonWriter writer = dslJson.newWriter();
@@ -62,10 +63,10 @@ public class KafkaMessageUtils {
 	}	
 	
 	public static<T> MessageBasedRequest<T> getRequestObject (Class<T> manifest, ConsumerRecord<String, byte[]> record) throws IOException{
-		MessageBasedRequest<T> req = new MessageBasedRequest<T>();
+		long requestid = KafkaMessageUtils.bytesToLong(record.headers().headers(RequestIdHeaderName).iterator().next().value());
+		MessageBasedRequest<T> req = new MessageBasedRequest<T>(requestid);
 		Iterator<Header> hiPoints = record.headers().headers(ForwarPointdHeaderName).iterator();
-		Iterator<Header> hiData = record.headers().headers(ForwarDataHeaderName).iterator();
-		
+		Iterator<Header> hiData = record.headers().headers(ForwarDataHeaderName).iterator();		
 		req.setData(convertByteArrayToObject(manifest, record.value()));
 		while(hiPoints.hasNext() && hiData.hasNext()) {
 			req.internalAddReponsePoint(new String(hiPoints.next().value()), hiData.next().value());
@@ -73,14 +74,19 @@ public class KafkaMessageUtils {
 		return req;
 	}
 	
-	public <T> ProducerRecord<String, byte[]> getProcedureRecord(Class<T> manifest, MessageBasedRequest<T> req, String topic, String key) throws IOException{
+	public static <T> ProducerRecord<String, byte[]> getProcedureRecord(MessageBasedRequest<T> req, String topic, String key) throws IOException{
 		byte[] body = convertObjecttoByteArray(req.getData());
 		ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key, body);
-			
+		record.headers().add(RequestIdHeaderName, KafkaMessageUtils.longToBytes(req.getRequestId()));
 		for(MessageBasedRequest.BinaryResponsePoint respoint:req.getReponsePoints()) {
 			record.headers().add(ForwarPointdHeaderName, respoint.point.getBytes());			
 			record.headers().add(ForwarDataHeaderName, respoint.data);
 		}
 		return record;
-	}	
+	}		
+	
+	public static <T> ProducerRecord<String, byte[]> getProcedureRecord(long requestd, T reqdata, String topic, String key) throws IOException{
+		MessageBasedRequest<T> req= new MessageBasedRequest<T>(requestd, reqdata);
+		return getProcedureRecord(req,topic,key);
+	}
 }
