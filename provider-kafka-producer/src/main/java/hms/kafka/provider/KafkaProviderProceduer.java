@@ -7,8 +7,8 @@ import com.typesafe.config.Config;
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import hms.kafka.KafkaProducerBase;
-import hms.kafka.messaging.MessageBasedReponse;
-import hms.kafka.messaging.KafkaMessageUtils;
+import hms.kafka.streamming.KafkaMessageUtils;
+import hms.kafka.streamming.MessageBasedReponse;
 import hms.provider.IProviderService;
 
 

@@ -1,4 +1,4 @@
-package hms.kafka.messaging;
+package hms.kafka.streamming;
 
 public class MessageBasedReponse{
 	private long requestId;	

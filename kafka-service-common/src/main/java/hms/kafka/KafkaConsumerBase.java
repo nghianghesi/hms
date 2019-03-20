@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 
 import com.typesafe.config.Config;
 
-import hms.kafka.messaging.KafkaMessageUtils;
+import hms.kafka.streamming.KafkaMessageUtils;
 
 public abstract class KafkaConsumerBase {
 	protected KafkaProducer<String, byte[]> producer;

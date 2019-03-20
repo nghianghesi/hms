@@ -1,12 +1,10 @@
-package hms.kafka.messaging;
+package hms.kafka.streamming;
 
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public class MessageBasedServiceManager {
-	public final String REQUEST_ID_KEY = "request-id";
-	public final String RETURN_TOPIC_KEY = "return-topic-key";
+public class RootStreamManager {
 	private Map<Long, MessageBasedReponse> waiters = new Hashtable<Long, MessageBasedReponse>();
 	private Long lastWaiteId = Long.MIN_VALUE;
 	private synchronized Long nextId() {

@@ -1,4 +1,4 @@
-package hms.kafka.messaging;
+package hms.kafka.streamming;
 
 import com.dslplatform.json.DslJson;
 import java.io.IOException;

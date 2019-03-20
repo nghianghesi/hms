@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 
 import hms.kafka.KafkaConsumerBase;
-import hms.kafka.messaging.KafkaMessageUtils;
+import hms.kafka.streamming.KafkaMessageUtils;
 import hms.provider.IProviderService;
 
 public class KafkaProviderConsumer extends KafkaConsumerBase{
