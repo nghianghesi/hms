@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MessageBasedRequest<T> {	
+public class HMSMessage<T> {	
 	
 	public static class ResponsePoint<R> {
 		public final String point;
@@ -24,12 +24,12 @@ public class MessageBasedRequest<T> {
 		}
 	}
 	
-	public MessageBasedRequest(long requestid, String messageKey) {
+	public HMSMessage(long requestid, String messageKey) {
 		this.requestId = requestid;
 		this.messageKey = messageKey;
 	}
 	
-	public MessageBasedRequest(long requestid, String messageKey, T reqdata) {
+	public HMSMessage(long requestid, String messageKey, T reqdata) {
 		this(requestid, messageKey);
 		this.data = reqdata;
 	}

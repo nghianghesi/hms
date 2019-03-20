@@ -14,15 +14,15 @@ public abstract class RootStreamManager extends KafkaNodeBase{
 		super(logger, config);
 	}
 
-	private Map<Long, MessageBasedReponse> waiters = new Hashtable<Long, MessageBasedReponse>();
+	private Map<Long, StreamReponse> waiters = new Hashtable<Long, StreamReponse>();
 	private Long lastWaiteId = Long.MIN_VALUE;
 	private synchronized Long nextId() {
 		return lastWaiteId == Long.MAX_VALUE ? Long.MIN_VALUE + 1 : lastWaiteId++;
 	} 
 	
-	public <T> void handleResponse(MessageBasedRequest<T> reponse) {
+	public <T> void handleResponse(HMSMessage<T> reponse) {
 		if(waiters.containsKey(reponse.getRequestId())) {
-			MessageBasedReponse waiter = waiters.remove(reponse.getRequestId()) ;
+			StreamReponse waiter = waiters.remove(reponse.getRequestId()) ;
 			waiter.setData(reponse);
 			waiter.notify();
 		}
@@ -30,20 +30,20 @@ public abstract class RootStreamManager extends KafkaNodeBase{
 	
 	public void handleRequestError(Long id, String error) {
 		if(waiters.containsKey(id)) {			
-			MessageBasedReponse waiter = waiters.remove(id) ;
+			StreamReponse waiter = waiters.remove(id) ;
 			waiter.setError(error);
 			waiter.notify();			
 		}
 	}	
-	public <T> MessageBasedReponse startStream(java.util.function.Function<Long,MessageBasedRequest<T>> createRequest) {
+	public <T> StreamReponse startStream(java.util.function.Function<Long,HMSMessage<T>> createRequest) {
 		return this.startStream(createRequest, this.timeout);
 	}
 
-	public <T> MessageBasedReponse startStream(java.util.function.Function<Long,MessageBasedRequest<T>> createRequest, int timeout) {
+	public <T> StreamReponse startStream(java.util.function.Function<Long,HMSMessage<T>> createRequest, int timeout) {
 		Long id = this.nextId();
-		MessageBasedReponse waiter = new MessageBasedReponse(id);
+		StreamReponse waiter = new StreamReponse(id);
 		this.waiters.put(id, waiter);
-		MessageBasedRequest<T> request = createRequest.apply(id);
+		HMSMessage<T> request = createRequest.apply(id);
 		if(request != null) {
 			request.addReponsePoint(this.consumeTopic);
 			try {

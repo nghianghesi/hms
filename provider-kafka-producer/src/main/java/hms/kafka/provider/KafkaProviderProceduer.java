@@ -8,8 +8,8 @@ import com.typesafe.config.Config;
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import hms.kafka.streamming.KafkaMessageUtils;
-import hms.kafka.streamming.MessageBasedReponse;
-import hms.kafka.streamming.MessageBasedRequest;
+import hms.kafka.streamming.StreamReponse;
+import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.RootStreamManager;
 import hms.provider.IProviderService;
 
@@ -55,8 +55,8 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> clear() {
 		return CompletableFuture.supplyAsync(()->{
-			MessageBasedReponse response = this.startStream((requestid)->{
-				return new MessageBasedRequest<Void>(requestid, IProviderService.ClearMessage);
+			StreamReponse response = this.startStream((requestid)->{
+				return new HMSMessage<Void>(requestid, IProviderService.ClearMessage);
 			});			
 			return !response.isError();
 		});
@@ -65,8 +65,8 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> initprovider(Provider providerdto) {
 		return CompletableFuture.supplyAsync(()->{
-			MessageBasedReponse response = this.startStream((requestid)->{
-				return new MessageBasedRequest<Provider>(requestid, IProviderService.InitproviderMessage, providerdto);
+			StreamReponse response = this.startStream((requestid)->{
+				return new HMSMessage<Provider>(requestid, IProviderService.InitproviderMessage, providerdto);
  			});			
 			return !response.isError();
 		});
@@ -75,8 +75,8 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto) {
 		return CompletableFuture.supplyAsync(()->{
-			MessageBasedReponse response = this.startStream((requestid)->{		
-				return new MessageBasedRequest<ProviderTracking>(requestid, IProviderService.TrackingMessage, trackingdto);
+			StreamReponse response = this.startStream((requestid)->{		
+				return new HMSMessage<ProviderTracking>(requestid, IProviderService.TrackingMessage, trackingdto);
 			});
 			return !response.isError();
 		});
@@ -89,7 +89,7 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 				case IProviderService.InitproviderMessage:
 				case IProviderService.TrackingMessage:
 			try {
-				MessageBasedRequest<Boolean> result = KafkaMessageUtils.getRequestObject(Boolean.class, record);
+				HMSMessage<Boolean> result = KafkaMessageUtils.getRequestObject(Boolean.class, record);
 				this.handleResponse(result);
 			} catch (IOException e) {
 				logger.error(IProviderService.ClearMessage, e.getMessage());

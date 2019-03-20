@@ -1,13 +1,13 @@
 package hms.kafka.streamming;
 
-public class MessageBasedReponse{
+public class StreamReponse{
 	private long requestId;	
 	private Object data;
 	private boolean isWaiting = true;
 	private boolean isError = false;
 	private String error;
 	
-	public MessageBasedReponse(long requestId) {
+	public StreamReponse(long requestId) {
 		this.requestId = requestId;
 	}
 	public long getRequestId() {
