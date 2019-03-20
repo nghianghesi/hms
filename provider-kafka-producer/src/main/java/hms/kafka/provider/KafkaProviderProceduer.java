@@ -8,14 +8,12 @@ import com.typesafe.config.Config;
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import hms.kafka.streamming.KafkaMessageUtils;
-import hms.kafka.streamming.KafkaNodeBase;
 import hms.kafka.streamming.MessageBasedReponse;
 import hms.kafka.streamming.MessageBasedRequest;
 import hms.kafka.streamming.RootStreamManager;
 import hms.provider.IProviderService;
 
-
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +39,10 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 		}else {
 			this.requestTopic = "hms.provider";
 		}
-		this.returnTopic= "return." + this.requestTopic;
+		this.consumeTopic= "return." + this.requestTopic;
 		
 		if(config.hasPath("kafka.provider.timeout")) {
-			this.timeout = (short)config.getInt("kafka.provider.timeout");
+			this.timeout = config.getInt("kafka.provider.timeout");
 		}	
 		
 		if(config.hasPath("kafka.provider.topic")) {
@@ -58,11 +56,8 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	public CompletableFuture<Boolean> clear() {
 		return CompletableFuture.supplyAsync(()->{
 			MessageBasedReponse response = this.startStream((requestid)->{
-				ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(
-						this.requestTopic, IProviderService.ClearMessage, new byte[] {});
-				this.setCommonInfo(record, requestid);
-				return this.producer.send(record);
-			}, this.timeout);			
+				return new MessageBasedRequest<Void>(requestid, IProviderService.ClearMessage);
+			});			
 			return !response.isError();
 		});
 	}
@@ -70,12 +65,9 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> initprovider(Provider providerdto) {
 		return CompletableFuture.supplyAsync(()->{
-			MessageBasedReponse response = this.startStream((requestid)->{		
-				ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(
-						this.requestTopic, IProviderService.InitproviderMessage, new byte[] {});
-				this.setCommonInfo(record, requestid);
-				return this.producer.send(record);
-			}, this.timeout);			
+			MessageBasedReponse response = this.startStream((requestid)->{
+				return new MessageBasedRequest<Provider>(requestid, IProviderService.InitproviderMessage, providerdto);
+ 			});			
 			return !response.isError();
 		});
 	}
@@ -84,26 +76,27 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto) {
 		return CompletableFuture.supplyAsync(()->{
 			MessageBasedReponse response = this.startStream((requestid)->{		
-				byte[] requestBody = this.toRequestBody(trackingdto);
-				if(requestBody != null) {
-					try {					
-						MessageBasedRequest<ProviderTracking> request = new MessageBasedRequest<ProviderTracking>();
-						request.setData(trackingdto);
-						ProducerRecord<String, byte[]> record;
-	
-							record = KafkaMessageUtils.getProcedureRecord(request, this.requestTopic, IProviderService.TrackingMessage);
-						this.setCommonInfo(record, requestid);
-						return this.producer.send(record);
-					} catch (IOException e) {
-						logger.error("Create request error", e.getMessage());
-						return null;
-					}					
-				}else {
-					return null;
-				}
-			}, this.timeout);
+				return new MessageBasedRequest<ProviderTracking>(requestid, IProviderService.TrackingMessage, trackingdto);
+			});
 			return !response.isError();
 		});
+	}
+	
+	@Override
+	protected void processRequest(ConsumerRecord<String, byte[]> record) {
+		switch (record.key()) {
+			case IProviderService.ClearMessage:
+				case IProviderService.InitproviderMessage:
+				case IProviderService.TrackingMessage:
+			try {
+				MessageBasedRequest<Boolean> result = KafkaMessageUtils.getRequestObject(Boolean.class, record);
+				this.handleResponse(result);
+			} catch (IOException e) {
+				logger.error(IProviderService.ClearMessage, e.getMessage());
+				this.handleRequestError(KafkaMessageUtils.getRequestId(record), "Response error");
+			}
+			break;
+		}
 	}
 
 	

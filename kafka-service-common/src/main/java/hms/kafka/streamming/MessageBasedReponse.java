@@ -2,21 +2,21 @@ package hms.kafka.streamming;
 
 public class MessageBasedReponse{
 	private long requestId;	
-	private byte[] data;
+	private Object data;
 	private boolean isWaiting = true;
 	private boolean isError = false;
 	private String error;
 	
+	public MessageBasedReponse(long requestId) {
+		this.requestId = requestId;
+	}
 	public long getRequestId() {
 		return requestId;
 	}
-	public void setRequestId(long requestId) {
-		this.requestId = requestId;
-	}
-	public byte[] getData() {
+	public Object getData() {
 		return data;
 	}
-	public synchronized void setData(byte[] data) {
+	public synchronized void setData(Object data) {
 		this.isWaiting = false;
 		this.data = data;
 	}

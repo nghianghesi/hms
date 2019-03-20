@@ -24,7 +24,7 @@ public abstract class KafkaNodeBase {
 	protected KafkaProducer<String, byte[]> producer;
 	protected KafkaConsumer<String, byte[]> consumer;
 	protected String requestTopic;
-	protected String returnTopic;
+	protected String consumeTopic;
 	protected String groupid;
 	protected String server;
 	protected int timeout = 5000;
@@ -44,7 +44,7 @@ public abstract class KafkaNodeBase {
         AdminClient adminClient = AdminClient.create(props);
         
         NewTopic requestTopic = new NewTopic(this.requestTopic, 2, (short)1);
-        NewTopic returnTopic = new NewTopic(this.returnTopic, 2, (short)1);
+        NewTopic returnTopic = new NewTopic(this.consumeTopic, 2, (short)1);
         CreateTopicsResult createTopicsResult = adminClient.createTopics(Arrays.asList(requestTopic,returnTopic));
         try {
 			createTopicsResult.all().get();
@@ -69,7 +69,7 @@ public abstract class KafkaNodeBase {
         consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");        
         this.consumer = new KafkaConsumer<>(consumerProps);    
-        this.consumer.subscribe(Pattern.compile(String.format("^%s.*", this.returnTopic)));
+        this.consumer.subscribe(Pattern.compile(String.format("^%s.*", this.consumeTopic)));
         
         CompletableFuture.runAsync(()->{
             while(true) {

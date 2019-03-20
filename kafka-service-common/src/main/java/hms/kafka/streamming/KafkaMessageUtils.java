@@ -62,9 +62,13 @@ public class KafkaMessageUtils {
 	    return buffer.array();
 	}	
 	
+	public static long getRequestId(ConsumerRecord<String, byte[]> record) {
+		Iterator<Header> i= record.headers().headers(RequestIdHeaderName).iterator();
+		return i.hasNext() ? KafkaMessageUtils.bytesToLong(i.next().value()):Long.MIN_VALUE;
+	}
 	public static<T> MessageBasedRequest<T> getRequestObject (Class<T> manifest, ConsumerRecord<String, byte[]> record) throws IOException{
-		long requestid = KafkaMessageUtils.bytesToLong(record.headers().headers(RequestIdHeaderName).iterator().next().value());
-		MessageBasedRequest<T> req = new MessageBasedRequest<T>(requestid);
+		long requestid = getRequestId(record);
+		MessageBasedRequest<T> req = new MessageBasedRequest<T>(requestid, record.key());
 		Iterator<Header> hiPoints = record.headers().headers(ForwarPointdHeaderName).iterator();
 		Iterator<Header> hiData = record.headers().headers(ForwarDataHeaderName).iterator();		
 		req.setData(convertByteArrayToObject(manifest, record.value()));
@@ -74,9 +78,9 @@ public class KafkaMessageUtils {
 		return req;
 	}
 	
-	public static <T> ProducerRecord<String, byte[]> getProcedureRecord(MessageBasedRequest<T> req, String topic, String key) throws IOException{
+	public static <T> ProducerRecord<String, byte[]> getProcedureRecord(MessageBasedRequest<T> req, String topic) throws IOException{
 		byte[] body = convertObjecttoByteArray(req.getData());
-		ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key, body);
+		ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, req.getMessageKey(), body);
 		record.headers().add(RequestIdHeaderName, KafkaMessageUtils.longToBytes(req.getRequestId()));
 		for(MessageBasedRequest.BinaryResponsePoint respoint:req.getReponsePoints()) {
 			record.headers().add(ForwarPointdHeaderName, respoint.point.getBytes());			
@@ -86,7 +90,7 @@ public class KafkaMessageUtils {
 	}		
 	
 	public static <T> ProducerRecord<String, byte[]> getProcedureRecord(long requestd, T reqdata, String topic, String key) throws IOException{
-		MessageBasedRequest<T> req= new MessageBasedRequest<T>(requestd, reqdata);
-		return getProcedureRecord(req,topic,key);
+		MessageBasedRequest<T> req= new MessageBasedRequest<T>(requestd, key, reqdata);
+		return getProcedureRecord(req,topic);
 	}
 }

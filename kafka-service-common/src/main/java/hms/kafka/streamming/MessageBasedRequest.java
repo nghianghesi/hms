@@ -24,25 +24,28 @@ public class MessageBasedRequest<T> {
 		}
 	}
 	
-	public MessageBasedRequest(long requestid) {
+	public MessageBasedRequest(long requestid, String messageKey) {
 		this.requestId = requestid;
+		this.messageKey = messageKey;
 	}
 	
-	public MessageBasedRequest(long requestid, T reqdata) {
-		this.requestId = requestid;
+	public MessageBasedRequest(long requestid, String messageKey, T reqdata) {
+		this(requestid, messageKey);
 		this.data = reqdata;
 	}
 	
+	private String messageKey;
 	private long requestId;	
 	private List<BinaryResponsePoint> responsePoints = new ArrayList<>();	
 	private T data;
 	public long getRequestId() {
 		return requestId;
+	}	
+	
+	public String getMessageKey() {
+		return messageKey;
 	}
 	
-	public void setRequestId(long requestId) {
-		this.requestId = requestId;
-	}
 	
 	public T getData() {
 		return data;
