@@ -1,5 +1,5 @@
 <projectDescription>
-  <name>providerserivce</name>
+  <name>provider-serivce</name>
   <buildSpec>
     <buildCommand>
       <name>org.scala-ide.sdt.core.scalabuilder</name>

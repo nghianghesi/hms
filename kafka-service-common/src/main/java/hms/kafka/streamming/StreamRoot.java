@@ -19,7 +19,7 @@ public class StreamRoot<TReq,TRes> extends KafkaProducerBase{
 	public StreamRoot(Class<TRes> manifiestTRes,  Logger logger, String server, String topic) {
 		super(logger, server,  topic);
 		this.consumeTopic = topic+".return";
-		new KafkaComsumerBase(logger, server, streamid, this.consumeTopic){
+		new KafkaConsumerBase(logger, server, streamid, this.consumeTopic){
 			@Override
 			protected void processRequest(ConsumerRecord<String, byte[]> record) {
 				try {

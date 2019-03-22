@@ -1,5 +1,5 @@
 <projectDescription>
-  <name>servicegateway</name>
+  <name>service-gateway</name>
   <buildSpec>
     <buildCommand>
       <name>org.scala-ide.sdt.core.scalabuilder</name>

@@ -1,5 +1,5 @@
 <projectDescription>
-  <name>providerkafkaproducer</name>
+  <name>provider-kafka-producer</name>
   <buildSpec>
     <buildCommand>
       <name>org.scala-ide.sdt.core.scalabuilder</name>

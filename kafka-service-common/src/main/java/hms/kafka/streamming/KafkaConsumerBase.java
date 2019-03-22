@@ -17,14 +17,14 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 
-public abstract class KafkaComsumerBase {	
+public abstract class KafkaConsumerBase {	
 	protected KafkaConsumer<String, byte[]> consumer;
 	protected String consumeTopic;
 	protected String groupid;
 	protected String server;
 	protected int timeout = 5000;
 	private Logger logger;
-	protected KafkaComsumerBase(Logger logger, String server, String groupid, String topic) {
+	protected KafkaConsumerBase(Logger logger, String server, String groupid, String topic) {
 		this.logger = logger;
 		this.server = server;
 		this.groupid = groupid;

@@ -29,7 +29,7 @@ lazy val dependencies =
   
 lazy val protocol = (project in file("./protocol"))
 
-lazy val servicecommon = (project in file("./service-common"))
+lazy val `service-common` = (project in file("./service-common"))
   .dependsOn(protocol)
 	  
 lazy val hubservice = (project in file("./hubservice"))
@@ -38,54 +38,54 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.mongodb,
 		dependencies.morphia,
 		dependencies.modelmapper))
-  .dependsOn(servicecommon, protocol)
+  .dependsOn(`service-common`, protocol)
   
   
   
- lazy val providerserivce = (project in file("./provider-serivce"))
+ lazy val `provider-serivce` = (project in file("./provider-serivce"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
 		dependencies.mongodb,
 		dependencies.morphia,
 		dependencies.modelmapper))
-  .dependsOn(servicecommon, hubservice, protocol)
+  .dependsOn(`service-common`, hubservice, protocol)
   
   
- lazy val kafkaserivcecommon = (project in file("./kafka-service-common"))
+ lazy val `kafka-serivce-common` = (project in file("./kafka-service-common"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
 		dependencies.dslplatform,
 		dependencies.kafkaclient,
 		dependencies.kafka))
-  .dependsOn(servicecommon)   
+  .dependsOn(`service-common`)   
   
- lazy val providerkafkaproducer = (project in file("./provider-kafka-producer"))
+ lazy val `provider-kafka-producer` = (project in file("./provider-kafka-producer"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
 		dependencies.kafkaclient,
 		dependencies.kafka))
-  .dependsOn(servicecommon,kafkaserivcecommon)   
+  .dependsOn(`service-common`,`kafka-serivce-common`)   
   
-  lazy val providerkafkacomsumer = (project in file("./provider-kafka-comsumer"))
+  lazy val `provider-kafka-comsumer` = (project in file("./provider-kafka-comsumer"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
 		dependencies.kafkaclient,
 		dependencies.kafka))
-  .dependsOn(servicecommon, kafkaserivcecommon, providerserivce)  
+  .dependsOn(`service-common`, `kafka-serivce-common`, `provider-serivce`)  
   
- lazy val hubkafkaproducer = (project in file("./hub-kafka-producer"))
+ lazy val `hub-kafka-producer` = (project in file("./hub-kafka-producer"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
 		dependencies.kafkaclient,
 		dependencies.kafka))
-  .dependsOn(servicecommon, kafkaserivcecommon)   
+  .dependsOn(`service-common`, `kafka-serivce-common`)   
   
-  lazy val hubkafkacomsumer = (project in file("./hub-kafka-comsumer"))
+  lazy val `hub-kafka-comsumer` = (project in file("./hub-kafka-comsumer"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
 		dependencies.kafkaclient,
 		dependencies.kafka))
-  .dependsOn(servicecommon, kafkaserivcecommon, hubservice)    
+  .dependsOn(`service-common`, `kafka-serivce-common`, hubservice)    
 
 lazy val client = (project in file("./client"))
   .settings(libraryDependencies ++=  Seq(
@@ -98,15 +98,16 @@ lazy val client = (project in file("./client"))
   .dependsOn(protocol)
   
   
-lazy val servicegateway = (project in file("./service"))
+lazy val `service-gateway` = (project in file("./service-gateway"))
 	.enablePlugins(PlayJava)
-	.settings(libraryDependencies ++=  Seq(
+	.settings(		
+		libraryDependencies ++=  Seq(
 		guice,
 		dependencies.mongodb,
 		dependencies.morphia,
 		dependencies.modelmapper
 	))
-	.dependsOn(protocol,servicecommon,kafkaserivcecommon,hubservice,providerserivce,providerkafkaproducer)	  
+	.dependsOn(protocol,`service-common`,`kafka-serivce-common`,hubservice,`provider-serivce`,`provider-kafka-producer`)	  
 	
 lazy val global = project
   .in(file("."))
@@ -114,10 +115,10 @@ lazy val global = project
     protocol,
     client,
 	hubservice,
-	providerserivce,
-	providerkafkaproducer,
-	providerkafkacomsumer,
-	hubkafkaproducer,
-	hubkafkacomsumer,	
-    servicegateway
+	`provider-serivce`,
+	`provider-kafka-producer`,
+	`provider-kafka-comsumer`,
+	`hub-kafka-producer`,
+	`hub-kafka-comsumer`,	
+    `service-gateway`
   )
