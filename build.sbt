@@ -66,7 +66,7 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.kafka))
   .dependsOn(`service-common`,`kafka-serivce-common`)   
   
-  lazy val `provider-kafka-comsumer` = (project in file("./provider-kafka-comsumer"))
+  lazy val `provider-kafka-consumer` = (project in file("./provider-kafka-consumer"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
 		dependencies.kafkaclient,
@@ -80,7 +80,7 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.kafka))
   .dependsOn(`service-common`, `kafka-serivce-common`)   
   
-  lazy val `hub-kafka-comsumer` = (project in file("./hub-kafka-comsumer"))
+  lazy val `hub-kafka-consumer` = (project in file("./hub-kafka-consumer"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  
 		dependencies.kafkaclient,
@@ -117,8 +117,8 @@ lazy val global = project
 	hubservice,
 	`provider-serivce`,
 	`provider-kafka-producer`,
-	`provider-kafka-comsumer`,
+	`provider-kafka-consumer`,
 	`hub-kafka-producer`,
-	`hub-kafka-comsumer`,	
+	`hub-kafka-consumer`,	
     `service-gateway`
   )

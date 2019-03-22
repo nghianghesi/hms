@@ -1,5 +1,6 @@
 package hms.kafka.streamming;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
@@ -17,18 +18,20 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 
-public abstract class KafkaConsumerBase {	
+public abstract class KafkaConsumerBase<TReq> {	
 	protected KafkaConsumer<String, byte[]> consumer;
 	protected String consumeTopic;
 	protected String groupid;
 	protected String server;
 	protected int timeout = 5000;
 	private Logger logger;
-	protected KafkaConsumerBase(Logger logger, String server, String groupid, String topic) {
+	private Class<TReq> reqManifest;
+	protected KafkaConsumerBase(Logger logger, Class<TReq> reqManifest, String server, String groupid, String topic) {
 		this.logger = logger;
 		this.server = server;
 		this.groupid = groupid;
 		this.consumeTopic = topic;
+		this.reqManifest = reqManifest;
 		this.ensureTopic();
 		this.createConsummer();
 	}
@@ -65,11 +68,16 @@ public abstract class KafkaConsumerBase {
             while(true) {
             	ConsumerRecords<String, byte[]> records = this.consumer.poll(Duration.ofMillis(100));
 				for (ConsumerRecord<String, byte[]> record : records) {					
-					this.processRequest(record);
+					try {
+						this.processRequest(KafkaMessageUtils.getHMSMessage(this.reqManifest, record));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						logger.error("Consumer error "+consumeTopic, e.getMessage());
+					}
 				}
             }
         });
 	}		
 	
-	protected abstract void processRequest(ConsumerRecord<String, byte[]> record) ;
+	protected abstract void processRequest(HMSMessage<TReq> record) ;
 }

@@ -10,3 +10,4 @@ public interface IProviderService {
 	CompletableFuture<Boolean> initprovider(hms.dto.Provider providerdto);
 	CompletableFuture<Boolean> tracking(hms.dto.ProviderTracking trackingdto);
 }
+

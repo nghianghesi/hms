@@ -1,5 +1,5 @@
 <projectDescription>
-  <name>provider-kafka-comsumer</name>
+  <name>provider-kafka-consumer</name>
   <buildSpec>
     <buildCommand>
       <name>org.scala-ide.sdt.core.scalabuilder</name>

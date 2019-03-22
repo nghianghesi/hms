@@ -17,7 +17,7 @@ import hms.provider.models.ProviderModel;
 import hms.provider.models.ProviderModel.ProviderTrackingModel;
 import hms.provider.repositories.IProviderRepository;
 
-public class ProviderService implements IProviderService{    
+public class ProviderService implements IProviderService, IProviderServiceProcessor{    
 	private static final Logger logger = LoggerFactory.getLogger(ProviderService.class);
 
 	private IProviderRepository repo;
@@ -49,7 +49,21 @@ public class ProviderService implements IProviderService{
 			this.repo.Save(provider);
 			return true;
 		});
-	}
+	}	
+
+	@Override
+	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto, UUID hubid) {		
+		return CompletableFuture.supplyAsync(()->{	
+			hms.provider.models.ProviderModel provider = this.repo.LoadById(trackingdto.getProviderid());
+			if(provider == null) {
+				throw ExceptionWrapper.wrap(new InvalidKeyException(String.format("Provider not found {0}", trackingdto.getProviderid())));
+			}
+			ProviderTrackingModel tracking = new ProviderTrackingModel(hubid, trackingdto.getLatitude(),trackingdto.getLongitude());
+			provider.setCurrentTracking(tracking);
+			this.repo.Save(provider);
+			return true;
+		});
+	}	
 	
 	@Override
 	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto) {
@@ -66,10 +80,7 @@ public class ProviderService implements IProviderService{
 			} catch (ExecutionException e) {
 				throw ExceptionWrapper.wrap(e);
 			}
-			ProviderTrackingModel tracking = new ProviderTrackingModel(hubid, trackingdto.getLatitude(),trackingdto.getLongitude());
-			provider.setCurrentTracking(tracking);
-			this.repo.Save(provider);
-			return true;
+			return this.tracking(trackingdto, hubid).join();
 		});
 	}
 }

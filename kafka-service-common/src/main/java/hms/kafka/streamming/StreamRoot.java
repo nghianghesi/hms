@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
@@ -19,15 +18,10 @@ public class StreamRoot<TReq,TRes> extends KafkaProducerBase{
 	public StreamRoot(Class<TRes> manifiestTRes,  Logger logger, String server, String topic) {
 		super(logger, server,  topic);
 		this.consumeTopic = topic+".return";
-		new KafkaConsumerBase(logger, server, streamid, this.consumeTopic){
+		new KafkaConsumerBase<TRes>(logger, manifiestTRes, server, streamid, this.consumeTopic){
 			@Override
-			protected void processRequest(ConsumerRecord<String, byte[]> record) {
-				try {
-					HMSMessage<TRes> response = KafkaMessageUtils.getHMSMessage(manifiestTRes, record);
-					handleResponse(response);
-				} catch (IOException e) {
-					logger.error(consumeTopic + "Error", e.getMessage());
-				}
+			protected void processRequest(HMSMessage<TRes> response) {
+				handleResponse(response);
 			}			
 		};
 	}
