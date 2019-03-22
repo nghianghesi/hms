@@ -48,7 +48,7 @@ public class KafkaProviderService implements IProviderService{
 	@Override
 	public CompletableFuture<Boolean> clear() {
 		return CompletableFuture.supplyAsync(()->{
-			StreamReponse response = clearStream.callStream((requestid)->{
+			StreamReponse response = clearStream.startStream((requestid)->{
 				return new HMSMessage<Void>(requestid, IProviderService.ClearMessage);
 			});			
 			return !response.isError();
@@ -58,7 +58,7 @@ public class KafkaProviderService implements IProviderService{
 	@Override
 	public CompletableFuture<Boolean> initprovider(hms.dto.Provider providerdto) {
 		return CompletableFuture.supplyAsync(()->{
-			StreamReponse response = initProviderStream.callStream((requestid)->{
+			StreamReponse response = initProviderStream.startStream((requestid)->{
 				return new HMSMessage<hms.dto.Provider>(requestid, IProviderService.InitproviderMessage, providerdto);
  			});
 			return !response.isError();
@@ -68,7 +68,7 @@ public class KafkaProviderService implements IProviderService{
 	@Override
 	public CompletableFuture<Boolean> tracking(hms.dto.ProviderTracking trackingdto) {
 		return CompletableFuture.supplyAsync(()->{
-			StreamReponse response = trackingProviderStream.callStream((requestid)->{		
+			StreamReponse response = trackingProviderStream.startStream((requestid)->{		
 				return new HMSMessage<hms.dto.ProviderTracking>(requestid, IProviderService.TrackingMessage, trackingdto);
 			});
 			return !response.isError();

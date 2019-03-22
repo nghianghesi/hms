@@ -16,23 +16,28 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.slf4j.Logger;
 
-public abstract class KafkaConsumerBase<TReq> {	
-	protected KafkaConsumer<String, byte[]> consumer;
-	protected String consumeTopic;
+public abstract class KafkaStreamNodeBase<TReq, TFor> {	
+	protected KafkaConsumer<String, byte[]> consumer;	
+	protected KafkaProducer<String, byte[]> producer;
+
+	protected String consumeTopic;	
 	protected String groupid;
 	protected String server;
 	protected int timeout = 5000;
 	private Logger logger;
 	private Class<TReq> reqManifest;
-	protected KafkaConsumerBase(Logger logger, Class<TReq> reqManifest, String server, String groupid, String topic) {
+	protected KafkaStreamNodeBase(Logger logger, Class<TReq> reqManifest, String server, String groupid, String topic) {
 		this.logger = logger;
 		this.server = server;
 		this.groupid = groupid;
 		this.consumeTopic = topic;
 		this.reqManifest = reqManifest;
-		this.ensureTopic();
+		this.ensureTopics();
+		this.createProducer();
 		this.createConsummer();
 	}
 	
@@ -40,18 +45,26 @@ public abstract class KafkaConsumerBase<TReq> {
 		this.timeout = timeoutInMillisecons;
 	}
 	
-	protected void ensureTopic() {
+	protected void ensureTopics() {
         Properties props = new Properties();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, this.server);
         AdminClient adminClient = AdminClient.create(props);
         
-        NewTopic returnTopic = new NewTopic(this.consumeTopic, 2, (short)1);
-        CreateTopicsResult createTopicsResult = adminClient.createTopics(Arrays.asList(returnTopic));
+        NewTopic cTopic = new NewTopic(this.consumeTopic, 2, (short)1);    
+        CreateTopicsResult createTopicsResult = adminClient.createTopics(Arrays.asList(cTopic));
         try {
 			createTopicsResult.all().get();
 		} catch (InterruptedException | ExecutionException e) {
 			logger.error("Create topic error",e);
 		}
+	}	
+	
+	protected void createProducer() {		
+        Properties props = new Properties();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.server);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
+        this.producer = new KafkaProducer<>(props);
 	}	
 	
 	protected void createConsummer() {
@@ -62,7 +75,7 @@ public abstract class KafkaConsumerBase<TReq> {
         consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");        
         this.consumer = new KafkaConsumer<>(consumerProps);    
-        this.consumer.subscribe(Pattern.compile(String.format("^%s.*", this.consumeTopic)));
+        this.consumer.subscribe(Pattern.compile(this.consumeTopic));
         
         CompletableFuture.runAsync(()->{
             while(true) {
@@ -71,7 +84,6 @@ public abstract class KafkaConsumerBase<TReq> {
 					try {
 						this.processRequest(KafkaMessageUtils.getHMSMessage(this.reqManifest, record));
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						logger.error("Consumer error "+consumeTopic, e.getMessage());
 					}
 				}

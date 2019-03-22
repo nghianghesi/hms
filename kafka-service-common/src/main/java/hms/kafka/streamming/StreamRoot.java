@@ -11,20 +11,17 @@ import java.util.concurrent.TimeoutException;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
-public class StreamRoot<TReq,TRes> extends KafkaProducerBase{
-	private String consumeTopic;
-	private String streamid = UUID.randomUUID().toString();
+public class StreamRoot<TReq,TRes> extends KafkaStreamNodeBase<TRes,Void>{
+	private String requestTopic;
 	
 	public StreamRoot(Class<TRes> manifiestTRes,  Logger logger, String server, String topic) {
-		super(logger, server,  topic);
-		this.consumeTopic = topic+".return";
-		new KafkaConsumerBase<TRes>(logger, manifiestTRes, server, streamid, this.consumeTopic){
-			@Override
-			protected void processRequest(HMSMessage<TRes> response) {
-				handleResponse(response);
-			}			
-		};
+		super(logger, manifiestTRes, server, UUID.randomUUID().toString(), topic+".return");
+		this.requestTopic = topic;
 	}
+	
+	protected void processRequest(HMSMessage<TRes> response) {
+		handleResponse(response);
+	}		
 
 	private Map<UUID, StreamReponse> waiters = new Hashtable<UUID, StreamReponse>();
 	private synchronized UUID nextId() {
@@ -47,11 +44,11 @@ public class StreamRoot<TReq,TRes> extends KafkaProducerBase{
 		}
 	}	
 	
-	public StreamReponse callStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest) {
-		return this.callStream(createRequest, this.timeout);
+	public StreamReponse startStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest) {
+		return this.startStream(createRequest, this.timeout);
 	}
-
-	public StreamReponse callStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest, int timeout) {
+	
+	public StreamReponse startStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest, int timeout) {
 		UUID id = this.nextId();
 		StreamReponse waiter = new StreamReponse(id);
 		this.waiters.put(id, waiter);
