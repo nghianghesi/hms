@@ -1,36 +1,47 @@
 package hms.kafka.streamming;
 
+import java.util.UUID;
+
 public class StreamReponse{
-	private long requestId;	
+	private UUID requestId;	
 	private Object data;
-	private boolean isWaiting = true;
+	private boolean needWaiting = true;
 	private boolean isError = false;
-	private String error;
 	
-	public StreamReponse(long requestId) {
+	//TODO: Need support relay response
+	private String error; 
+	
+	public StreamReponse(UUID requestId) {
 		this.requestId = requestId;
 	}
-	public long getRequestId() {
+	
+	public UUID getRequestId() {
 		return requestId;
 	}
+	
 	public Object getData() {
 		return data;
 	}
+	
 	public synchronized void setData(Object data) {
-		this.isWaiting = false;
+		this.needWaiting = false;
 		this.data = data;
 	}
+	
 	public synchronized boolean isError() {
 		return isError;
 	}
-	synchronized boolean IsWaiting() {
-		return this.isWaiting;
+	
+	synchronized boolean needWaiting() {
+		return this.needWaiting;
 	}
+	
 	public synchronized void setError(String error) {
-		this.isWaiting = false;
+		this.needWaiting = false;
 		this.isError = true;
 		this.error = error;
 	}
+	
 	public String getError() {
 		return this.error;
 	}
