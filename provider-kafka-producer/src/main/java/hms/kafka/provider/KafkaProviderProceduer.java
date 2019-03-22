@@ -29,7 +29,7 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	@Override
 	protected void loadConfig(Config config) {
 		if(config.hasPath("kafka.provider.groupid")) {
-			this.groupid = config.getString("hms.provider.responselistener");
+			this.groupid = config.getString("kafka.provider.groupid");
 		}else {
 			this.groupid = "hms.provider.responselistener";
 		}
@@ -55,7 +55,7 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> clear() {
 		return CompletableFuture.supplyAsync(()->{
-			StreamReponse response = this.startStream((requestid)->{
+			StreamReponse response = this.callStream((requestid)->{
 				return new HMSMessage<Void>(requestid, IProviderService.ClearMessage);
 			});			
 			return !response.isError();
@@ -65,7 +65,7 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> initprovider(Provider providerdto) {
 		return CompletableFuture.supplyAsync(()->{
-			StreamReponse response = this.startStream((requestid)->{
+			StreamReponse response = this.callStream((requestid)->{
 				return new HMSMessage<Provider>(requestid, IProviderService.InitproviderMessage, providerdto);
  			});			
 			return !response.isError();
@@ -75,7 +75,7 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 	@Override
 	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto) {
 		return CompletableFuture.supplyAsync(()->{
-			StreamReponse response = this.startStream((requestid)->{		
+			StreamReponse response = this.callStream((requestid)->{		
 				return new HMSMessage<ProviderTracking>(requestid, IProviderService.TrackingMessage, trackingdto);
 			});
 			return !response.isError();
@@ -89,7 +89,7 @@ public class KafkaProviderProceduer extends RootStreamManager implements hms.pro
 				case IProviderService.InitproviderMessage:
 				case IProviderService.TrackingMessage:
 			try {
-				HMSMessage<Boolean> result = KafkaMessageUtils.getRequestObject(Boolean.class, record);
+				HMSMessage<Boolean> result = KafkaMessageUtils.getHMSMessage(Boolean.class, record);
 				this.handleResponse(result);
 			} catch (IOException e) {
 				logger.error(IProviderService.ClearMessage, e.getMessage());

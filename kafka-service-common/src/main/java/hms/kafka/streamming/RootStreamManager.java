@@ -3,24 +3,39 @@ package hms.kafka.streamming;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
-import com.typesafe.config.Config;
-
-public abstract class RootStreamManager extends KafkaNodeBase{
-	protected RootStreamManager(Logger logger, Config config) {
-		super(logger, config);
+public abstract class RootStreamManager<TReq,TRes> extends KafkaProducerBase{
+	private String consumeTopic;
+	private String streamid = UUID.randomUUID().toString();
+	
+	protected RootStreamManager(Class<TRes> manifiestTRes,  Logger logger, String server, String topic) {
+		super(logger, server,  topic);
+		this.consumeTopic = topic+".return";
+		new KafkaComsumerBase(logger, server, streamid, this.consumeTopic){
+			@Override
+			protected void processRequest(ConsumerRecord<String, byte[]> record) {
+				try {
+					HMSMessage<TRes> response = KafkaMessageUtils.getHMSMessage(manifiestTRes, record);
+					handleResponse(response);
+				} catch (IOException e) {
+					logger.error(consumeTopic + "Error", e.getMessage());
+				}
+			}			
+		};
 	}
 
-	private Map<Long, StreamReponse> waiters = new Hashtable<Long, StreamReponse>();
-	private Long lastWaiteId = Long.MIN_VALUE;
-	private synchronized Long nextId() {
-		return lastWaiteId == Long.MAX_VALUE ? Long.MIN_VALUE + 1 : lastWaiteId++;
+	private Map<UUID, StreamReponse> waiters = new Hashtable<UUID, StreamReponse>();
+	private synchronized UUID nextId() {
+		return UUID.randomUUID();
 	} 
 	
-	public <T> void handleResponse(HMSMessage<T> reponse) {
+	public void handleResponse(HMSMessage<TRes> reponse) {
 		if(waiters.containsKey(reponse.getRequestId())) {
 			StreamReponse waiter = waiters.remove(reponse.getRequestId()) ;
 			waiter.setData(reponse);
@@ -28,37 +43,39 @@ public abstract class RootStreamManager extends KafkaNodeBase{
 		}
 	}
 	
-	public void handleRequestError(Long id, String error) {
+	public void handleRequestError(UUID id, String error) {
 		if(waiters.containsKey(id)) {			
 			StreamReponse waiter = waiters.remove(id) ;
 			waiter.setError(error);
 			waiter.notify();			
 		}
 	}	
-	public <T> StreamReponse startStream(java.util.function.Function<Long,HMSMessage<T>> createRequest) {
-		return this.startStream(createRequest, this.timeout);
+	
+	public StreamReponse callStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest) {
+		return this.callStream(createRequest, this.timeout);
 	}
 
-	public <T> StreamReponse startStream(java.util.function.Function<Long,HMSMessage<T>> createRequest, int timeout) {
-		Long id = this.nextId();
+	public StreamReponse callStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest, int timeout) {
+		UUID id = this.nextId();
 		StreamReponse waiter = new StreamReponse(id);
 		this.waiters.put(id, waiter);
-		HMSMessage<T> request = createRequest.apply(id);
+		HMSMessage<TReq> request = createRequest.apply(id);
 		if(request != null) {
 			request.addReponsePoint(this.consumeTopic);
 			try {
 				ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, this.requestTopic);
-				this.producer.send(record);
-			} catch (IOException e1) {
-				this.handleRequestError(id, "Request error");
+				this.producer.send(record).get();
+			} catch (IOException | InterruptedException | ExecutionException e) {
+				this.handleRequestError(id, "Request error: "+e.getMessage());
 				return waiter;
 			}
+			
 			try {
-				if(waiter.IsWaiting()) {
+				if(waiter.needWaiting()) {
 					waiter.wait(timeout);
 				}
 			} catch (InterruptedException e) {
-				this.handleRequestError(id, "Request timeout");
+				this.handleRequestError(id, "Request error: "+e.getMessage());
 				return waiter;
 			}					
 		}else {

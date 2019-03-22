@@ -3,6 +3,7 @@ package hms.kafka.streamming;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class HMSMessage<T> {	
 	
@@ -24,21 +25,21 @@ public class HMSMessage<T> {
 		}
 	}
 	
-	public HMSMessage(long requestid, String messageKey) {
+	public HMSMessage(UUID requestid, String messageKey) {
 		this.requestId = requestid;
 		this.messageKey = messageKey;
 	}
 	
-	public HMSMessage(long requestid, String messageKey, T reqdata) {
+	public HMSMessage(UUID requestid, String messageKey, T reqdata) {
 		this(requestid, messageKey);
 		this.data = reqdata;
 	}
 	
 	private String messageKey;
-	private long requestId;	
+	private UUID requestId;	
 	private List<BinaryResponsePoint> responsePoints = new ArrayList<>();	
 	private T data;
-	public long getRequestId() {
+	public UUID getRequestId() {
 		return requestId;
 	}	
 	

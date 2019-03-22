@@ -4,6 +4,7 @@ import com.dslplatform.json.DslJson;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
+import java.util.UUID;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -62,12 +63,26 @@ public class KafkaMessageUtils {
 	    return buffer.array();
 	}	
 	
-	public static long getRequestId(ConsumerRecord<String, byte[]> record) {
+	  public static UUID bytesToUuid(byte[] bytes) {
+		    ByteBuffer bb = ByteBuffer.wrap(bytes);
+		    long firstLong = bb.getLong();
+		    long secondLong = bb.getLong();
+		    return new UUID(firstLong, secondLong);
+		  }
+
+		  public static byte[] UuidToBytes(UUID uuid) {
+		    ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+		    bb.putLong(uuid.getMostSignificantBits());
+		    bb.putLong(uuid.getLeastSignificantBits());
+		    return bb.array();
+		  }	
+	
+	public static UUID getRequestId(ConsumerRecord<String, byte[]> record) {
 		Iterator<Header> i= record.headers().headers(RequestIdHeaderName).iterator();
-		return i.hasNext() ? KafkaMessageUtils.bytesToLong(i.next().value()):Long.MIN_VALUE;
+		return i.hasNext() ? KafkaMessageUtils.bytesToUuid(i.next().value()):null;
 	}
-	public static<T> HMSMessage<T> getRequestObject (Class<T> manifest, ConsumerRecord<String, byte[]> record) throws IOException{
-		long requestid = getRequestId(record);
+	public static<T> HMSMessage<T> getHMSMessage (Class<T> manifest, ConsumerRecord<String, byte[]> record) throws IOException{
+		UUID requestid = getRequestId(record);
 		HMSMessage<T> req = new HMSMessage<T>(requestid, record.key());
 		Iterator<Header> hiPoints = record.headers().headers(ForwarPointdHeaderName).iterator();
 		Iterator<Header> hiData = record.headers().headers(ForwarDataHeaderName).iterator();		
@@ -81,7 +96,7 @@ public class KafkaMessageUtils {
 	public static <T> ProducerRecord<String, byte[]> getProcedureRecord(HMSMessage<T> req, String topic) throws IOException{
 		byte[] body = convertObjecttoByteArray(req.getData());
 		ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, req.getMessageKey(), body);
-		record.headers().add(RequestIdHeaderName, KafkaMessageUtils.longToBytes(req.getRequestId()));
+		record.headers().add(RequestIdHeaderName, KafkaMessageUtils.UuidToBytes(req.getRequestId()));
 		for(HMSMessage.BinaryResponsePoint respoint:req.getReponsePoints()) {
 			record.headers().add(ForwarPointdHeaderName, respoint.point.getBytes());			
 			record.headers().add(ForwarDataHeaderName, respoint.data);
@@ -89,7 +104,7 @@ public class KafkaMessageUtils {
 		return record;
 	}		
 	
-	public static <T> ProducerRecord<String, byte[]> getProcedureRecord(long requestd, T reqdata, String topic, String key) throws IOException{
+	public static <T> ProducerRecord<String, byte[]> getProcedureRecord(UUID requestd, T reqdata, String topic, String key) throws IOException{
 		HMSMessage<T> req= new HMSMessage<T>(requestd, key, reqdata);
 		return getProcedureRecord(req,topic);
 	}
