@@ -64,6 +64,10 @@ public class HMSMessage<T> {
 		this.responsePoints.add(new BinaryResponsePoint(point, data));
 	}
 	
+	public String getCurrentResponsePoint() {
+		return this.responsePoints.get(this.responsePoints.size()-1).point;
+	}
+	
 	public void addReponsePoint(String point) {
 		this.internalAddReponsePoint(point, null);
 	}	
@@ -79,5 +83,11 @@ public class HMSMessage<T> {
 		}else {
 			return new ResponsePoint<R>(p.point, null);
 		}
+	}
+	
+	public <F> HMSMessage<F> forwardRequest(){
+		HMSMessage<F> r = new HMSMessage<F>(this.requestId, this.messageKey);
+		r.responsePoints.addAll(this.responsePoints);
+		return r;
 	}
 }

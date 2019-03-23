@@ -18,9 +18,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
-public abstract class KafkaStreamNodeBase<TReq, TFor> {	
+public abstract class KafkaStreamNodeBase<TReq, TRep> {	
 	protected KafkaConsumer<String, byte[]> consumer;	
 	protected KafkaProducer<String, byte[]> producer;
 
@@ -45,18 +46,22 @@ public abstract class KafkaStreamNodeBase<TReq, TFor> {
 		this.timeout = timeoutInMillisecons;
 	}
 	
-	protected void ensureTopics() {
+	protected void ensureTopic(String topic) {
         Properties props = new Properties();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, this.server);
         AdminClient adminClient = AdminClient.create(props);
         
-        NewTopic cTopic = new NewTopic(this.consumeTopic, 2, (short)1);    
+        NewTopic cTopic = new NewTopic(topic, 2, (short)1);    
         CreateTopicsResult createTopicsResult = adminClient.createTopics(Arrays.asList(cTopic));
         try {
 			createTopicsResult.all().get();
 		} catch (InterruptedException | ExecutionException e) {
 			logger.error("Create topic error",e);
 		}
+	}	
+	
+	protected void ensureTopics() {
+        this.ensureTopic(this.consumeTopic);
 	}	
 	
 	protected void createProducer() {		
@@ -90,6 +95,18 @@ public abstract class KafkaStreamNodeBase<TReq, TFor> {
             }
         });
 	}		
+	
+	protected void reply(HMSMessage<TReq> request, TRep value) {
+		HMSMessage<TRep> replymsg = request.forwardRequest();
+		replymsg.setData(value);
+		String replytop = request.getCurrentResponsePoint();
+		try {
+			ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
+			this.producer.send(record).get();
+		} catch (IOException | InterruptedException | ExecutionException e) {
+			logger.error("Reply message error", e.getMessage());
+		}		
+	}
 	
 	protected abstract void processRequest(HMSMessage<TReq> record) ;
 }

@@ -68,16 +68,11 @@ public class ProviderService implements IProviderService, IProviderServiceProces
 	@Override
 	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto) {
 		return CompletableFuture.supplyAsync(()->{		
-			hms.provider.models.ProviderModel provider = this.repo.LoadById(trackingdto.getProviderid());
-			if(provider == null) {
-				throw ExceptionWrapper.wrap(new InvalidKeyException(String.format("Provider not found {0}", trackingdto.getProviderid())));
-			}
 			UUID hubid;
 			try {
 				hubid = this.hubservice.getHostingHubId(trackingdto.getLatitude(), trackingdto.getLongitude()).get();
-			} catch (InterruptedException e) {
-				throw ExceptionWrapper.wrap(e);
-			} catch (ExecutionException e) {
+			} catch (InterruptedException | ExceptionWrapper | ExecutionException e) {
+				logger.error("provider tracking error", e.getMessage());
 				throw ExceptionWrapper.wrap(e);
 			}
 			return this.tracking(trackingdto, hubid).join();
