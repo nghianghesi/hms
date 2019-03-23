@@ -8,6 +8,7 @@ import hms.kafka.streamming.StreamReponse;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.StreamRoot;
 import hms.provider.IProviderService;
+import hms.provider.KafkaProviderMeta;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,35 +22,24 @@ public class KafkaProviderService implements IProviderService{
 	StreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
 	
 	@Inject
-	public KafkaProviderService(Config config) {	
-		String topicPrefix = "hms.provider.";
-		if(config.hasPath("kafka.provider.topic")) {
-			topicPrefix = config.getString("kafka.provider.topic")+".";
-		}		
-		
+	public KafkaProviderService(Config config) {			
 		String server;
 		if(config.hasPath("kafka.server")) {
 			server = config.getString("kafka.server");
-			clearStream = new StreamRoot<Void, Boolean>(Boolean.class, logger, server, topicPrefix + IProviderService.ClearMessage);
-			initProviderStream = new StreamRoot<hms.dto.Provider, Boolean>(Boolean.class, logger, server, topicPrefix + IProviderService.InitproviderMessage);						
-			trackingProviderStream = new StreamRoot<hms.dto.ProviderTracking, Boolean>(Boolean.class, logger, server, topicPrefix + IProviderService.TrackingMessage);						
+			clearStream = new StreamRoot<Void, Boolean>(Boolean.class, logger, server, KafkaProviderMeta.ClearMessage);
+			initProviderStream = new StreamRoot<hms.dto.Provider, Boolean>(Boolean.class, logger, server, KafkaProviderMeta.InitproviderMessage);						
+			trackingProviderStream = new StreamRoot<hms.dto.ProviderTracking, Boolean>(Boolean.class, logger, server, KafkaProviderMeta.TrackingMessage);						
 		}else {
 			logger.error("Missing kafka.server configuration");
 			throw new Error("Invalid configuration");
-		}
-	
-
-		//if(config.hasPath("kafka.provider.timeout")) {
-			//int timeout = config.getInt("kafka.provider.timeout");			
-		//}	
-		
+		}		
 	}
 	
 	@Override
 	public CompletableFuture<Boolean> clear() {
 		return CompletableFuture.supplyAsync(()->{
 			StreamReponse response = clearStream.startStream((requestid)->{
-				return new HMSMessage<Void>(requestid, IProviderService.ClearMessage);
+				return new HMSMessage<Void>(requestid, KafkaProviderMeta.ClearMessage);
 			});			
 			return !response.isError();
 		});
@@ -59,7 +49,7 @@ public class KafkaProviderService implements IProviderService{
 	public CompletableFuture<Boolean> initprovider(hms.dto.Provider providerdto) {
 		return CompletableFuture.supplyAsync(()->{
 			StreamReponse response = initProviderStream.startStream((requestid)->{
-				return new HMSMessage<hms.dto.Provider>(requestid, IProviderService.InitproviderMessage, providerdto);
+				return new HMSMessage<hms.dto.Provider>(requestid, KafkaProviderMeta.InitproviderMessage, providerdto);
  			});
 			return !response.isError();
 		});
@@ -69,7 +59,7 @@ public class KafkaProviderService implements IProviderService{
 	public CompletableFuture<Boolean> tracking(hms.dto.ProviderTracking trackingdto) {
 		return CompletableFuture.supplyAsync(()->{
 			StreamReponse response = trackingProviderStream.startStream((requestid)->{		
-				return new HMSMessage<hms.dto.ProviderTracking>(requestid, IProviderService.TrackingMessage, trackingdto);
+				return new HMSMessage<hms.dto.ProviderTracking>(requestid, KafkaProviderMeta.TrackingMessage, trackingdto);
 			});
 			return !response.isError();
 		});

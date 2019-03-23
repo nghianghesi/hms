@@ -17,7 +17,7 @@ import hms.provider.models.ProviderModel;
 import hms.provider.models.ProviderModel.ProviderTrackingModel;
 import hms.provider.repositories.IProviderRepository;
 
-public class ProviderService implements IProviderService, IProviderServiceProcessor{    
+public class ProviderService implements IProviderService{    
 	private static final Logger logger = LoggerFactory.getLogger(ProviderService.class);
 
 	private IProviderRepository repo;
@@ -51,8 +51,7 @@ public class ProviderService implements IProviderService, IProviderServiceProces
 		});
 	}	
 
-	@Override
-	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto, UUID hubid) {		
+	protected CompletableFuture<Boolean> internalTrackingProviderHub(ProviderTracking trackingdto, UUID hubid) {		
 		return CompletableFuture.supplyAsync(()->{	
 			hms.provider.models.ProviderModel provider = this.repo.LoadById(trackingdto.getProviderid());
 			if(provider == null) {
@@ -75,7 +74,7 @@ public class ProviderService implements IProviderService, IProviderServiceProces
 				logger.error("provider tracking error", e.getMessage());
 				throw ExceptionWrapper.wrap(e);
 			}
-			return this.tracking(trackingdto, hubid).join();
+			return this.internalTrackingProviderHub(trackingdto, hubid).join();
 		});
 	}
 }

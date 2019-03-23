@@ -5,9 +5,7 @@ import javax.inject.Inject;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
-import com.mongodb.operation.UpdateOperation;
 
-import hms.dto.ProviderTracking;
 import hms.provider.ProviderPlayMorphia;
 import hms.provider.entities.ProviderEntity;
 import hms.provider.entities.ProviderTrackingEntity;

@@ -18,8 +18,8 @@ import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
 import hms.kafka.streamming.HMSMessage.ResponsePoint;
 import hms.kafka.streamming.KafkaMessageUtils;
-import hms.provider.IProviderService;
 import hms.provider.IProviderServiceProcessor;
+import hms.provider.KafkaProviderMeta;
 
 public class KafkaProviderProcessing {
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderProcessing.class);
@@ -31,8 +31,7 @@ public class KafkaProviderProcessing {
 	KafkaStreamNodeBase<UUID, Boolean>  trackingProviderHubProcessor;
 
 	private String kafkaserver;
-	private String providerTopicPrefix;
-	private String providerTopicGroup;
+	private String providerGroup;
 	
 	@Inject
 	public KafkaProviderProcessing(Config config, IProviderServiceProcessor providerService) {
@@ -42,15 +41,10 @@ public class KafkaProviderProcessing {
 		this.buildTrackingProviderProcessor();
 		this.buildTrackingProviderHubProcessor();
 	}
-	
-	private String getFullMessageName(String message) {
-		return providerTopicPrefix+message;
-	}
-	
+		
 	private void buildClearProcessor() {
 		this.clearProcessor = new KafkaStreamNodeBase<Void, Boolean>(
-				logger,Void.class, kafkaserver, providerTopicGroup, 
-				getFullMessageName(IProviderService.ClearMessage)) {
+				logger,Void.class, kafkaserver, providerGroup, KafkaProviderMeta.ClearMessage) {
 			@Override
 			protected void processRequest(HMSMessage<Void> request) {
 				try {
@@ -64,8 +58,8 @@ public class KafkaProviderProcessing {
 	
 	private void buildInitProviderProcessor() {		
 		this.initProviderProcessor = new KafkaStreamNodeBase<hms.dto.Provider, Boolean>(
-				logger, hms.dto.Provider.class, kafkaserver, providerTopicGroup, 
-				getFullMessageName(IProviderService.InitproviderMessage)) {
+				logger, hms.dto.Provider.class, kafkaserver, providerGroup, 
+				KafkaProviderMeta.InitproviderMessage) {
 			@Override
 			protected void processRequest(HMSMessage<hms.dto.Provider> request) {
 				try {
@@ -79,14 +73,14 @@ public class KafkaProviderProcessing {
 	
 	private void buildTrackingProviderProcessor() {
 		this.trackingProviderProcessor = new KafkaStreamNodeBase<hms.dto.ProviderTracking, UUID>(
-				logger, hms.dto.ProviderTracking.class, kafkaserver, providerTopicGroup, 
-				getFullMessageName(IProviderService.TrackingMessage)) {
+				logger, hms.dto.ProviderTracking.class, kafkaserver, providerGroup, 
+				KafkaProviderMeta.TrackingMessage) {
 			@Override
 			protected void processRequest(HMSMessage<hms.dto.ProviderTracking> request) {	
 				HMSMessage<hms.dto.Coordinate> getHubIdReg = request.forwardRequest();
 				getHubIdReg.setData(new Coordinate(request.getData().getLatitude(), request.getData().getLongitude()));
 				try {//forward to find hubid, then back to TrackingWithHubMessage
-					getHubIdReg.addReponsePoint(IProviderServiceProcessor.TrackingWithHubMessage, request.getData());					
+					getHubIdReg.addReponsePoint(KafkaProviderMeta.TrackingWithHubMessage, request.getData());					
 					ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, IHubService.MappingHubMessage);					
 					this.producer.send(record);
 				} catch (IOException e) {
@@ -98,8 +92,8 @@ public class KafkaProviderProcessing {
 	
 	private void buildTrackingProviderHubProcessor() {
 		this.trackingProviderHubProcessor = new KafkaStreamNodeBase<UUID, Boolean>(
-				logger, UUID.class, kafkaserver, providerTopicGroup, 
-				getFullMessageName(IProviderServiceProcessor.TrackingWithHubMessage)) {
+				logger, UUID.class, kafkaserver, providerGroup, 
+				KafkaProviderMeta.TrackingWithHubMessage) {
 			@Override
 			protected void processRequest(HMSMessage<UUID> request) {
 				UUID hubid = request.getData();
