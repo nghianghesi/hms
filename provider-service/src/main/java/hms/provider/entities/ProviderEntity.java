@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.bson.types.ObjectId;
 
+import xyz.morphia.annotations.Embedded;
 import xyz.morphia.annotations.Entity;
 import xyz.morphia.annotations.Field;
 import xyz.morphia.annotations.Id;
@@ -19,6 +20,7 @@ import xyz.morphia.geo.Point;
 })
 @Entity(value = "Provider")
 public class ProviderEntity {	
+	@Embedded
 	public static class ProviderTrackingStruct{
 	    private UUID hubid;
 	    public UUID getHubid() {

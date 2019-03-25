@@ -21,7 +21,7 @@ public class HubNodePlayMorphia extends PlayMorphia{
                 return env.classLoader();
             }
         });
-        this.morphia().map(hms.hub.entities.HubNodeEntity.class);        
-        this.datastore().ensureIndexes();    
+        //this.morphia().map(hms.hub.entities.HubNodeEntity.class);        
+        //this.datastore().ensureIndexes();
 	}
 }

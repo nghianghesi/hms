@@ -13,7 +13,7 @@ import com.typesafe.config.Config;
 
 import hms.dto.Coordinate;
 import hms.dto.ProviderTracking;
-import hms.hub.IHubService;
+import hms.hub.KafkaHubMeta;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
 import hms.kafka.streamming.HMSMessage.ResponsePoint;
@@ -81,7 +81,7 @@ public class KafkaProviderProcessing {
 				getHubIdReg.setData(new Coordinate(request.getData().getLatitude(), request.getData().getLongitude()));
 				try {//forward to find hubid, then back to TrackingWithHubMessage
 					getHubIdReg.addReponsePoint(KafkaProviderMeta.TrackingWithHubMessage, request.getData());					
-					ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, IHubService.MappingHubMessage);					
+					ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, KafkaHubMeta.MappingHubMessage);					
 					this.producer.send(record);
 				} catch (IOException e) {
 					logger.error("Forward To Hub Error", e.getMessage());

@@ -40,7 +40,7 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.mongodb,
 		dependencies.morphia,
 		dependencies.modelmapper))
-  .dependsOn(`service-common`, protocol, playmorphia)
+  .dependsOn(`service-common`, protocol)
   
   
   
@@ -50,8 +50,12 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.mongodb,
 		dependencies.morphia,
 		dependencies.modelmapper))
-  .dependsOn(`service-common`, hubservice, protocol, playmorphia)
+  .dependsOn(`service-common`, hubservice, protocol)
   
+ lazy val `provider-play` = (project in file("./provider-play"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice))
+  .dependsOn(`provider-service`,playmorphia)  
   
  lazy val `kafka-serivce-common` = (project in file("./kafka-service-common"))
   .settings(libraryDependencies ++=  Seq(	  
@@ -88,7 +92,12 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.kafkaclient,
 		dependencies.kafka))
   .dependsOn(`service-common`, `kafka-serivce-common`, hubservice)    
-
+  
+  
+ lazy val `hub-play` = (project in file("./hub-play"))
+  .settings(libraryDependencies ++=  Seq(guice))
+  .dependsOn(hubservice,playmorphia)  
+  
 lazy val client = (project in file("./client"))
   .settings(libraryDependencies ++=  Seq(
       dependencies.junit,
@@ -109,7 +118,18 @@ lazy val `service-gateway` = (project in file("./service-gateway"))
 		dependencies.morphia,
 		dependencies.modelmapper
 	))
-	.dependsOn(protocol,`service-common`,`kafka-serivce-common`,hubservice,`provider-service`,`provider-kafka-producer`, playmorphia)	  
+	.dependsOn(protocol, `service-common`,`kafka-serivce-common`,hubservice,`provider-service`, `provider-kafka-producer`, `provider-play`,`hub-play`)	  
+  
+lazy val `processing-host` = (project in file("./processing-host"))
+	.enablePlugins(PlayJava)
+	.settings(		
+		libraryDependencies ++=  Seq(
+		guice,
+		dependencies.mongodb,
+		dependencies.morphia,
+		dependencies.modelmapper
+	))
+	.dependsOn(`provider-kafka-consumer`,`hub-kafka-consumer`, `provider-play`,`hub-play`)	  
 	
 lazy val global = project
   .in(file("."))
@@ -122,5 +142,6 @@ lazy val global = project
 	`provider-kafka-consumer`,
 	`hub-kafka-producer`,
 	`hub-kafka-consumer`,	
-    `service-gateway`
+    `service-gateway`,
+	`processing-host`
   )

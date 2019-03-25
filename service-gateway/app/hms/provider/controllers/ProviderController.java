@@ -6,9 +6,6 @@ import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import hms.provider.IProviderService;
@@ -19,13 +16,10 @@ import play.mvc.Http;
 import play.mvc.Result;
 
 public class ProviderController  extends Controller {
-    private static final Logger logger = LoggerFactory.getLogger(ProviderController.class);
     private IProviderService providerserivce;
-    private HttpExecutionContext ec;
     @Inject
     public ProviderController(HttpExecutionContext ec,IProviderService providerservice) {
     	this.providerserivce = providerservice;
-    	this.ec = ec;
     }
     
     public Result index() {

@@ -4,7 +4,6 @@ import javax.inject.Inject;
 
 import it.unifi.cerm.playmorphia.PlayMorphia;
 
-import com.mongodb.DBObject;
 import com.typesafe.config.Config;
 import play.Environment;
 import play.inject.ApplicationLifecycle;
@@ -25,9 +24,9 @@ public class ProviderPlayMorphia extends PlayMorphia{
                 return env.classLoader();
             }
         });
-        this.morphia().map(hms.provider.entities.ProviderEntity.class);        
-        this.datastore().ensureIndexes();    
-        this.morphia().map(hms.provider.entities.ProviderTrackingEntity.class);        
-        this.datastore().ensureIndexes();    
+        //this.morphia().map(hms.provider.entities.ProviderEntity.class);        
+        //this.datastore().ensureIndexes();    
+        //this.morphia().map(hms.provider.entities.ProviderTrackingEntity.class);        
+        //this.datastore().ensureIndexes();    
 	}
 }

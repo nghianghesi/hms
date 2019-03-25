@@ -36,7 +36,7 @@ public class KafkaHubProcessing{
 				try {
 					this.reply(request, hubService.getHostingHubId(request.getData().getLatitude(), request.getData().getLongitude()).get());
 				} catch (InterruptedException | ExecutionException e) {
-					logger.error("clear provider error", e.getMessage());
+					logger.error("Clear provider error", e.getMessage());
 				}				
 			}
 		};
