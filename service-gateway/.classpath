@@ -1,6 +1,8 @@
 <classpath>
   <classpathentry kind="src" path="app"/>
   <classpathentry kind="src" path="conf"/>
+  <classpathentry kind="src" path="target\scala-2.11\twirl\main"/>
+  <classpathentry kind="src" path="target\scala-2.11\routes\main"/>
   <classpathentry excluding="resources\" kind="src" path="test"/>
   <classpathentry kind="src" path="/protocol" exported="true" combineaccessrules="false"/>
   <classpathentry kind="src" path="/service-common" exported="true" combineaccessrules="false"/>
@@ -10,6 +12,7 @@
   <classpathentry kind="src" path="/provider-kafka-producer" exported="true" combineaccessrules="false"/>
   <classpathentry kind="src" path="/provider-play" exported="true" combineaccessrules="false"/>
   <classpathentry kind="src" path="/hub-play" exported="true" combineaccessrules="false"/>
+  <classpathentry kind="src" path="/hms-play" exported="true" combineaccessrules="false"/>
   <classpathentry kind="lib" path="..\playmorphia\lib\play-morphia.jar"/>
   <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.typesafe.play\play-guice_2.11\srcs\play-guice_2.11-2.7.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.typesafe.play\play-guice_2.11\jars\play-guice_2.11-2.7.0.jar">
