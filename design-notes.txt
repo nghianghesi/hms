@@ -3,3 +3,4 @@ micro-service vs normal similar to asyn-js vs syn-js (observable pattern, parall
 start up: create topic if not existing
 setup producer, consumer.
 hub service handler before provider service, then place result message
+each service method is a kafka topic

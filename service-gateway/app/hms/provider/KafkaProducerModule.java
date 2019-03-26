@@ -1,4 +1,4 @@
-package hms;
+package hms.provider;
 
 import com.google.inject.AbstractModule;
 

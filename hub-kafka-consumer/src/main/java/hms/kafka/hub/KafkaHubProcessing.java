@@ -32,6 +32,7 @@ public class KafkaHubProcessing{
 			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);
 		}else {
 			logger.error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
+			throw new Error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
 		}
 		
 		this.hubGroup = "hms.hub";

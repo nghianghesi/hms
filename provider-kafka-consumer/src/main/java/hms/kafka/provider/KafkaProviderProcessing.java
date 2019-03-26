@@ -42,6 +42,7 @@ public class KafkaProviderProcessing {
 			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);
 		}else {
 			logger.error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
+			throw new Error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
 		}
 		
 		this.providerGroup = "hms.provider";

@@ -32,7 +32,7 @@ public class KafkaProviderService implements IProviderService{
 			trackingProviderStream = new StreamRoot<hms.dto.ProviderTracking, Boolean>(Boolean.class, logger, server, KafkaProviderMeta.TrackingMessage);						
 		}else {
 			logger.error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
-			throw new Error("Invalid configuration");
+			throw new Error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
 		}		
 	}
 	

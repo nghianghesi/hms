@@ -120,7 +120,8 @@ lazy val `service-gateway` = (project in file("./service-gateway"))
   
 lazy val `processing-host` = (project in file("./processing-host"))
 	.enablePlugins(PlayJava)
-	.settings(		
+	.settings(	
+		PlayKeys.playDefaultPort := 9001,
 		libraryDependencies ++=  Seq(
 		guice,
 		dependencies.mongodb,

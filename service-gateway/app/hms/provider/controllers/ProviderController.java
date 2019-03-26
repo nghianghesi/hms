@@ -18,7 +18,7 @@ import play.mvc.Result;
 public class ProviderController  extends Controller {
     private IProviderService providerserivce;
     @Inject
-    public ProviderController(HttpExecutionContext ec,IProviderService providerservice) {
+    public ProviderController(HttpExecutionContext ec, IProviderService providerservice) {
     	this.providerserivce = providerservice;
     }
     

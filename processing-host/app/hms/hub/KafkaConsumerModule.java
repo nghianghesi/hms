@@ -7,6 +7,6 @@ public class KafkaConsumerModule extends AbstractModule {
 	protected void configure() {
         bind(hms.hub.repositories.IHubNodeRepository.class).to(hms.hub.repositories.HubNodeRepository.class);
         bind(hms.hub.IHubServiceProcessor.class).to(hms.hub.HubService.class);
-        bind(hms.kafka.hub.KafkaHubProcessing.class).to(hms.kafka.hub.KafkaHubProcessing.class).asEagerSingleton();       
+        bind(hms.kafka.hub.KafkaHubProcessing.class).asEagerSingleton();       
 	}
 }
