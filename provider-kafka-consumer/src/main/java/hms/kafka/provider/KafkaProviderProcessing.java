@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 
+import hms.KafkaHMSMeta;
 import hms.dto.Coordinate;
 import hms.dto.ProviderTracking;
 import hms.hub.KafkaHubMeta;
@@ -35,7 +36,19 @@ public class KafkaProviderProcessing {
 	
 	@Inject
 	public KafkaProviderProcessing(Config config, IProviderServiceProcessor providerService) {
-		this.providerService = providerService;
+		this.providerService = providerService;	
+
+		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
+			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);
+		}else {
+			logger.error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
+		}
+		
+		this.providerGroup = "hms.provider";
+		if(config.hasPath(KafkaProviderMeta.ProviderGroupConfigKey)) {
+			this.providerGroup = config.getString(KafkaProviderMeta.ProviderGroupConfigKey);
+		}
+		
 		this.buildClearProcessor();
 		this.buildInitProviderProcessor();
 		this.buildTrackingProviderProcessor();
@@ -79,7 +92,7 @@ public class KafkaProviderProcessing {
 			protected void processRequest(HMSMessage<hms.dto.ProviderTracking> request) {	
 				HMSMessage<hms.dto.Coordinate> getHubIdReg = request.forwardRequest();
 				getHubIdReg.setData(new Coordinate(request.getData().getLatitude(), request.getData().getLongitude()));
-				try {//forward to find hubid, then back to TrackingWithHubMessage
+				try {//forward to find hub-id, then back to TrackingWithHubMessage
 					getHubIdReg.addReponsePoint(KafkaProviderMeta.TrackingWithHubMessage, request.getData());					
 					ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, KafkaHubMeta.MappingHubMessage);					
 					this.producer.send(record);
@@ -87,6 +100,11 @@ public class KafkaProviderProcessing {
 					logger.error("Forward To Hub Error", e.getMessage());
 				}
 			}
+			@Override
+			protected void ensureTopics() {
+		        super.ensureTopics();
+		        this.ensureTopic(KafkaHubMeta.MappingHubMessage);
+			}				
 		};
 	}	
 	

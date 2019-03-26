@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import com.typesafe.config.Config;
 
 import hms.kafka.streamming.StreamReponse;
+import hms.KafkaHMSMeta;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.StreamRoot;
 import hms.provider.IProviderService;
@@ -24,13 +25,13 @@ public class KafkaProviderService implements IProviderService{
 	@Inject
 	public KafkaProviderService(Config config) {			
 		String server;
-		if(config.hasPath("kafka.server")) {
-			server = config.getString("kafka.server");
+		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
+			server = config.getString(KafkaHMSMeta.ServerConfigKey);
 			clearStream = new StreamRoot<Void, Boolean>(Boolean.class, logger, server, KafkaProviderMeta.ClearMessage);
 			initProviderStream = new StreamRoot<hms.dto.Provider, Boolean>(Boolean.class, logger, server, KafkaProviderMeta.InitproviderMessage);						
 			trackingProviderStream = new StreamRoot<hms.dto.ProviderTracking, Boolean>(Boolean.class, logger, server, KafkaProviderMeta.TrackingMessage);						
 		}else {
-			logger.error("Missing kafka.server configuration");
+			logger.error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
 			throw new Error("Invalid configuration");
 		}		
 	}

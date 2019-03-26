@@ -25,14 +25,15 @@ lazy val dependencies =
 	var kafkaclient = "org.apache.kafka" % "kafka-clients" % "2.1.1" 
 	var kafka = "org.apache.kafka" %% "kafka" % "2.1.1"
 	var dslplatform ="com.dslplatform" % "dsl-json-java8" % "1.8.5"
+	var playframwork="com.typesafe.play" %% "play" % "2.7"
   }
   
 lazy val protocol = (project in file("./protocol"))
 lazy val playmorphia = (project in file("./playmorphia"))
 lazy val `hms-play` = (project in file("./hms-play"))	
-	.enablePlugins(PlayJava)
 	.settings(libraryDependencies ++=  Seq(	  
 		guice,  
+		dependencies.playframwork,
 		dependencies.mongodb,
 		dependencies.morphia))
 	.dependsOn(playmorphia)
@@ -57,11 +58,6 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.morphia,
 		dependencies.modelmapper))
   .dependsOn(`service-common`, hubservice, protocol)
-  
- lazy val `provider-play` = (project in file("./provider-play"))
-  .settings(libraryDependencies ++=  Seq(	  
-		guice))
-  .dependsOn(`provider-service`,playmorphia)  
   
  lazy val `kafka-serivce-common` = (project in file("./kafka-service-common"))
   .settings(libraryDependencies ++=  Seq(	  
@@ -100,10 +96,6 @@ lazy val hubservice = (project in file("./hubservice"))
   .dependsOn(`service-common`, `kafka-serivce-common`, hubservice)    
   
   
- lazy val `hub-play` = (project in file("./hub-play"))
-  .settings(libraryDependencies ++=  Seq(guice))
-  .dependsOn(hubservice,playmorphia)  
-  
 lazy val client = (project in file("./client"))
   .settings(libraryDependencies ++=  Seq(
       dependencies.junit,
@@ -124,7 +116,7 @@ lazy val `service-gateway` = (project in file("./service-gateway"))
 		dependencies.morphia,
 		dependencies.modelmapper
 	))
-	.dependsOn(protocol, `service-common`,`kafka-serivce-common`,hubservice,`provider-service`, `provider-kafka-producer`, `provider-play`,`hub-play`,`hms-play`)	  
+	.dependsOn(protocol, `service-common`,`kafka-serivce-common`,hubservice,`provider-service`, `provider-kafka-producer`, `hms-play`,`provider-kafka-producer`)	  
   
 lazy val `processing-host` = (project in file("./processing-host"))
 	.enablePlugins(PlayJava)
@@ -135,7 +127,7 @@ lazy val `processing-host` = (project in file("./processing-host"))
 		dependencies.morphia,
 		dependencies.modelmapper
 	))
-	.dependsOn(`provider-kafka-consumer`,`hub-kafka-consumer`, `provider-play`,`hub-play`,`hms-play`)	  
+	.dependsOn(`provider-kafka-consumer`,`hub-kafka-consumer`, `hms-play`)	  
 	
 lazy val global = project
   .in(file("."))

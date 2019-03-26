@@ -70,7 +70,7 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
         this.producer = new KafkaProducer<>(props);
-	}	
+	}
 	
 	protected void createConsummer() {
         Properties consumerProps = new Properties();

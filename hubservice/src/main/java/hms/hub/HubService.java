@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import hms.hub.models.HubNodeModel;
 import hms.hub.repositories.IHubNodeRepository;
 
-public class HubService implements IHubService {	
+public class HubService implements IHubService, IHubServiceProcessor {	
 	private HubNodeModel rootNode;
 	@Inject
 	public HubService(IHubNodeRepository repo) {

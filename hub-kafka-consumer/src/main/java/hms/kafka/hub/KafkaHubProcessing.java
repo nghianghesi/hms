@@ -1,4 +1,4 @@
-package hms.hub;
+package hms.kafka.hub;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -10,9 +10,11 @@ import org.slf4j.LoggerFactory;
 
 import com.typesafe.config.Config;
 
+import hms.KafkaHMSMeta;
+import hms.hub.IHubServiceProcessor;
+import hms.hub.KafkaHubMeta;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
-
 public class KafkaHubProcessing{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaHubProcessing.class);
 	private IHubServiceProcessor hubService;
@@ -25,6 +27,18 @@ public class KafkaHubProcessing{
 	@Inject
 	public KafkaHubProcessing(Config config, IHubServiceProcessor hubService) {
 		this.hubService = hubService;
+		
+		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
+			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);
+		}else {
+			logger.error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
+		}
+		
+		this.hubGroup = "hms.hub";
+		if(config.hasPath(KafkaHubMeta.GroupConfigKey)) {
+			this.hubGroup = config.getString(KafkaHubMeta.GroupConfigKey);
+		}
+		
 		this.buildGetHubCoordinateProcessor();
 	}
 	
