@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 public class StreamRoot<TReq,TRes> extends KafkaStreamNodeBase<TRes,Void>{
 	private String requestTopic;
 	
-	public StreamRoot(Class<TRes> manifiestTRes,  Logger logger, String server, String topic) {
-		super(logger, manifiestTRes, server, UUID.randomUUID().toString(), topic+".return");
+	public StreamRoot(Class<TRes> manifiestTRes,  Logger logger, String rootid, String kafkaServer, String topic) {
+		super(logger, manifiestTRes, kafkaServer, rootid, topic+".return");
 		this.requestTopic = topic;
 	}
 	
@@ -23,40 +23,48 @@ public class StreamRoot<TReq,TRes> extends KafkaStreamNodeBase<TRes,Void>{
 		handleResponse(response);
 	}		
 
-	private Map<UUID, StreamReponse> waiters = new Hashtable<UUID, StreamReponse>();
+	private Map<UUID, StreamResponse> waiters = new Hashtable<UUID, StreamResponse>();
 	private synchronized UUID nextId() {
 		return UUID.randomUUID();
 	} 
 	
 	public void handleResponse(HMSMessage<TRes> reponse) {
 		if(waiters.containsKey(reponse.getRequestId())) {
-			StreamReponse waiter = waiters.remove(reponse.getRequestId()) ;
+			StreamResponse waiter = waiters.remove(reponse.getRequestId()) ;
 			waiter.setData(reponse);
-			waiter.notify();
+			this.logger.info("Notify waiter " + this.requestTopic + " " + reponse.getRequestId());
+			synchronized(waiter) {
+				waiter.notifyAll();
+			}
+		}else {
+			this.logger.warn("Stream response without waiter " + this.requestTopic + " " + reponse.getRequestId());
 		}
 	}
 	
 	public void handleRequestError(UUID id, String error) {
 		if(waiters.containsKey(id)) {			
-			StreamReponse waiter = waiters.remove(id) ;
+			StreamResponse waiter = waiters.remove(id) ;
 			waiter.setError(error);
-			waiter.notify();			
+			synchronized(waiter) {
+				waiter.notifyAll();
+			}
 		}
 	}	
 	
-	public StreamReponse startStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest) {
+	public StreamResponse startStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest) {
 		return this.startStream(createRequest, this.timeout);
 	}
 	
-	public StreamReponse startStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest, int timeout) {
+	public StreamResponse startStream(java.util.function.Function<UUID,HMSMessage<TReq>> createRequest, int timeout) {
 		UUID id = this.nextId();
-		StreamReponse waiter = new StreamReponse(id);
+		StreamResponse waiter = new StreamResponse(id);
 		this.waiters.put(id, waiter);
 		HMSMessage<TReq> request = createRequest.apply(id);
 		if(request != null) {
 			request.addReponsePoint(this.consumeTopic);
 			try {
 				ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, this.requestTopic);
+				this.logger.info("Start stream "+this.requestTopic + " " + request.getRequestId());
 				this.producer.send(record).get(timeout, TimeUnit.MILLISECONDS);
 			} catch (IOException | InterruptedException | ExecutionException | TimeoutException e) {
 				this.handleRequestError(id, "Request error: "+e.getMessage());
@@ -65,7 +73,10 @@ public class StreamRoot<TReq,TRes> extends KafkaStreamNodeBase<TRes,Void>{
 			
 			try {
 				if(waiter.needWaiting()) {
-					waiter.wait(timeout);
+					synchronized(waiter) {
+						waiter.wait(timeout);				
+						this.logger.info("Get stream response "+this.requestTopic + " " + request.getRequestId());
+					}
 				}
 			} catch (InterruptedException e) {
 				this.handleRequestError(id, "Request error: "+e.getMessage());

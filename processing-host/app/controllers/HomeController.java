@@ -1,5 +1,14 @@
 package controllers;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.*;
 
 /**
@@ -7,6 +16,13 @@ import play.mvc.*;
  * to the application's home page.
  */
 public class HomeController extends Controller {
+	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
+	private HttpExecutionContext httpExecutionContext;
+
+    @Inject
+    public HomeController(HttpExecutionContext ec) {
+        this.httpExecutionContext = ec;
+    }
 
     /**
      * An action that renders an HTML page with a welcome message.
@@ -14,8 +30,13 @@ public class HomeController extends Controller {
      * this method will be called when the application receives a
      * <code>GET</code> request with a path of <code>/</code>.
      */
-    public Result index() {
-        return ok(views.html.index.render());
+    public CompletionStage<Result> index() {
+    	return CompletableFuture.supplyAsync(()->{
+	    	logger.info("Test log from home");
+	    	return true;
+    	},httpExecutionContext.current()).thenApplyAsync((r)->{
+    		return ok(views.html.index.render());	    	
+    	}, httpExecutionContext.current());
     }
 
 }

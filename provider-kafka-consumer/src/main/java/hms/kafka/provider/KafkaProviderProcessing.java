@@ -54,6 +54,9 @@ public class KafkaProviderProcessing {
 		this.buildInitProviderProcessor();
 		this.buildTrackingProviderProcessor();
 		this.buildTrackingProviderHubProcessor();
+		
+
+		logger.info("Provider processing is ready");
 	}
 		
 	private void buildClearProcessor() {
@@ -62,7 +65,7 @@ public class KafkaProviderProcessing {
 			@Override
 			protected void processRequest(HMSMessage<Void> request) {
 				try {
-					this.reply(request, providerService.clear().get());
+					this.reply(request, providerService.clear().get());					
 				} catch (InterruptedException | ExecutionException e) {
 					logger.error("clear provider error", e.getMessage());
 				}				

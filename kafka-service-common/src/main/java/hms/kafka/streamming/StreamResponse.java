@@ -2,7 +2,7 @@ package hms.kafka.streamming;
 
 import java.util.UUID;
 
-public class StreamReponse{
+public class StreamResponse{
 	private UUID requestId;	
 	private Object data;
 	private boolean needWaiting = true;
@@ -11,7 +11,7 @@ public class StreamReponse{
 	//TODO: Need support relay response
 	private String error; 
 	
-	public StreamReponse(UUID requestId) {
+	public StreamResponse(UUID requestId) {
 		this.requestId = requestId;
 	}
 	

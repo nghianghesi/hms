@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import hms.common.ExceptionWrapper;
+import hms.common.IHMSExecutorContext;
 import hms.dto.ProviderTracking;
 import hms.hub.IHubService;
 import hms.provider.models.ProviderModel;
@@ -22,11 +23,13 @@ public class ProviderService implements IProviderService{
 
 	private IProviderRepository repo;
 	private IHubService hubservice;
+	private IHMSExecutorContext execContext;
 	
 	@Inject
-	public ProviderService(IHubService hubservice, IProviderRepository repo){
+	public ProviderService(IHMSExecutorContext ec,IHubService hubservice, IProviderRepository repo){
 		this.repo = repo;
 		this.hubservice = hubservice;
+		this.execContext = ec;
 	}
 	
 	@Override
@@ -34,7 +37,7 @@ public class ProviderService implements IProviderService{
 		return CompletableFuture.supplyAsync(() -> {
 			this.repo.clear();
 			return true;
-		});		
+		},this.execContext.getExecutor());		
 	}
 
 	@Override
@@ -48,7 +51,7 @@ public class ProviderService implements IProviderService{
 			provider.load(providerdto);
 			this.repo.Save(provider);
 			return true;
-		});
+		},this.execContext.getExecutor());
 	}	
 
 	protected CompletableFuture<Boolean> internalTrackingProviderHub(ProviderTracking trackingdto, UUID hubid) {		
@@ -61,7 +64,7 @@ public class ProviderService implements IProviderService{
 			provider.setCurrentTracking(tracking);
 			this.repo.Save(provider);
 			return true;
-		});
+		}, this.execContext.getExecutor());
 	}	
 	
 	@Override
@@ -75,6 +78,6 @@ public class ProviderService implements IProviderService{
 				throw ExceptionWrapper.wrap(e);
 			}
 			return this.internalTrackingProviderHub(trackingdto, hubid).join();
-		});
+		}, this.execContext.getExecutor());
 	}
 }

@@ -4,14 +4,16 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
+
+import hms.common.IHMSExecutorContext;
 import hms.dto.ProviderTracking;
 import hms.provider.repositories.IProviderRepository;
 
 public class ProviderServiceProcessor extends ProviderService implements IProviderServiceProcessor{
 
 	@Inject
-	public ProviderServiceProcessor(IProviderRepository repo) {
-		super(null, repo);
+	public ProviderServiceProcessor(IHMSExecutorContext ec,IProviderRepository repo) {
+		super(ec, null, repo);
 	}	
 
 	@Override

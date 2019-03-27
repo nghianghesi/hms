@@ -3,10 +3,10 @@ package hms.kafka.streamming;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.regex.Pattern;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -29,7 +29,7 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 	protected String groupid;
 	protected String server;
 	protected int timeout = 5000;
-	private Logger logger;
+	protected Logger logger;
 	private Class<TReq> reqManifest;
 
 	protected KafkaStreamNodeBase(Logger logger, Class<TReq> reqManifest, String server, String groupid, String topic) {
@@ -80,25 +80,28 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 		consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.server);
 		consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, this.groupid);
 		consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-		consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-				"org.apache.kafka.common.serialization.StringDeserializer");
 		consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+				"org.apache.kafka.common.serialization.StringDeserializer");		
+		consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.ByteArrayDeserializer");
 		this.consumer = new KafkaConsumer<>(consumerProps);
-		this.consumer.subscribe(Pattern.compile(this.consumeTopic));
+		this.consumer.subscribe(Collections.singletonList(this.consumeTopic));
 
-		CompletableFuture.runAsync(() -> {
+		new Thread(() -> {						
 			while (true) {
-				ConsumerRecords<String, byte[]> records = this.consumer.poll(Duration.ofMillis(100));
+				//logger.info("running consumer" + consumeTopic);
+				ConsumerRecords<String, byte[]> records = this.consumer.poll(Duration.ofMillis(500));
 				for (ConsumerRecord<String, byte[]> record : records) {
 					try {
-						this.processRequest(KafkaMessageUtils.getHMSMessage(this.reqManifest, record));
+						 HMSMessage<TReq> request = KafkaMessageUtils.getHMSMessage(this.reqManifest, record);
+						logger.info("Consuming " + consumeTopic + " "+ request.getRequestId());						 
+						this.processRequest(request);
 					} catch (IOException e) {
 						logger.error("Consumer error " + consumeTopic, e.getMessage());
 					}
 				}
 			}
-		});
+		}).start();
 	}
 
 	protected void reply(HMSMessage<TReq> request, TRep value) {
@@ -107,6 +110,7 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 		String replytop = request.getCurrentResponsePoint();
 		try {
 			ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
+			logger.info("replying "+replytop);			
 			this.producer.send(record).get();
 		} catch (IOException | InterruptedException | ExecutionException e) {
 			logger.error("Reply message error", e.getMessage());

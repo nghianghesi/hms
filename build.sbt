@@ -36,7 +36,7 @@ lazy val `hms-play` = (project in file("./hms-play"))
 		dependencies.playframwork,
 		dependencies.mongodb,
 		dependencies.morphia))
-	.dependsOn(playmorphia)
+	.dependsOn(playmorphia,`service-common`)
 
 lazy val `service-common` = (project in file("./service-common"))
   .dependsOn(protocol)

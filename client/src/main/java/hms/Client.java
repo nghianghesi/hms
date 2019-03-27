@@ -139,7 +139,7 @@ public class Client {
 		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
 
 		initProvider(client, list);
-		logger.info("Tracking Providers:");
+		/*logger.info("Tracking Providers:");
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
 		
@@ -149,7 +149,7 @@ public class Client {
 		
 		for (int groupidx = 0; groupidx < groupRunners.size(); groupidx++) {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
-		}
+		}*/
 		
 		logger.info(client.getStats());
 	}
