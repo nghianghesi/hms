@@ -49,7 +49,6 @@ public class KafkaHubProcessing{
 			@Override
 			protected void processRequest(HMSMessage<hms.dto.Coordinate> request) {
 				try {
-					logger.info(request.DebugInfo());
 					this.reply(request, hubService.getHostingHubId(request.getData().getLatitude(), request.getData().getLongitude()).get());
 				} catch (InterruptedException | ExecutionException e) {
 					logger.error("Get bub by provider coordinater error: {}", e.getMessage());

@@ -15,7 +15,7 @@ public class StreamRoot<TReq,TRes> extends KafkaStreamNodeBase<TRes,Void>{
 	private String requestTopic;
 	
 	public StreamRoot(Class<TRes> manifiestTRes,  Logger logger, String rootid, String kafkaServer, String topic) {
-		super(logger, manifiestTRes, kafkaServer, rootid, topic+".return");
+		super(logger, manifiestTRes, kafkaServer, rootid, topic+".return", 1);
 		this.requestTopic = topic;
 	}
 	

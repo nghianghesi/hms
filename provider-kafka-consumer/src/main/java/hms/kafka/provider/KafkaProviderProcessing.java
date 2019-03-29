@@ -53,8 +53,7 @@ public class KafkaProviderProcessing {
 		this.buildClearProcessor();
 		this.buildInitProviderProcessor();
 		this.buildTrackingProviderProcessor();
-		this.buildTrackingProviderHubProcessor();
-		
+		this.buildTrackingProviderHubProcessor();	
 
 		logger.info("Provider processing is ready");
 	}

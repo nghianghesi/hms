@@ -43,7 +43,6 @@ public class ProviderService implements IProviderService{
 	@Override
 	public CompletableFuture<Boolean> initprovider(hms.dto.Provider providerdto) {
 		return CompletableFuture.supplyAsync(()->{
-			logger.info("Provider dto:" + providerdto.getProviderid().toString());
 			ProviderModel provider = this.repo.LoadById(providerdto.getProviderid());
 			if(provider == null) {
 				provider = new ProviderModel();			

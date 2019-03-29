@@ -91,11 +91,14 @@ public class HMSMessage<T> {
 		return r;
 	}
 	
-	public String DebugInfo() {
+	/*public String DebugInfo() {
 		java.util.StringJoiner str = new java.util.StringJoiner (",");
 		for(BinaryResponsePoint p: this.responsePoints) {
 			str.add(p.point);
+			if(p.data!=null) {
+				str.add(new String(p.data));
+			}
 		}
 		return str.toString();
-	}
+	}*/
 }
