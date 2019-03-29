@@ -65,7 +65,7 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.dslplatform,
 		dependencies.kafkaclient,
 		dependencies.kafka))
-  .dependsOn(`service-common`)   
+  .dependsOn(`service-common`,protocol)   
   
  lazy val `provider-kafka-producer` = (project in file("./provider-kafka-producer"))
   .settings(libraryDependencies ++=  Seq(	  

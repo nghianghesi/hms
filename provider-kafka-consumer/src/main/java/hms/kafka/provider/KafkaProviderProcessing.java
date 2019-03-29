@@ -41,8 +41,8 @@ public class KafkaProviderProcessing {
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
 			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);
 		}else {
-			logger.error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
-			throw new Error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
+			logger.error("Missing {} configuration",KafkaHMSMeta.ServerConfigKey);
+			throw new Error(String.format("Missing {} configuration",KafkaHMSMeta.ServerConfigKey));
 		}
 		
 		this.providerGroup = "hms.provider";
@@ -67,7 +67,7 @@ public class KafkaProviderProcessing {
 				try {
 					this.reply(request, providerService.clear().get());					
 				} catch (InterruptedException | ExecutionException e) {
-					logger.error("clear provider error", e.getMessage());
+					logger.error("clear provider error {}", e.getMessage());
 				}				
 			}
 		};
@@ -82,7 +82,7 @@ public class KafkaProviderProcessing {
 				try {
 					this.reply(request, providerService.initprovider(request.getData()).get());
 				} catch (InterruptedException | ExecutionException e) {
-					logger.error("Init provider error", e.getMessage());
+					logger.error("Init provider error {}", e.getMessage());
 				}				
 			}
 		};
@@ -94,14 +94,14 @@ public class KafkaProviderProcessing {
 				KafkaProviderMeta.TrackingMessage) {
 			@Override
 			protected void processRequest(HMSMessage<hms.dto.ProviderTracking> request) {	
-				HMSMessage<hms.dto.Coordinate> getHubIdReg = request.forwardRequest();
-				getHubIdReg.setData(new Coordinate(request.getData().getLatitude(), request.getData().getLongitude()));
+				HMSMessage<hms.dto.Coordinate> getHubIdReq = request.forwardRequest();
+				getHubIdReq.setData(new Coordinate(request.getData().getLatitude(), request.getData().getLongitude()));
 				try {//forward to find hub-id, then back to TrackingWithHubMessage
-					getHubIdReg.addReponsePoint(KafkaProviderMeta.TrackingWithHubMessage, request.getData());					
-					ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, KafkaHubMeta.MappingHubMessage);					
+					getHubIdReq.addReponsePoint(KafkaProviderMeta.TrackingWithHubMessage, request.getData());					
+					ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(getHubIdReq, KafkaHubMeta.MappingHubMessage);					
 					this.producer.send(record);
 				} catch (IOException e) {
-					logger.error("Forward To Hub Error", e.getMessage());
+					logger.error("Forward to hub error {}", e.getMessage());
 				}
 			}
 			@Override
@@ -125,7 +125,7 @@ public class KafkaProviderProcessing {
 					Boolean trackingRes = providerService.tracking(trackingdto.data, hubid).join();
 					this.reply(request, trackingRes);
 				} catch (IOException e) {
-					logger.error("Tracking Provider Hub Error", e.getMessage());
+					logger.error("Tracking Provider Hub Error {}", e.getMessage());
 				}
 			}
 		};

@@ -90,4 +90,12 @@ public class HMSMessage<T> {
 		r.responsePoints.addAll(this.responsePoints);
 		return r;
 	}
+	
+	public String DebugInfo() {
+		java.util.StringJoiner str = new java.util.StringJoiner (",");
+		for(BinaryResponsePoint p: this.responsePoints) {
+			str.add(p.point);
+		}
+		return str.toString();
+	}
 }

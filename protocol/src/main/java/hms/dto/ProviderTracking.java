@@ -18,6 +18,10 @@ public class ProviderTracking {
 	
 	public UUID getProviderid() {
 		return providerid;
+	}	
+	
+	public void setProviderid(UUID providerid) {
+		this.providerid = providerid;
 	}
 	
 	public double getLatitude() {
@@ -27,8 +31,12 @@ public class ProviderTracking {
 	public double getLongitude() {
 		return longitude;
 	}	
-
-	public ProviderTracking getSelf() {
-		return this;
+	
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
 	}
+
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
+	}		
 }

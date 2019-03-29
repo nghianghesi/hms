@@ -36,8 +36,8 @@ public class KafkaProviderService implements IProviderService{
 			initProviderStream = new StreamRoot<hms.dto.Provider, Boolean>(Boolean.class, logger, rootid, server, KafkaProviderMeta.InitproviderMessage);						
 			trackingProviderStream = new StreamRoot<hms.dto.ProviderTracking, Boolean>(Boolean.class, logger, rootid, server, KafkaProviderMeta.TrackingMessage);						
 		}else {
-			logger.error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
-			throw new Error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
+			logger.error("Missing {} {} configuration",KafkaHMSMeta.ServerConfigKey,KafkaHMSMeta.RootIdConfigKey);
+			throw new Error(String.format("Missing {} {} configuration",KafkaHMSMeta.ServerConfigKey,KafkaHMSMeta.RootIdConfigKey));
 		}		
 	}
 	

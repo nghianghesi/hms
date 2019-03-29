@@ -19,6 +19,7 @@ public class Provider {
 	public UUID getProviderid() {
 		return providerid;
 	}
+	
 	public String getName() {
 		return name;
 	}

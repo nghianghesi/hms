@@ -35,9 +35,12 @@ public class ProviderController  extends Controller {
     public CompletionStage<Result> initprovider(Http.Request request) {
     	JsonNode json = request.body().asJson();
     	hms.dto.Provider providerdto = Json.fromJson(json, hms.dto.Provider.class);
-    	logger.info("Start of init provider");
     	return this.providerserivce.initprovider(providerdto).thenApplyAsync( t ->{
-            return ok("init provider");
+    		if(t) {
+    			return ok("init provider");
+    		}else {
+    			return ok("init provider failed");
+    		}
     	}, ec.current());
     }
     

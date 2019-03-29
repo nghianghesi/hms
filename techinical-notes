@@ -8,3 +8,9 @@ Sbt scala version vs lib version on maven
 
 
 CompletableFuture allow single thenRun... only (not accepted as chain)
+
+Need executor context for CompletableStage action
+Need separate there for consumer (to avoid locking http executor context)
+
+Start play app without http server by Scala
+DslJson required default constructor & public getter/setter

@@ -4,19 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import hms.dto.ProviderTracking;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 
 public class Client {
-	private static final int NUM_OF_PROVIDER = 15000;
+	private static final int NUM_OF_PROVIDER = 10;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
@@ -33,8 +28,8 @@ public class Client {
 	private static final double LONGITUDE_MOVE = 0.01;
 	private static final double LATITUDE_MOVE = 0.01;
 	
-	private static final int NUM_OF_LOOP = 10;
-	private static final int NUM_OF_THREAD = 500;
+	private static final int NUM_OF_LOOP = 5;
+	private static final int NUM_OF_THREAD = 5;
 	private static final int THREAD_DELAY = 100;
 	private static final int ITEM_PER_THREAD=NUM_OF_PROVIDER/NUM_OF_THREAD;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
@@ -139,7 +134,7 @@ public class Client {
 		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
 
 		initProvider(client, list);
-		/*logger.info("Tracking Providers:");
+		logger.info("Tracking Providers:");
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
 		
@@ -149,7 +144,7 @@ public class Client {
 		
 		for (int groupidx = 0; groupidx < groupRunners.size(); groupidx++) {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
-		}*/
+		}
 		
 		logger.info(client.getStats());
 	}

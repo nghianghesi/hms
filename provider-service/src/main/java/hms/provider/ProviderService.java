@@ -74,7 +74,7 @@ public class ProviderService implements IProviderService{
 			try {
 				hubid = this.hubservice.getHostingHubId(trackingdto.getLatitude(), trackingdto.getLongitude()).get();
 			} catch (InterruptedException | ExceptionWrapper | ExecutionException e) {
-				logger.error("provider tracking error", e.getMessage());
+				logger.error("provider tracking error {}", e.getMessage());
 				throw ExceptionWrapper.wrap(e);
 			}
 			return this.internalTrackingProviderHub(trackingdto, hubid).join();

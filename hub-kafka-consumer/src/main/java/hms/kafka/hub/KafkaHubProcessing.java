@@ -31,8 +31,8 @@ public class KafkaHubProcessing{
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
 			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);
 		}else {
-			logger.error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
-			throw new Error("Missing "+KafkaHMSMeta.ServerConfigKey+" configuration");
+			logger.error("Missing {} configuration",KafkaHMSMeta.ServerConfigKey);
+			throw new Error(String.format("Missing {} configuration",KafkaHMSMeta.ServerConfigKey));
 		}
 		
 		this.hubGroup = "hms.hub";
@@ -40,18 +40,19 @@ public class KafkaHubProcessing{
 			this.hubGroup = config.getString(KafkaHubMeta.GroupConfigKey);
 		}
 		
-		this.buildGetHubCoordinateProcessor();
+		this.buildHubByProviderCoordidateProcessor();
 	}
 	
-	private void buildGetHubCoordinateProcessor() {
+	private void buildHubByProviderCoordidateProcessor() {
 		this.getHubByCoordinateProcessor = new KafkaStreamNodeBase<hms.dto.Coordinate, UUID>(
 				logger,hms.dto.Coordinate.class, kafkaserver, hubGroup, KafkaHubMeta.MappingHubMessage) {
 			@Override
 			protected void processRequest(HMSMessage<hms.dto.Coordinate> request) {
 				try {
+					logger.info(request.DebugInfo());
 					this.reply(request, hubService.getHostingHubId(request.getData().getLatitude(), request.getData().getLongitude()).get());
 				} catch (InterruptedException | ExecutionException e) {
-					logger.error("Clear provider error", e.getMessage());
+					logger.error("Get bub by provider coordinater error: {}", e.getMessage());
 				}				
 			}
 		};

@@ -5,8 +5,10 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -29,15 +31,21 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 	protected String groupid;
 	protected String server;
 	protected int timeout = 5000;
+	protected int numberOfExecutors = 5;
+	private Semaphore executorSemaphore; 
 	protected Logger logger;
 	private Class<TReq> reqManifest;
 
 	protected KafkaStreamNodeBase(Logger logger, Class<TReq> reqManifest, String server, String groupid, String topic) {
+		this(logger, reqManifest, server, groupid, topic, 5);
+	}
+	protected KafkaStreamNodeBase(Logger logger, Class<TReq> reqManifest, String server, String groupid, String topic, int numberOfExecutors) {
 		this.logger = logger;
 		this.server = server;
 		this.groupid = groupid;
 		this.consumeTopic = topic;
 		this.reqManifest = reqManifest;
+		this.numberOfExecutors = numberOfExecutors;
 		this.ensureTopics();
 		this.createProducer();
 		this.createConsummer();
@@ -57,7 +65,7 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 		try {
 			createTopicsResult.all().get();
 		} catch (InterruptedException | ExecutionException e) {
-			logger.error("Create topic error", e);
+			logger.error("Create topic error {}", e.getMessage());
 		}
 	}
 
@@ -87,18 +95,31 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 		this.consumer = new KafkaConsumer<>(consumerProps);
 		this.consumer.subscribe(Collections.singletonList(this.consumeTopic));
 
+		
+		ExecutorService ex = Executors.newFixedThreadPool(numberOfExecutors); 
+		executorSemaphore = new Semaphore(numberOfExecutors);
 		new Thread(() -> {						
 			while (true) {
 				//logger.info("running consumer" + consumeTopic);
 				ConsumerRecords<String, byte[]> records = this.consumer.poll(Duration.ofMillis(500));
-				for (ConsumerRecord<String, byte[]> record : records) {
+				for (ConsumerRecord<String, byte[]> recordLoop : records) {
+					final ConsumerRecord<String, byte[]> record = recordLoop;
 					try {
-						 HMSMessage<TReq> request = KafkaMessageUtils.getHMSMessage(this.reqManifest, record);
-						logger.info("Consuming " + consumeTopic + " "+ request.getRequestId());						 
-						this.processRequest(request);
-					} catch (IOException e) {
-						logger.error("Consumer error " + consumeTopic, e.getMessage());
+						executorSemaphore.acquire();
+					} catch (InterruptedException e) {
+						logger.error("Consumer error {} {}", consumeTopic, e.getMessage());
 					}
+					ex.execute(()->{
+						try {
+							 HMSMessage<TReq> request = KafkaMessageUtils.getHMSMessage(this.reqManifest, record);
+							logger.info("Consuming {} {}",consumeTopic, request.getRequestId());						 
+							this.processRequest(request);
+						} catch (IOException e) {
+							logger.error("Consumer error {} {}", consumeTopic, e.getMessage());
+						} finally{
+							executorSemaphore.release();
+						}
+					});
 				}
 			}
 		}).start();
@@ -110,10 +131,10 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 		String replytop = request.getCurrentResponsePoint();
 		try {
 			ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
-			logger.info("replying "+replytop);			
+			logger.info("replying {}",replytop);			
 			this.producer.send(record).get();
 		} catch (IOException | InterruptedException | ExecutionException e) {
-			logger.error("Reply message error", e.getMessage());
+			logger.error("Reply message error {}", e.getMessage());
 		}
 	}
 
