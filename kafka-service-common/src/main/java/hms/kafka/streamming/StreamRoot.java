@@ -11,6 +11,8 @@ import java.util.concurrent.TimeoutException;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
+import hms.StreamResponse;
+
 public class StreamRoot<TReq,TRes> extends KafkaStreamNodeBase<TRes,Void>{
 	private String requestTopic;
 	

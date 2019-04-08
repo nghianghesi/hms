@@ -29,6 +29,7 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 	protected KafkaProducer<String, byte[]> producer;
 
 	protected String consumeTopic;
+	protected String returnTopic;
 	protected String groupid;
 	protected String server;
 	protected int timeout = 5000;
@@ -45,6 +46,7 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 		this.server = server;
 		this.groupid = groupid;
 		this.consumeTopic = topic;
+		this.returnTopic=this.consumeTopic+".return";
 		this.reqManifest = reqManifest;
 		this.numberOfExecutors = numberOfExecutors;
 		this.ensureTopics();
@@ -151,7 +153,7 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 	protected void reply(HMSMessage<TReq> request, TRep value) {
 		HMSMessage<TRep> replymsg = request.forwardRequest();
 		replymsg.setData(value);
-		String replytop = request.getCurrentResponsePoint();
+		String replytop = request.getCurrentResponsePoint(this.returnTopic);
 		try {
 			ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
 			this.producer.send(record).get();

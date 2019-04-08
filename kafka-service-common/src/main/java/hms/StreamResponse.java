@@ -1,4 +1,4 @@
-package hms.kafka.streamming;
+package hms;
 
 import java.util.UUID;
 
@@ -32,7 +32,7 @@ public class StreamResponse{
 		return isError;
 	}
 	
-	synchronized boolean needWaiting() {
+	public synchronized boolean needWaiting() {
 		return this.needWaiting;
 	}
 	

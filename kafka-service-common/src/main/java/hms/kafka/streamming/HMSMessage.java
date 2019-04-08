@@ -64,8 +64,12 @@ public class HMSMessage<T> {
 		this.responsePoints.add(new BinaryResponsePoint(point, data));
 	}
 	
-	public String getCurrentResponsePoint() {
-		return this.responsePoints.get(this.responsePoints.size()-1).point;
+	public String getCurrentResponsePoint(String defaultResponse) {	
+		if(this.responsePoints.size()>0) {
+			return this.responsePoints.get(this.responsePoints.size()-1).point;
+		}else {
+			return defaultResponse;
+		}
 	}
 	
 	public void addReponsePoint(String point) {

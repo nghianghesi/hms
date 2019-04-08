@@ -9,7 +9,7 @@ object AppStarter{
     val context = ApplicationLoader.createContext(env)
     val loader = ApplicationLoader(context)
     app = loader.load(context)
-    Play.start(app)  
+    Play.start(app)
   }
   
   def stop(){    

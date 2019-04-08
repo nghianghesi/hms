@@ -4,8 +4,8 @@ import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import com.typesafe.config.Config;
 
-import hms.kafka.streamming.StreamResponse;
 import hms.KafkaHMSMeta;
+import hms.StreamResponse;
 import hms.common.IHMSExecutorContext;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.StreamRoot;
