@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,30 +25,32 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
-public abstract class KafkaStreamNodeBase<TReq, TRep> {
-	protected KafkaConsumer<String, byte[]> consumer;
-	protected KafkaProducer<String, byte[]> producer;
+import hms.provider.KafkaProviderMeta;
 
-	protected String consumeTopic;
-	protected String returnTopic;
-	protected String groupid;
-	protected String server;
+public abstract class KafkaStreamNodeBase<TCon, TRep> {
+	protected KafkaConsumer<UUID, byte[]> consumer;
+	protected KafkaProducer<UUID, byte[]> producer;
+
+
 	protected int timeout = 5000;
 	protected int numberOfExecutors = 5;
 	private boolean shutdownNode = false; 
-	protected Logger logger;
-	private Class<TReq> reqManifest;
 
-	protected KafkaStreamNodeBase(Logger logger, Class<TReq> reqManifest, String server, String groupid, String topic) {
-		this(logger, reqManifest, server, groupid, topic, 5);
+	protected abstract Logger getLogger();	
+	protected abstract Class<TCon> getReqManifest();
+	protected abstract String getConsumeTopic();
+	protected abstract String getForwardTopic();
+	
+	protected String getAfterForwardTopic() {
+		return null;
 	}
-	protected KafkaStreamNodeBase(Logger logger, Class<TReq> reqManifest, String server, String groupid, String topic, int numberOfExecutors) {
-		this.logger = logger;
-		this.server = server;
-		this.groupid = groupid;
-		this.consumeTopic = topic;
-		this.returnTopic=this.consumeTopic+".return";
-		this.reqManifest = reqManifest;
+	protected abstract String getGroupid();
+	protected abstract String getServer();
+	
+	protected KafkaStreamNodeBase() {
+		this(5);
+	}
+	protected KafkaStreamNodeBase(int numberOfExecutors) {
 		this.numberOfExecutors = numberOfExecutors;
 		this.ensureTopics();
 		this.createProducer();
@@ -60,7 +63,7 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 
 	protected void ensureTopic(String topic) {
 		Properties props = new Properties();
-		props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, this.server);
+		props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
 		AdminClient adminClient = AdminClient.create(props);
 
 		NewTopic cTopic = new NewTopic(topic, 2, (short) 1);
@@ -68,19 +71,26 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 		try {
 			createTopicsResult.all().get();
 		} catch (InterruptedException | ExecutionException e) {
-			logger.error("Create topic error {}", e.getMessage());
+			this.getLogger().error("Create topic error {}", e.getMessage());
 		}
 	}
 
 	protected void ensureTopics() {
-		this.ensureTopic(this.consumeTopic);
+		this.ensureTopic(this.getConsumeTopic());
+		if(this.getForwardTopic()!=null) {
+			this.ensureTopic(this.getForwardTopic());
+		}		
+		
+		if(this.getAfterForwardTopic()!=null) {
+			this.ensureTopic(this.getAfterForwardTopic());
+		}
 	}
 
 	protected void createProducer() {
 		Properties props = new Properties();
-		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.server);
+		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
 		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-				"org.apache.kafka.common.serialization.StringSerializer");
+				"org.apache.kafka.common.serialization.UUIDSerializer");
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.ByteArraySerializer");
 		this.producer = new KafkaProducer<>(props);
@@ -90,36 +100,43 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 
 	protected void createConsummer() {
 		Properties consumerProps = new Properties();
-		consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.server);
-		consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, this.groupid);
+		consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
+		consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, this.getGroupid());
 		consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 		consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-				"org.apache.kafka.common.serialization.StringDeserializer");		
+				"org.apache.kafka.common.serialization.UUIDDeserializer");		
 		consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.ByteArrayDeserializer");
 		this.consumer = new KafkaConsumer<>(consumerProps);
-		this.consumer.subscribe(Collections.singletonList(this.consumeTopic));
+		this.consumer.subscribe(Collections.singletonList(this.getConsumeTopic()));
 
 		
 		{// process record
-			java.util.function.Consumer<ConsumerRecord<String, byte[]>> processRecord = (record)->{
+			java.util.function.Consumer<ConsumerRecord<UUID, byte[]>> processRecord = (record)->{
 				try {
-					 HMSMessage<TReq> request = KafkaMessageUtils.getHMSMessage(this.reqManifest, record);
-					logger.info("Consuming {} {}",consumeTopic, request.getRequestId());						 
-					this.processRequest(request);
+					 HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getReqManifest(), record);
+					this.getLogger().info("Consuming {} {}",this.getConsumeTopic(), request.getRequestId());						 
+					TRep res = this.processRequest(request);
+					if(this.getForwardTopic()!=null) {
+						if(this.getAfterForwardTopic() == null) {
+							this.reply(request, res);
+						}else {
+							this.forward(request, res);
+						}
+					}
 				} catch (IOException e) {
-					logger.error("Consumer error {} {}", consumeTopic, e.getMessage());
+					this.getLogger().error("Consumer error {} {}", this.getConsumeTopic(), e.getMessage());
 				}
 			};
 	
 			final ExecutorService ex = this.numberOfExecutors > 1 ? Executors.newFixedThreadPool(numberOfExecutors):null;
 			final Semaphore executorSemaphore = this.numberOfExecutors > 1 ? new Semaphore(numberOfExecutors) : null;		
-			java.util.function.Consumer<ConsumerRecord<String, byte[]>> processRecordByPool = 
+			java.util.function.Consumer<ConsumerRecord<UUID, byte[]>> processRecordByPool = 
 			this.numberOfExecutors > 1 ? (record) -> {
 				try {
 					executorSemaphore.acquire();
 				} catch (InterruptedException e) {
-					logger.error("Consumer error {} {}", consumeTopic, e.getMessage());
+					this.getLogger().error("Consumer error {} {}", this.getConsumeTopic(), e.getMessage());
 				}
 				ex.execute(()->{
 					processRecord.accept(record);
@@ -132,14 +149,14 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 				try {
 					ex.awaitTermination(10, TimeUnit.MINUTES);
 				} catch (InterruptedException e) {
-					logger.error("Shutdown consumer error {} {}", consumeTopic, e.getMessage());
+					this.getLogger().error("Shutdown consumer error {} {}", this.getConsumeTopic(), e.getMessage());
 				}
 			}:()->{};
 			
 			new Thread(() -> {		
 				while (!shutdownNode) {
-					ConsumerRecords<String, byte[]> records = this.consumer.poll(Duration.ofMillis(500));
-					for (ConsumerRecord<String, byte[]> record : records) {
+					ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(500));
+					for (ConsumerRecord<UUID, byte[]> record : records) {
 						processRecordByPool.accept(record);
 					}
 				}
@@ -147,20 +164,32 @@ public abstract class KafkaStreamNodeBase<TReq, TRep> {
 			}).start();
 		}
 		
-		logger.info("Consumer {} ready {}",consumeTopic, this.numberOfExecutors);						 
+		this.getLogger().info("Consumer {} ready {}",this.getConsumeTopic(), this.numberOfExecutors);						 
 	}
 
-	protected void reply(HMSMessage<TReq> request, TRep value) {
+	protected void reply(HMSMessage<TCon> request, TRep value) {
 		HMSMessage<TRep> replymsg = request.forwardRequest();
 		replymsg.setData(value);
-		String replytop = request.getCurrentResponsePoint(this.returnTopic);
+		String replytop = request.getCurrentResponsePoint(this.getForwardTopic());
 		try {
-			ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
+			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
 			this.producer.send(record).get();
 		} catch (IOException | InterruptedException | ExecutionException e) {
-			logger.error("Reply message error {}", e.getMessage());
+			this.getLogger().error("Reply message error {}", e.getMessage());
 		}
 	}
+	
+	protected void forward(HMSMessage<TCon> request, TRep value) {
+		HMSMessage<TRep> forwardReq = request.forwardRequest();
+		forwardReq.setData(value);
+		try {//forward to find hub-id, then back to TrackingWithHubMessage
+			forwardReq.addReponsePoint(this.getAfterForwardTopic(), request.getData());					
+			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, this.getForwardTopic());					
+			this.producer.send(record);
+		} catch (IOException e) {
+			this.getLogger().error("Forward request error {}", e.getMessage());
+		}		
+	}
 
-	protected abstract void processRequest(HMSMessage<TReq> record);
+	protected abstract TRep processRequest(HMSMessage<TCon> record);
 }

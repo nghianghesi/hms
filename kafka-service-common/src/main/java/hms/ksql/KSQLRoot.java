@@ -50,19 +50,19 @@ public abstract class KSQLRoot<TR, TRes> {
 	public void setTimeout(int timeoutInMillisecons) {
 		this.timeout = timeoutInMillisecons;
 	}
+	
+	protected String[] getRelatedTopics() {
+		return new String[] {this.getGetReqestTopic(), this.getConsumeTopic()};
+	}
 
-	protected void ensureTopics() {
-		try {
-			KafkaConfigFactory.ensureTopic(this.getKafkaServer(), this.getGetReqestTopic());			
-		} catch (InterruptedException | ExecutionException e) {
-			this.getLogger().error("Create topic {} error {}",this.getGetReqestTopic(), e.getMessage());
-		}
-		
-		try {
-			KafkaConfigFactory.ensureTopic(this.getKafkaServer(), this.getConsumeTopic());			
-		} catch (InterruptedException | ExecutionException e) {
-			this.getLogger().error("Create topic {} error {}",this.getConsumeTopic(), e.getMessage());
-		}
+	protected void ensureTopics() { 
+		for(String topic:this.getRelatedTopics()) {
+			try {
+				KafkaConfigFactory.ensureTopic(this.getKafkaServer(), topic);			
+			} catch (InterruptedException | ExecutionException e) {
+				this.getLogger().error("Create topic {} error {}", topic, e.getMessage());
+			}			
+		}	
 	}	
 
 	protected void createProducer() {

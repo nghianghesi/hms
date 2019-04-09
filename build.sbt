@@ -24,6 +24,7 @@ lazy val dependencies =
 	var modelmapper = "org.modelmapper" % "modelmapper" % "2.3.0"
 	var kafkaclient = "org.apache.kafka" % "kafka-clients" % "2.1.1" 
 	var kafka = "org.apache.kafka" %% "kafka" % "2.1.1"
+	var kafkastream = "org.apache.kafka" % "kafka-streams" % "2.2.0"
 	var dslplatform ="com.dslplatform" % "dsl-json-java8" % "1.8.5"
 	var playframwork="com.typesafe.play" %% "play" % "2.7"
   }
@@ -64,6 +65,7 @@ lazy val hubservice = (project in file("./hubservice"))
 		guice,  
 		dependencies.dslplatform,
 		dependencies.kafkaclient,
+		dependencies.kafkastream,
 		dependencies.kafka))
   .dependsOn(`service-common`,protocol)   
   

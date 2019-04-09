@@ -25,28 +25,21 @@ public class HMSMessage<T> {
 		}
 	}
 	
-	public HMSMessage(UUID requestid, String messageKey) {
+	public HMSMessage(UUID requestid) {
 		this.requestId = requestid;
-		this.messageKey = messageKey;
 	}
 	
-	public HMSMessage(UUID requestid, String messageKey, T reqdata) {
-		this(requestid, messageKey);
+	public HMSMessage(UUID requestid, T reqdata) {
+		this(requestid);
 		this.data = reqdata;
 	}
 	
-	private String messageKey;
 	private UUID requestId;	
 	private List<BinaryResponsePoint> responsePoints = new ArrayList<>();	
 	private T data;
 	public UUID getRequestId() {
 		return requestId;
 	}	
-	
-	public String getMessageKey() {
-		return messageKey;
-	}
-	
 	
 	public T getData() {
 		return data;
@@ -90,19 +83,8 @@ public class HMSMessage<T> {
 	}
 	
 	public <F> HMSMessage<F> forwardRequest(){
-		HMSMessage<F> r = new HMSMessage<F>(this.requestId, this.messageKey);
+		HMSMessage<F> r = new HMSMessage<F>(this.requestId);
 		r.responsePoints.addAll(this.responsePoints);
 		return r;
-	}
-	
-	/*public String DebugInfo() {
-		java.util.StringJoiner str = new java.util.StringJoiner (",");
-		for(BinaryResponsePoint p: this.responsePoints) {
-			str.add(p.point);
-			if(p.data!=null) {
-				str.add(new String(p.data));
-			}
-		}
-		return str.toString();
-	}*/
+	}	
 }

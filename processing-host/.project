@@ -1,24 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>processing-host</name>
-	<comment></comment>
-	<projects>
-	</projects>
-	<buildSpec>
-		<buildCommand>
-			<name>org.scala-ide.sdt.core.scalabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-	</buildSpec>
-	<natures>
-		<nature>org.scala-ide.sdt.core.scalanature</nature>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
-	</natures>
+  <name>processing-host</name>
+  <buildSpec>
+    <buildCommand>
+      <name>org.scala-ide.sdt.core.scalabuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.scala-ide.sdt.core.scalanature</nature>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
+  <linkedResources> </linkedResources>
 </projectDescription>

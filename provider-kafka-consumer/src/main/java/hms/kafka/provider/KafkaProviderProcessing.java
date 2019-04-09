@@ -6,19 +6,18 @@ import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
 import hms.dto.Coordinate;
+import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import hms.hub.KafkaHubMeta;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
 import hms.kafka.streamming.HMSMessage.ResponsePoint;
-import hms.kafka.streamming.KafkaMessageUtils;
 import hms.provider.IProviderServiceProcessor;
 import hms.provider.KafkaProviderMeta;
 
@@ -28,11 +27,34 @@ public class KafkaProviderProcessing {
 	
 	KafkaStreamNodeBase<Void, Boolean>  clearProcessor; 
 	KafkaStreamNodeBase<hms.dto.Provider, Boolean>  initProviderProcessor;
-	KafkaStreamNodeBase<hms.dto.ProviderTracking, UUID>  trackingProviderProcessor;	
+	KafkaStreamNodeBase<hms.dto.ProviderTracking, Coordinate>  trackingProviderProcessor;	
 	KafkaStreamNodeBase<UUID, Boolean>  trackingProviderHubProcessor;
 
 	private String kafkaserver;
 	private String providerGroup;
+	
+	private abstract class ProviderProcessingNode<TCon,TRep> extends KafkaStreamNodeBase<TCon,TRep>{
+		
+		@Override
+		protected Logger getLogger() {
+			return logger;
+		}
+		
+		@Override
+		protected String getGroupid() {
+			return providerGroup;
+		}
+		
+		@Override
+		protected String getServer() {
+			return kafkaserver;
+		}
+
+		@Override
+		protected String getForwardTopic() {
+			return this.getConsumeTopic()+".return";
+		}		
+	}
 	
 	@Inject
 	public KafkaProviderProcessing(Config config, IProviderServiceProcessor providerService) {
@@ -59,74 +81,117 @@ public class KafkaProviderProcessing {
 	}
 		
 	private void buildClearProcessor() {
-		this.clearProcessor = new KafkaStreamNodeBase<Void, Boolean>(
-				logger,Void.class, kafkaserver, providerGroup, KafkaProviderMeta.ClearMessage) {
+		this.clearProcessor = new ProviderProcessingNode<Void, Boolean>() {
 			@Override
-			protected void processRequest(HMSMessage<Void> request) {
+			protected Boolean processRequest(HMSMessage<Void> request) {
 				try {
-					this.reply(request, providerService.clear().get());					
+					return providerService.clear().get();					
 				} catch (InterruptedException | ExecutionException e) {
 					logger.error("clear provider error {}", e.getMessage());
+					return false;
 				}				
 			}
+
+			@Override
+			protected Class<Void> getReqManifest() {
+				return Void.class;
+			}
+
+			@Override
+			protected String getConsumeTopic() {
+				return KafkaProviderMeta.ClearMessage;
+			}
+
 		};
 	}
 	
 	private void buildInitProviderProcessor() {		
-		this.initProviderProcessor = new KafkaStreamNodeBase<hms.dto.Provider, Boolean>(
-				logger, hms.dto.Provider.class, kafkaserver, providerGroup, 
-				KafkaProviderMeta.InitproviderMessage) {
+		this.initProviderProcessor = new ProviderProcessingNode<hms.dto.Provider, Boolean>() {
 			@Override
-			protected void processRequest(HMSMessage<hms.dto.Provider> request) {
+			protected Boolean processRequest(HMSMessage<hms.dto.Provider> request) {
 				try {
-					this.reply(request, providerService.initprovider(request.getData()).get());
+					return providerService.initprovider(request.getData()).get();
 				} catch (InterruptedException | ExecutionException e) {
 					logger.error("Init provider error {}", e.getMessage());
+					return false;
 				}				
+			}
+
+			@Override
+			protected Class<Provider> getReqManifest() {
+				return Provider.class;
+			}
+
+			@Override
+			protected String getConsumeTopic() {
+				return KafkaProviderMeta.InitproviderMessage;
 			}
 		};
 	}		
 	
 	private void buildTrackingProviderProcessor() {
-		this.trackingProviderProcessor = new KafkaStreamNodeBase<hms.dto.ProviderTracking, UUID>(
-				logger, hms.dto.ProviderTracking.class, kafkaserver, providerGroup, 
-				KafkaProviderMeta.TrackingMessage) {
+		this.trackingProviderProcessor = new ProviderProcessingNode<hms.dto.ProviderTracking, Coordinate>() {
 			@Override
-			protected void processRequest(HMSMessage<hms.dto.ProviderTracking> request) {	
-				HMSMessage<hms.dto.Coordinate> getHubIdReq = request.forwardRequest();
-				getHubIdReq.setData(new Coordinate(request.getData().getLatitude(), request.getData().getLongitude()));
-				try {//forward to find hub-id, then back to TrackingWithHubMessage
-					getHubIdReq.addReponsePoint(KafkaProviderMeta.TrackingWithHubMessage, request.getData());					
-					ProducerRecord<String, byte[]> record = KafkaMessageUtils.getProcedureRecord(getHubIdReq, KafkaHubMeta.MappingHubMessage);					
-					this.producer.send(record);
-				} catch (IOException e) {
-					logger.error("Forward to hub error {}", e.getMessage());
-				}
+			protected Coordinate processRequest(HMSMessage<hms.dto.ProviderTracking> request) {	
+				return new Coordinate(request.getData().getLatitude(), request.getData().getLongitude());
 			}
+			
 			@Override
 			protected void ensureTopics() {
 		        super.ensureTopics();
-		        this.ensureTopic(KafkaHubMeta.MappingHubMessage);
+			}
+			
+			@Override
+			protected Class<ProviderTracking> getReqManifest() {
+				return ProviderTracking.class;
+			}
+			
+			@Override
+			protected String getConsumeTopic() {
+				return KafkaProviderMeta.TrackingMessage;
+			}		
+			
+			@Override
+			protected String getForwardTopic() {
+				return KafkaHubMeta.MappingHubMessage;
+			}	
+			
+			@Override
+			protected String getAfterForwardTopic() {
+				return KafkaProviderMeta.TrackingWithHubMessage;
 			}				
 		};
 	}	
 	
 	private void buildTrackingProviderHubProcessor() {
-		this.trackingProviderHubProcessor = new KafkaStreamNodeBase<UUID, Boolean>(
-				logger, UUID.class, kafkaserver, providerGroup, 
-				KafkaProviderMeta.TrackingWithHubMessage) {
+		this.trackingProviderHubProcessor = new ProviderProcessingNode<UUID, Boolean>() {
 			@Override
-			protected void processRequest(HMSMessage<UUID> request) {
+			protected Boolean processRequest(HMSMessage<UUID> request) {
 				UUID hubid = request.getData();
 				ResponsePoint<ProviderTracking> trackingdto;
 				try {
 					trackingdto = request.popReponsePoint(hms.dto.ProviderTracking.class);
-					Boolean trackingRes = providerService.tracking(trackingdto.data, hubid).join();
-					this.reply(request, trackingRes);
+					return providerService.tracking(trackingdto.data, hubid).join();
 				} catch (IOException e) {
 					logger.error("Tracking Provider Hub Error {}", e.getMessage());
+					return false;
 				}
 			}
+
+			@Override
+			protected Class<UUID> getReqManifest() {
+				return UUID.class;
+			}
+
+			@Override
+			protected String getConsumeTopic() {
+				return KafkaHubMeta.MappingHubMessage;
+			}		
+			
+			@Override
+			protected String getForwardTopic() {				
+				return KafkaProviderMeta.TrackingMessage + ".return";
+			}	
 		};
 	}	
 }

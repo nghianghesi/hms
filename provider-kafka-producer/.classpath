@@ -226,16 +226,6 @@
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.dslplatform\dsl-json\docs\dsl-json-1.8.5-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka-clients\srcs\kafka-clients-2.1.1-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka-clients\jars\kafka-clients-2.1.1.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka-clients\docs\kafka-clients-2.1.1-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.github.luben\zstd-jni\srcs\zstd-jni-1.3.7-1-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.github.luben\zstd-jni\jars\zstd-jni-1.3.7-1.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.github.luben\zstd-jni\docs\zstd-jni-1.3.7-1-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.lz4\lz4-java\srcs\lz4-java-1.5.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.lz4\lz4-java\jars\lz4-java-1.5.0.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.lz4\lz4-java\docs\lz4-java-1.5.0-javadoc.jar!/"/>
@@ -244,6 +234,36 @@
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.xerial.snappy\snappy-java\srcs\snappy-java-1.1.7.2-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.xerial.snappy\snappy-java\bundles\snappy-java-1.1.7.2.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.xerial.snappy\snappy-java\docs\snappy-java-1.1.7.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka-streams\srcs\kafka-streams-2.2.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka-streams\jars\kafka-streams-2.2.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka-streams\docs\kafka-streams-2.2.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka-clients\srcs\kafka-clients-2.2.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka-clients\jars\kafka-clients-2.2.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka-clients\docs\kafka-clients-2.2.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.github.luben\zstd-jni\srcs\zstd-jni-1.3.8-1-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.github.luben\zstd-jni\jars\zstd-jni-1.3.8-1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.github.luben\zstd-jni\docs\zstd-jni-1.3.8-1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.apache.kafka\connect-json\srcs\connect-json-2.2.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.apache.kafka\connect-json\jars\connect-json-2.2.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.apache.kafka\connect-json\docs\connect-json-2.2.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.apache.kafka\connect-api\srcs\connect-api-2.2.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.apache.kafka\connect-api\jars\connect-api-2.2.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.apache.kafka\connect-api\docs\connect-api-2.2.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.rocksdb\rocksdbjni\srcs\rocksdbjni-5.15.10-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.rocksdb\rocksdbjni\jars\rocksdbjni-5.15.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.rocksdb\rocksdbjni\docs\rocksdbjni-5.15.10-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka_2.11\srcs\kafka_2.11-2.1.1-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.apache.kafka\kafka_2.11\jars\kafka_2.11-2.1.1.jar">

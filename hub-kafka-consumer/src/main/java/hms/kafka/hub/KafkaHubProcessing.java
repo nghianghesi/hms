@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
+import hms.dto.Coordinate;
 import hms.hub.IHubServiceProcessor;
 import hms.hub.KafkaHubMeta;
 import hms.kafka.streamming.HMSMessage;
@@ -23,6 +24,29 @@ public class KafkaHubProcessing{
 
 	private String kafkaserver;
 	private String hubGroup;
+	
+	private abstract class HubProcessingNode<TCon,TRep> extends KafkaStreamNodeBase<TCon,TRep>{
+		
+		@Override
+		protected Logger getLogger() {
+			return logger;
+		}
+		
+		@Override
+		protected String getGroupid() {
+			return hubGroup;
+		}
+		
+		@Override
+		protected String getServer() {
+			return kafkaserver;
+		}
+
+		@Override
+		protected String getForwardTopic() {
+			return this.getConsumeTopic()+".return";
+		}		
+	}
 	
 	@Inject
 	public KafkaHubProcessing(Config config, IHubServiceProcessor hubService) {
@@ -44,15 +68,25 @@ public class KafkaHubProcessing{
 	}
 	
 	private void buildHubByProviderCoordidateProcessor() {
-		this.getHubByCoordinateProcessor = new KafkaStreamNodeBase<hms.dto.Coordinate, UUID>(
-				logger,hms.dto.Coordinate.class, kafkaserver, hubGroup, KafkaHubMeta.MappingHubMessage) {
+		this.getHubByCoordinateProcessor = new HubProcessingNode<hms.dto.Coordinate, UUID>() {
 			@Override
-			protected void processRequest(HMSMessage<hms.dto.Coordinate> request) {
+			protected UUID processRequest(HMSMessage<hms.dto.Coordinate> request) {
 				try {
-					this.reply(request, hubService.getHostingHubId(request.getData().getLatitude(), request.getData().getLongitude()).get());
+					return hubService.getHostingHubId(request.getData().getLatitude(), request.getData().getLongitude()).get();
 				} catch (InterruptedException | ExecutionException e) {
 					logger.error("Get bub by provider coordinater error: {}", e.getMessage());
+					return null;
 				}				
+			}
+
+			@Override
+			protected Class<Coordinate> getReqManifest() {
+				return Coordinate.class;
+			}
+
+			@Override
+			protected String getConsumeTopic() {
+				return KafkaHubMeta.MappingHubMessage;
 			}
 		};
 	}
