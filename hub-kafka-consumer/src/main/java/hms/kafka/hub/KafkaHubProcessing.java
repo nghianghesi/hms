@@ -44,7 +44,7 @@ public class KafkaHubProcessing{
 
 		@Override
 		protected String getForwardTopic() {
-			return this.getConsumeTopic()+".return";
+			return this.getConsumeTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 		}		
 	}
 	

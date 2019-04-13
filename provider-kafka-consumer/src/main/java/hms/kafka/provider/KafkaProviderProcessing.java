@@ -52,7 +52,7 @@ public class KafkaProviderProcessing {
 
 		@Override
 		protected String getForwardTopic() {
-			return this.getConsumeTopic()+".return";
+			return this.getConsumeTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 		}		
 	}
 	
@@ -157,7 +157,7 @@ public class KafkaProviderProcessing {
 			}	
 			
 			@Override
-			protected String getAfterForwardTopic() {
+			protected String getForwardBackTopic() {
 				return KafkaProviderMeta.TrackingWithHubMessage;
 			}				
 		};
@@ -190,7 +190,7 @@ public class KafkaProviderProcessing {
 			
 			@Override
 			protected String getForwardTopic() {				
-				return KafkaProviderMeta.TrackingMessage + ".return";
+				return KafkaProviderMeta.TrackingMessage + KafkaHMSMeta.ReturnTopicSuffix;
 			}	
 		};
 	}	

@@ -25,8 +25,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
-import hms.provider.KafkaProviderMeta;
-
 public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	protected KafkaConsumer<UUID, byte[]> consumer;
 	protected KafkaProducer<UUID, byte[]> producer;
@@ -41,9 +39,13 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	protected abstract String getConsumeTopic();
 	protected abstract String getForwardTopic();
 	
-	protected String getAfterForwardTopic() {
+	/***
+	 * set the point to handler response of the forward-message.
+	 */	
+	protected String getForwardBackTopic() {
 		return null;
 	}
+	
 	protected abstract String getGroupid();
 	protected abstract String getServer();
 	
@@ -66,7 +68,8 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
 		AdminClient adminClient = AdminClient.create(props);
 
-		NewTopic cTopic = new NewTopic(topic, 2, (short) 1);
+		// by default, create topic with 1 partition, use Kafka tools to change this topic to scale.
+		NewTopic cTopic = new NewTopic(topic, 1, (short) 1);
 		CreateTopicsResult createTopicsResult = adminClient.createTopics(Arrays.asList(cTopic));
 		try {
 			createTopicsResult.all().get();
@@ -81,8 +84,8 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 			this.ensureTopic(this.getForwardTopic());
 		}		
 		
-		if(this.getAfterForwardTopic()!=null) {
-			this.ensureTopic(this.getAfterForwardTopic());
+		if(this.getForwardBackTopic()!=null) {
+			this.ensureTopic(this.getForwardBackTopic());
 		}
 	}
 
@@ -118,7 +121,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 					this.getLogger().info("Consuming {} {}",this.getConsumeTopic(), request.getRequestId());						 
 					TRep res = this.processRequest(request);
 					if(this.getForwardTopic()!=null) {
-						if(this.getAfterForwardTopic() == null) {
+						if(this.getForwardBackTopic() == null) {
 							this.reply(request, res);
 						}else {
 							this.forward(request, res);
@@ -183,7 +186,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		HMSMessage<TRep> forwardReq = request.forwardRequest();
 		forwardReq.setData(value);
 		try {//forward to find hub-id, then back to TrackingWithHubMessage
-			forwardReq.addReponsePoint(this.getAfterForwardTopic(), request.getData());					
+			forwardReq.addReponsePoint(this.getForwardBackTopic(), request.getData());					
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, this.getForwardTopic());					
 			this.producer.send(record);
 		} catch (IOException e) {

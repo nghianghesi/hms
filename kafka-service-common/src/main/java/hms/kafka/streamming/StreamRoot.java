@@ -9,13 +9,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+
+import hms.KafkaHMSMeta;
 import hms.StreamResponse;
 
-public abstract class StreamRoot<TStart, TRes> extends KafkaStreamNodeBase<TRes,Void>{
+public abstract class StreamRoot<TStart, TRes> 
+	extends KafkaStreamNodeBase<TRes,Void>{ // consume & forward to none.
 	protected abstract String getStartTopic();
 	
 	protected String getConsumeTopic() {
-		return this.getStartTopic()+".return";
+		return this.getStartTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 	}
 	
 	protected String getForwardTopic() {

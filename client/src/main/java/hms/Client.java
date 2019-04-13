@@ -28,7 +28,7 @@ public class Client {
 	private static final double LONGITUDE_MOVE = 0.01;
 	private static final double LATITUDE_MOVE = 0.01;
 	
-	private static final int NUM_OF_LOOP = 10;
+	private static final int NUM_OF_LOOP = 1;
 	private static final int NUM_OF_THREAD = 500;
 	private static final int THREAD_DELAY = 100;
 	private static final int ITEM_PER_THREAD=NUM_OF_PROVIDER/NUM_OF_THREAD;
