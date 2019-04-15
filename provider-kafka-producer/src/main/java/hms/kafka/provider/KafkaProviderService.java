@@ -62,7 +62,7 @@ public class KafkaProviderService implements IProviderService{
 				}
 
 				@Override
-				protected Class<Boolean> getReqManifest() {
+				protected Class<Boolean> getTConsumeManifest() {
 					return Boolean.class;
 				}				
 			};
@@ -74,7 +74,7 @@ public class KafkaProviderService implements IProviderService{
 				}
 
 				@Override
-				protected Class<Boolean> getReqManifest() {
+				protected Class<Boolean> getTConsumeManifest() {
 					return Boolean.class;
 				}				
 			};				
@@ -87,7 +87,7 @@ public class KafkaProviderService implements IProviderService{
 				}
 
 				@Override
-				protected Class<Boolean> getReqManifest() {
+				protected Class<Boolean> getTConsumeManifest() {
 					return Boolean.class;
 				}				
 			};	

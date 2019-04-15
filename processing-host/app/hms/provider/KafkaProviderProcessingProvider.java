@@ -1,5 +1,6 @@
 package hms.provider;
 
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.typesafe.config.Config;
 
@@ -8,6 +9,7 @@ import play.inject.ApplicationLifecycle;
 
 public class KafkaProviderProcessingProvider extends hms.KafkaProcessingProvider<KafkaProviderProcessing> {
 
+	@Inject
 	public KafkaProviderProcessingProvider(ApplicationLifecycle app, Injector injector) {
 		super(app, injector);
 		// TODO Auto-generated constructor stub

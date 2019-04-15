@@ -29,11 +29,7 @@ public abstract class StreamRoot<TStart, TRes>
 	protected void ensureTopics() {
 		super.ensureTopics();
 		this.ensureTopic(this.getStartTopic());				
-	}
-	
-	public StreamRoot() {
-		super(1);
-	}
+	}	
 	
 	protected Void processRequest(HMSMessage<TRes> response) {
 		handleResponse(response);
