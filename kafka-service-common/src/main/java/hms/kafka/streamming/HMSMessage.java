@@ -57,11 +57,11 @@ public class HMSMessage<T> {
 		this.responsePoints.add(new BinaryResponsePoint(point, data));
 	}
 	
-	public String getCurrentResponsePoint(String defaultResponse) {	
+	public String getCurrentResponsePoint(String defaultRepsonseTopic) {	
 		if(this.responsePoints.size()>0) {
 			return this.responsePoints.get(this.responsePoints.size()-1).point;
 		}else {
-			return defaultResponse;
+			return defaultRepsonseTopic;
 		}
 	}
 	
@@ -86,5 +86,23 @@ public class HMSMessage<T> {
 		HMSMessage<F> r = new HMSMessage<F>(this.requestId);
 		r.responsePoints.addAll(this.responsePoints);
 		return r;
+	}	
+	
+	public String DebugInfo() {
+		java.util.StringJoiner str = new java.util.StringJoiner (",");
+		for(BinaryResponsePoint p: this.responsePoints) {
+			str.add(p.point);
+			if(p.data!=null) {
+				str.add(new String(p.data));
+			}
+		}
+		
+		try {
+			str.add(new String(KafkaMessageUtils.convertObjecttoByteArray(this.data)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			str.add(e.getMessage());
+		}
+		return str.toString();
 	}	
 }

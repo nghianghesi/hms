@@ -1,5 +1,6 @@
 package hms.kafka.provider;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -21,7 +22,7 @@ import hms.kafka.streamming.HMSMessage.ResponsePoint;
 import hms.provider.IProviderServiceProcessor;
 import hms.provider.KafkaProviderMeta;
 
-public class KafkaProviderProcessing {
+public class KafkaProviderProcessing implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderProcessing.class);
 	private IProviderServiceProcessor providerService;
 	
@@ -93,7 +94,7 @@ public class KafkaProviderProcessing {
 			}
 
 			@Override
-			protected Class<Void> getReqManifest() {
+			protected Class<Void> getTConsumeManifest() {
 				return Void.class;
 			}
 
@@ -118,7 +119,7 @@ public class KafkaProviderProcessing {
 			}
 
 			@Override
-			protected Class<Provider> getReqManifest() {
+			protected Class<Provider> getTConsumeManifest() {
 				return Provider.class;
 			}
 
@@ -137,12 +138,7 @@ public class KafkaProviderProcessing {
 			}
 			
 			@Override
-			protected void ensureTopics() {
-		        super.ensureTopics();
-			}
-			
-			@Override
-			protected Class<ProviderTracking> getReqManifest() {
+			protected Class<ProviderTracking> getTConsumeManifest() {
 				return ProviderTracking.class;
 			}
 			
@@ -171,21 +167,21 @@ public class KafkaProviderProcessing {
 				ResponsePoint<ProviderTracking> trackingdto;
 				try {
 					trackingdto = request.popReponsePoint(hms.dto.ProviderTracking.class);
-					return providerService.tracking(trackingdto.data, hubid).join();
-				} catch (IOException e) {
+					return providerService.tracking(trackingdto.data, hubid).get();
+				} catch (IOException | InterruptedException | ExecutionException e) {
 					logger.error("Tracking Provider Hub Error {}", e.getMessage());
 					return false;
 				}
 			}
 
 			@Override
-			protected Class<UUID> getReqManifest() {
+			protected Class<UUID> getTConsumeManifest() {
 				return UUID.class;
 			}
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaHubMeta.MappingHubMessage;
+				return KafkaProviderMeta.TrackingWithHubMessage;
 			}		
 			
 			@Override
@@ -193,5 +189,14 @@ public class KafkaProviderProcessing {
 				return KafkaProviderMeta.TrackingMessage + KafkaHMSMeta.ReturnTopicSuffix;
 			}	
 		};
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		this.clearProcessor.shutDown();
+		this.initProviderProcessor.shutDown();
+		this.trackingProviderProcessor.shutDown();
+		this.trackingProviderHubProcessor.shutDown();
 	}	
 }

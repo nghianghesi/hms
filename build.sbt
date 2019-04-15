@@ -31,6 +31,10 @@ lazy val dependencies =
   
 lazy val protocol = (project in file("./protocol"))
 lazy val playmorphia = (project in file("./playmorphia"))
+
+lazy val `service-common` = (project in file("./service-common"))
+  .dependsOn(protocol)
+  
 lazy val `hms-play` = (project in file("./hms-play"))	
 	.settings(libraryDependencies ++=  Seq(	  
 		guice,  
@@ -38,10 +42,7 @@ lazy val `hms-play` = (project in file("./hms-play"))
 		dependencies.mongodb,
 		dependencies.morphia))
 	.dependsOn(playmorphia,`service-common`)
-
-lazy val `service-common` = (project in file("./service-common"))
-  .dependsOn(protocol)
-	  
+  
 lazy val hubservice = (project in file("./hubservice"))
   .settings(libraryDependencies ++=  Seq(	  
 		guice,  

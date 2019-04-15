@@ -1,5 +1,7 @@
 package hms.kafka.hub;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -16,7 +18,7 @@ import hms.hub.IHubServiceProcessor;
 import hms.hub.KafkaHubMeta;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
-public class KafkaHubProcessing{
+public class KafkaHubProcessing implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(KafkaHubProcessing.class);
 	private IHubServiceProcessor hubService;
 	
@@ -80,7 +82,7 @@ public class KafkaHubProcessing{
 			}
 
 			@Override
-			protected Class<Coordinate> getReqManifest() {
+			protected Class<Coordinate> getTConsumeManifest() {
 				return Coordinate.class;
 			}
 
@@ -89,6 +91,12 @@ public class KafkaHubProcessing{
 				return KafkaHubMeta.MappingHubMessage;
 			}
 		};
+	}
+
+	@Override
+	public void close() throws IOException {
+		// TODO Auto-generated method stub
+		this.getHubByCoordinateProcessor.shutDown();
 	}
 
 }
