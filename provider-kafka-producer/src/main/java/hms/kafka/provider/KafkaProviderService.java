@@ -1,5 +1,7 @@
 package hms.kafka.provider;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import com.typesafe.config.Config;
@@ -16,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class KafkaProviderService implements IProviderService{
+public class KafkaProviderService implements IProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderService.class);
 
 	StreamRoot<Void, Boolean>  clearStream; 
@@ -126,6 +128,13 @@ public class KafkaProviderService implements IProviderService{
 			});
 			return !response.isError() && response.getData()!=null;
 		}, this.execContext.getExecutor());
+	}
+
+	@Override
+	public void close() throws IOException {
+		this.clearStream.shutDown();
+		this.initProviderStream.shutDown();
+		this.trackingProviderStream.shutDown();		
 	}		
 	
 }

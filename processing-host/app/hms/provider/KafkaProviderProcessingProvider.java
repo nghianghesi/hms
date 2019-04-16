@@ -7,7 +7,7 @@ import com.typesafe.config.Config;
 import hms.kafka.provider.KafkaProviderProcessing;
 import play.inject.ApplicationLifecycle;
 
-public class KafkaProviderProcessingProvider extends hms.KafkaProcessingProvider<KafkaProviderProcessing> {
+public class KafkaProviderProcessingProvider extends hms.commons.KafkaProcessingProvider<KafkaProviderProcessing> {
 
 	@Inject
 	public KafkaProviderProcessingProvider(ApplicationLifecycle app, Injector injector) {

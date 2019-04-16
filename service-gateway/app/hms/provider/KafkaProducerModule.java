@@ -6,6 +6,6 @@ public class KafkaProducerModule extends AbstractModule {
 	@Override
 	protected void configure() {
         bind(hms.provider.IProviderService.class)
-        	.to(hms.kafka.provider.KafkaProviderService.class);        
+        	.toProvider(hms.provider.KafkaProducerServiceProvider.class);        
 	}
 }
