@@ -1,0 +1,1 @@
+mongos --configdb hms/localhost:27019,localhost:27119,localhost:27219

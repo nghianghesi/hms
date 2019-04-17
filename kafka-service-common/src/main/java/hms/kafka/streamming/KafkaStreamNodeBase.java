@@ -115,7 +115,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		{// process single record
 			java.util.function.Consumer<ConsumerRecord<UUID, byte[]>> processRecord = (record)->{
 				try {
-					this.getLogger().info("Consuming {} {} {}",this.getConsumeTopic(), record.key() , new String(record.value()));					
+					//this.getLogger().info("Consuming {} {} {}",this.getConsumeTopic(), record.key() , new String(record.value()));					
 					 HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
 					TRep res = this.processRequest(request);
 					if(this.getForwardTopic()!=null) {
@@ -162,7 +162,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		forwardReq.setData(value);
 		try {
 			forwardReq.addReponsePoint(this.getForwardBackTopic(), request.getData());
-			this.getLogger().info("forwarding:" + forwardReq.DebugInfo());			
+			//this.getLogger().info("forwarding:" + forwardReq.DebugInfo());			
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, this.getForwardTopic());					
 			this.producer.send(record);
 		} catch (IOException e) {
@@ -175,6 +175,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	public void shutDown() {
 		this.shutdownNode = true;
 		try {
+			this.getLogger().info("Shutting down");
 			this.consumerThread.join();
 			this.producer.close();
 			this.consumer.close();

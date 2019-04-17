@@ -14,8 +14,12 @@ import xyz.morphia.geo.Point;
 import xyz.morphia.utils.IndexType;
 
 @Indexes({
-    @Index(fields = {@Field("providerid")}, options = @IndexOptions(unique = true,name = "tracking_indexing_providerid")),
-    @Index(fields = {@Field(value="location", type = IndexType.GEO2DSPHERE)}, options = @IndexOptions(name = "tracking_indexing_location"))    
+    @Index(fields = {@Field("providerid")}, options = @IndexOptions(name = "tracking_indexing_providerid")),
+    @Index(fields = {
+    		@Field("hubid"),
+    		@Field(value="location", type = IndexType.GEO2DSPHERE)
+    		}, options = @IndexOptions(name = "tracking_indexing_location")
+    )    
 })
 @Entity(value = "ProviderTracking")
 public class ProviderTrackingEntity {
