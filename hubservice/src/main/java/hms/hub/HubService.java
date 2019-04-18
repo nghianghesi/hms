@@ -27,8 +27,9 @@ public class HubService implements IHubService, IHubServiceProcessor {
 	{
 		return CompletableFuture.supplyAsync(()->{
 			//TODO: need return hubid full-path
-			logger.info("host mapping:{} - {} {}" + this.rootNode.getDebugInfo(), longitude, latitude);
-			return this.rootNode.getHostingHub(latitude, longitude).getHubid();
+			UUID hubid= this.rootNode.getHostingHub(latitude, longitude).getHubid();
+			logger.info("host mapping:{} - {} {} - {}", this.rootNode.getDebugInfo(), longitude, latitude, hubid);
+			return hubid;
 		}, this.execContext.getExecutor());
 	}
 }

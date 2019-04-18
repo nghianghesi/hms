@@ -93,17 +93,17 @@ public class HubNodeModel {
 	}    
 	
 	public boolean isRangeContains(double latitude, double longitude) {
-		return this.getLocation().getLatitude() - this.getLatitudeRange() >= latitude
-				 && this.getLocation().getLatitude() + this.getLatitudeRange() <= latitude
-				 && this.getLocation().getLongitude() - this.getLongitudeRange() >= longitude
-						 && this.getLocation().getLongitude() + this.getLongitudeRange() <= longitude;
+		return this.getLocation().getLatitude() - this.getLatitudeRange() <= latitude
+				 && this.getLocation().getLatitude() + this.getLatitudeRange() >= latitude
+				 && this.getLocation().getLongitude() - this.getLongitudeRange() <= longitude
+						 && this.getLocation().getLongitude() + this.getLongitudeRange() >= longitude;
 	}	
 	
 	public boolean isRangeMovedOut(double latitude, double longitude) {
-		return !(this.getLocation().getLatitude() - this.getLatitudeRange() - this.getMargin()>= latitude
-				 && this.getLocation().getLatitude() + this.getLatitudeRange() + this.getMargin()<= latitude
-				 && this.getLocation().getLongitude() - this.getLongitudeRange() - this.getMargin()>= longitude
-						 && this.getLocation().getLongitude() + this.getLongitudeRange() + this.getMargin() <= longitude);
+		return !(this.getLocation().getLatitude() - this.getLatitudeRange() - this.getMargin() <= latitude
+				 && this.getLocation().getLatitude() + this.getLatitudeRange() + this.getMargin() >= latitude
+				 && this.getLocation().getLongitude() - this.getLongitudeRange() - this.getMargin() <= longitude
+						 && this.getLocation().getLongitude() + this.getLongitudeRange() + this.getMargin() >= longitude);
 	}
 	
 	private double rangeDistance(double latitude, double longitude) {
@@ -112,12 +112,12 @@ public class HubNodeModel {
 	}
 	
 	public HubNodeModel getHostingHub(double latitude, double longitude) {
-		double minRange = -1, temptRangeDistance;
+		double minRange = -1.0, temptRangeDistance;
 		HubNodeModel res = null;
 		for(HubNodeModel node : this.subHubs) {
 			if(node.isRangeContains(latitude, longitude)) {
 				temptRangeDistance = node.rangeDistance(latitude, longitude);
-				if(minRange == -1 || minRange > temptRangeDistance) {
+				if(minRange < 0 || minRange > temptRangeDistance) {
 					minRange = temptRangeDistance;
 					res = node;
 				}
@@ -131,6 +131,9 @@ public class HubNodeModel {
 		str.add(this.entity.getHubid().toString());
 		str.add(""+this.getLocation().getLongitude());
 		str.add(""+this.getLocation().getLatitude());
+		str.add(""+this.getLatitudeRange());
+		str.add(""+this.getLongitudeRange());
+		str.add(""+this.getMargin());
 		if(this.subHubs.size()>0) {
 			str.add("[");
 			for(HubNodeModel node : this.subHubs) {
