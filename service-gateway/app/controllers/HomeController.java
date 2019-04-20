@@ -2,13 +2,17 @@ package controllers;
 
 
 import java.io.IOException;
-import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dslplatform.json.DslJson;
 import com.dslplatform.json.JsonWriter;
 import com.dslplatform.json.runtime.Settings;
 
-import hms.dto.Coordinate;
+import hms.provider.ProviderService;
 import play.mvc.*;
 
 /**
@@ -16,14 +20,23 @@ import play.mvc.*;
  * to the application's home page.
  */
 public class HomeController extends Controller {
+	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
+
     /**
      * An action that renders an HTML page with a welcome message.
      * The configuration in the <code>routes</code> file means that
      * this method will be called when the application receives a
      * <code>GET</code> request with a path of <code>/</code>.
      */
-    public Result index() {
-
+	
+	private class pack{
+		CompletableFuture<Result> c;
+		CompletableFuture<Result> cw;
+		int count = 1;
+	}
+    public CompletableFuture<Result> index() {
+    	pack p = new pack();
+    	p.c = CompletableFuture.supplyAsync(() -> {
     	String msg = "";
     	hms.dto.Coordinate t = new hms.dto.Coordinate(10,10);
     	DslJson<Object> dslJson = new DslJson<>(
@@ -39,7 +52,41 @@ public class HomeController extends Controller {
 		}catch(IOException ex) {
 			
 		}
-        return ok(msg + views.html.index.render());
+		logger.info("Final result");
+		Result res = ok(msg + views.html.index.render());
+        p.c.complete(res);
+        p.cw.cancel(true); 
+        return res;
+    	});
+    	
+    	Function<Result,Result> fn = (r)->{
+    		logger.info("inter");
+    		try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				logger.error(e.getMessage());
+			}
+    		return r;		
+    	};
+    	p.c=p.cw=p.c.thenApplyAsync(fn);
+    	p.c=p.c.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn)
+    			.thenApplyAsync(fn);
+    	p.c.thenApplyAsync((r)->{
+    		logger.info("before render");
+    		return r;
+    	});
+    	return p.c;
     }
 
 }

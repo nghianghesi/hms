@@ -16,4 +16,6 @@ Need separate there for consumer (to avoid locking http executor context)
 Start play app without http server by Scala
 DslJson required default constructor & public getter/setter
 
+Simulate non-blocking while waiting for response from microservice.
+
 
