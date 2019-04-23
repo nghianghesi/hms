@@ -12,6 +12,7 @@ import com.dslplatform.json.DslJson;
 import com.dslplatform.json.JsonWriter;
 import com.dslplatform.json.runtime.Settings;
 
+import hms.common.ServiceWaiter;
 import hms.provider.ProviderService;
 import play.mvc.*;
 
@@ -30,63 +31,21 @@ public class HomeController extends Controller {
      */
 	
 	private class pack{
-		CompletableFuture<Result> c;
-		CompletableFuture<Result> cw;
 		int count = 1;
 	}
     public CompletableFuture<Result> index() {
-    	pack p = new pack();
-    	p.c = CompletableFuture.supplyAsync(() -> {
-    	String msg = "";
-    	hms.dto.Coordinate t = new hms.dto.Coordinate(10,10);
-    	DslJson<Object> dslJson = new DslJson<>(
-    			Settings.withRuntime().allowArrayFormat(true).includeServiceLoader());
-
-		JsonWriter writer = dslJson.newWriter();
-		try {
-			dslJson.serialize(writer, t);
-			byte[] buff = writer.getByteBuffer();
-			msg = new String(buff);
-			
-			msg+=dslJson.deserialize(hms.dto.Coordinate.class, writer.getByteBuffer(), buff.length);
-		}catch(IOException ex) {
-			
-		}
-		logger.info("Final result");
-		Result res = ok(msg + views.html.index.render());
-        p.c.complete(res);
-        p.cw.cancel(true); 
-        return res;
+    	CompletableFuture<Result> action = CompletableFuture.supplyAsync(() -> {
+			return ok(views.html.index.render());
     	});
     	
-    	Function<Result,Result> fn = (r)->{
-    		logger.info("inter");
-    		try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				logger.error(e.getMessage());
-			}
-    		return r;		
-    	};
-    	p.c=p.cw=p.c.thenApplyAsync(fn);
-    	p.c=p.c.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn)
-    			.thenApplyAsync(fn);
-    	p.c.thenApplyAsync((r)->{
-    		logger.info("before render");
+    	pack p = new pack();
+    	return ServiceWaiter.getInstance().waitForSignal(action,20000,()->{
+    		logger.info("checking for signal");
+    		return ++p.count > 100;
+    	}).thenApplyAsync((r)->{
+    		logger.info("Got signal");
     		return r;
     	});
-    	return p.c;
     }
 
 }
