@@ -9,6 +9,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class ServiceWaiter {
+	
+	public static interface IServiceChecker<T>{
+		boolean isReady();
+		T getResult();
+		boolean isError();
+		Throwable getError();
+	}
+	
 	private static ServiceWaiter instance = new ServiceWaiter();
 	public static ServiceWaiter getInstance() {
 		return instance;
@@ -17,22 +25,21 @@ public class ServiceWaiter {
 	private ExecutorService ec = Executors.newFixedThreadPool(1);
 	private final int IdleDuration = 100;
 	private boolean shuttingdown = false;
-	@SuppressWarnings("unused")
-	private int sleeping(int v) {
+	
+	private void sleeping() {
 		if(!this.shuttingdown) {
 			try {
 				Thread.sleep(this.IdleDuration);
+				CompletableFuture.runAsync(()->this.sleeping(),this.ec);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}	
-			this.idleMan = this.idleMan.thenApplyAsync((vv)->this.sleeping(vv),this.ec);
+			}
 		}
-		return v;
 	}
 	
-	private CompletableFuture<Integer> idleMan;
+	
 	private ServiceWaiter() {	
-		this.idleMan = CompletableFuture.supplyAsync(()->{return this.sleeping(0);}, this.ec);
+		CompletableFuture.runAsync(()->this.sleeping(),this.ec);
 	}
 	
 	public void shutdown() {
@@ -46,7 +53,32 @@ public class ServiceWaiter {
 		long start =  java.lang.System.currentTimeMillis();
 	}
 	
-	public <T> CompletableFuture<T> waitForSignal(CompletableFuture<T> task, int timeout, Callable<Boolean> quickcheck){
+	public <T> CompletableFuture<T> waitForSignal(IServiceChecker<T> waiter, int timeout){
+		CompletableFuture<T> finalWaiter = new CompletableFuture<T>();
+		final Result<T> waiting = new Result<>();
+		waiting.wrap = () -> {
+			if(java.lang.System.currentTimeMillis() - waiting.start > timeout) {
+				finalWaiter.completeExceptionally(new TimeoutException());
+			}else {
+				try {
+					if(waiter.isReady()) {
+						finalWaiter.complete(waiter.getResult());
+					}else if(waiter.isError()){
+						finalWaiter.completeExceptionally(waiter.getError());
+					}else {
+						CompletableFuture.runAsync(waiting.wrap, this.ec);
+					}
+				} catch (Exception e) {
+					finalWaiter.completeExceptionally(e);
+				}				
+			}
+		};
+		waiting.wrap.run();
+		return finalWaiter;
+	}
+
+	
+	public <T> CompletableFuture<T> waitForSignal(CompletableFuture<T> task, Callable<Boolean> quickcheck, int timeout){
 		CompletableFuture<T> finalWaiter = new CompletableFuture<T>();
 		final Result<T> waiting = new Result<>();
 		try {
@@ -74,7 +106,7 @@ public class ServiceWaiter {
 				finalWaiter.complete(waiting.data);
 			}
 		};
-		CompletableFuture.runAsync(waiting.wrap, this.ec);
+		waiting.wrap.run();
 		return finalWaiter;
 	}
 }

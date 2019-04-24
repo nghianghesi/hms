@@ -7,8 +7,6 @@ import javax.inject.Inject;
 import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
-import hms.StreamResponse;
-import hms.common.IHMSExecutorContext;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.StreamRoot;
 import hms.provider.IProviderService;
@@ -25,7 +23,6 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	StreamRoot<hms.dto.Provider, Boolean>  initProviderStream;
 	StreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
 	String server, rootid;	
-	private IHMSExecutorContext execContext;
 
 	private abstract class ProviderStreamRoot<TStart,TRes> extends StreamRoot<TStart,TRes>{
 		@Override
@@ -50,8 +47,7 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	}
 	
 	@Inject
-	public KafkaProviderService(IHMSExecutorContext ec, Config config) {	
-		this.execContext = ec;
+	public KafkaProviderService(Config config) {	
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)
 				&& config.hasPath(KafkaHMSMeta.RootIdConfigKey)) {
 			server = config.getString(KafkaHMSMeta.ServerConfigKey);
@@ -102,32 +98,23 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	
 	@Override
 	public CompletableFuture<Boolean> clear() {
-		return CompletableFuture.supplyAsync(()->{
-			StreamResponse response = clearStream.startStream((requestid)->{
-				return new HMSMessage<Void>(requestid);
-			});			
-			return !response.isError() && response.getData()!=null;
-		}, this.execContext.getExecutor());
+		return clearStream.startStream((requestid)->{
+			return new HMSMessage<Void>(requestid);
+		});
 	}
 
 	@Override
 	public CompletableFuture<Boolean> initprovider(hms.dto.Provider providerdto) {
-		return CompletableFuture.supplyAsync(()->{
-			StreamResponse response = initProviderStream.startStream((requestid)->{
-				return new HMSMessage<hms.dto.Provider>(requestid, providerdto);
- 			});
-			return !response.isError() && response.getData()!=null;
-		}, this.execContext.getExecutor());
+		return initProviderStream.startStream((requestid)->{
+			return new HMSMessage<hms.dto.Provider>(requestid, providerdto);
+ 		});
 	}
 
 	@Override
 	public CompletableFuture<Boolean> tracking(hms.dto.ProviderTracking trackingdto) {
-		return CompletableFuture.supplyAsync(()->{
-			StreamResponse response = trackingProviderStream.startStream((requestid)->{		
-				return new HMSMessage<hms.dto.ProviderTracking>(requestid, trackingdto);
-			});
-			return !response.isError() && response.getData()!=null;
-		}, this.execContext.getExecutor());
+		return trackingProviderStream.startStream((requestid)->{		
+			return new HMSMessage<hms.dto.ProviderTracking>(requestid, trackingdto);
+		});
 	}
 
 	@Override

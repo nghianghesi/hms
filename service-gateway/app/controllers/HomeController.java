@@ -39,10 +39,10 @@ public class HomeController extends Controller {
     	});
     	
     	pack p = new pack();
-    	return ServiceWaiter.getInstance().waitForSignal(action,20000,()->{
+    	return ServiceWaiter.getInstance().waitForSignal(action,()->{
     		logger.info("checking for signal");
     		return ++p.count > 100;
-    	}).thenApplyAsync((r)->{
+    	},20000).thenApplyAsync((r)->{
     		logger.info("Got signal");
     		return r;
     	});

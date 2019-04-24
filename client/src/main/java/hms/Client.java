@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,7 +128,7 @@ public class Client {
 		};	
 	}
 	
-	public static void main1(String[] args) {
+	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>();
 		String serviceUrl = "http://localhost:9000/";
@@ -151,63 +149,4 @@ public class Client {
 		
 		logger.info(client.getStats());
 	}
-	
-	public static void main(String[] args) {
-		ForkJoinPool workingPool = new ForkJoinPool(1);
-		ForkJoinPool waitingPool = new ForkJoinPool(1);
-    	pack p = new pack();
-
-	   	p.cw = ()->{
-    		logger.info("Idle waiting");
-    		try {
-				Thread.sleep(1000);
-				if(p.count < pack.max) {
-					CompletableFuture.runAsync(p.cw, waitingPool);
-				}
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				logger.error(e.getMessage());
-			}
-    	};
-    	
-	   	Function<Integer,Integer> quick = (r)->{
-    		logger.info("Quick check");
-    		return r;
-    	};    	
-
-    	
-    	CompletableFuture.runAsync(p.cw, waitingPool);    	
-
-    	for(int j=0;j<pack.max;j++) {
-    		final int taskid = j;
-	    	CompletableFuture<Integer> c = CompletableFuture.supplyAsync(() -> {
-	    		logger.info("Working {}",taskid);
-	    		return 0;
-	    	}, workingPool);
-	    	
-	    	for(int i=0;i<100;i++) {
-	    		c = c.thenApplyAsync(quick,waitingPool);
-	    	};
-	    	
-	    	c.whenCompleteAsync((r,ex) -> {
-	    		logger.info("Done Working {}",taskid);
-	    		p.count+=1;
-	    	}, workingPool);
-    	}
-    	
-    	try {
-			while(p.count<p.max) {
-				Thread.sleep(100);
-			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	private static class pack{
-		static final int max = 10;
-		Runnable cw;
-		int count = 0;
-	}
-
 }

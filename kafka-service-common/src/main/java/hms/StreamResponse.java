@@ -2,11 +2,13 @@ package hms;
 
 import java.util.UUID;
 
-public class StreamResponse{
+import hms.common.ServiceWaiter.IServiceChecker;
+
+public class StreamResponse<T> implements IServiceChecker<T>{
 	private UUID requestId;	
-	private Object data;
-	private boolean needWaiting = true;
-	private boolean isError = false;
+	private T data;
+	private enum STATUS{waiting, error, ready};
+	private STATUS status = STATUS.waiting;
 	
 	//TODO: Need support relay response
 	private String error; 
@@ -19,30 +21,29 @@ public class StreamResponse{
 		return requestId;
 	}
 	
-	public Object getData() {
+	public T getResult() {
 		return data;
 	}
 	
-	public synchronized void setData(Object data) {
-		this.needWaiting = false;
+	public void setData(T data) {
 		this.data = data;
+		this.status = STATUS.ready;		
 	}
 	
-	public synchronized boolean isError() {
-		return isError;
+	public boolean isError() {
+		return this.status == STATUS.error;
 	}
 	
-	public synchronized boolean needWaiting() {
-		return this.needWaiting;
+	public boolean isReady() {
+		return this.status == STATUS.ready;
 	}
 	
-	public synchronized void setError(String error) {
-		this.needWaiting = false;
-		this.isError = true;
-		this.error = error;
+	public void setError(String error) {
+		this.error = error;		
+		this.status = STATUS.error;
 	}
 	
-	public String getError() {
-		return this.error;
-	}
+	public Throwable getError() {
+		return new Exception(this.error);
+	}	
 }
