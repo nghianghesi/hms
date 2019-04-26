@@ -1,5 +1,6 @@
 package hms.provider.repositories;
 
+import java.util.List;
 import java.util.UUID;
 
 import hms.provider.models.ProviderModel;
@@ -13,5 +14,7 @@ public interface IProviderRepository {
 	void SaveTracking(hms.provider.models.ProviderModel provider);
 	
 	void clear();
+	
+	List<hms.provider.models.ProviderModel> queryProviders(List<UUID> hostid, double latitude, double longitude, double distance);
 
 }

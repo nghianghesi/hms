@@ -17,6 +17,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+
 public class ProviderController  extends Controller {	
 	private static final Logger logger = LoggerFactory.getLogger(ProviderController.class);
 
@@ -58,7 +59,16 @@ public class ProviderController  extends Controller {
     	JsonNode json = request.body().asJson();
     	hms.dto.ProviderTracking trackingdto = Json.fromJson(json, hms.dto.ProviderTracking.class);
     	return this.providerserivce.tracking(trackingdto).thenApplyAsync(t->{
-    		return ok("Provider tracking");
+    		return ok(Json.toJson(t));
+    	}, ec.current());
+    }
+    
+    
+    public CompletionStage<Result> query(Http.Request request) {
+    	JsonNode json = request.body().asJson();
+    	hms.dto.Coordinate position = Json.fromJson(json, hms.dto.Coordinate.class);
+    	return this.providerserivce.queryProviders(position).thenApplyAsync(t->{
+    		return ok(Json.toJson(t));
     	}, ec.current());
     }
 }

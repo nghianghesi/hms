@@ -110,6 +110,17 @@ lazy val client = (project in file("./client"))
   .dependsOn(protocol)
   
   
+lazy val query = (project in file("./query"))
+  .settings(libraryDependencies ++=  Seq(
+      dependencies.junit,
+      dependencies.novocode,
+	  dependencies.retrofit2_converter_gson,	  
+	  dependencies.retrofit2,	  
+	  dependencies.slf4japi,	  
+	  dependencies.slf4jimpl))
+  .dependsOn(protocol)
+  
+  
 lazy val `service-gateway` = (project in file("./service-gateway"))
 	.enablePlugins(PlayJava)
 	.settings(		
@@ -138,6 +149,7 @@ lazy val global = project
   .aggregate(
     protocol,
     client,
+	query,
 	hubservice,
 	`provider-service`,
 	`provider-kafka-producer`,

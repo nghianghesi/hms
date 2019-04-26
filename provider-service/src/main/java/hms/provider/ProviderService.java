@@ -1,9 +1,10 @@
 package hms.provider;
 
 import java.security.InvalidKeyException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -23,7 +24,7 @@ public class ProviderService implements IProviderService{
 
 	private IProviderRepository repo;
 	private IHubService hubservice;
-	private IHMSExecutorContext execContext;
+	protected IHMSExecutorContext execContext;
 	
 	@Inject
 	public ProviderService(IHMSExecutorContext ec,IHubService hubservice, IProviderRepository repo){
@@ -50,33 +51,40 @@ public class ProviderService implements IProviderService{
 			provider.load(providerdto);
 			this.repo.Save(provider);
 			return true;
-		},this.execContext.getExecutor());
+		}, this.execContext.getExecutor());
 	}	
 
-	protected CompletableFuture<Boolean> internalTrackingProviderHub(ProviderTracking trackingdto, UUID hubid) {		
-		return CompletableFuture.supplyAsync(()->{	
-			hms.provider.models.ProviderModel provider = this.repo.LoadById(trackingdto.getProviderid());
-			if(provider == null) {
-				throw ExceptionWrapper.wrap(new InvalidKeyException(String.format("Provider not found {0}", trackingdto.getProviderid())));
-			}
-			ProviderTrackingModel tracking = new ProviderTrackingModel(hubid, trackingdto.getLatitude(),trackingdto.getLongitude());
-			provider.setCurrentTracking(tracking);
-			this.repo.Save(provider);
-			return true;
-		}, this.execContext.getExecutor());
+	protected Boolean internalTrackingProviderHub(ProviderTracking trackingdto, UUID hubid) {		
+		hms.provider.models.ProviderModel provider = this.repo.LoadById(trackingdto.getProviderid());
+		if(provider == null) {
+			throw ExceptionWrapper.wrap(new InvalidKeyException(String.format("Provider not found {0}", trackingdto.getProviderid())));
+		}
+		ProviderTrackingModel tracking = new ProviderTrackingModel(hubid, trackingdto.getLatitude(),trackingdto.getLongitude());
+		provider.setCurrentTracking(tracking);
+		this.repo.Save(provider);
+		return true;
 	}	
 	
 	@Override
 	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto) {
-		return CompletableFuture.supplyAsync(()->{		
-			UUID hubid;
-			try {
-				hubid = this.hubservice.getHostingHubId(trackingdto.getLatitude(), trackingdto.getLongitude()).get();
-			} catch (InterruptedException | ExceptionWrapper | ExecutionException e) {
-				logger.error("provider tracking error {}", e.getMessage());
-				throw ExceptionWrapper.wrap(e);
-			}
-			return this.internalTrackingProviderHub(trackingdto, hubid).join();
-		}, this.execContext.getExecutor());
+		return this.hubservice.getHostingHubId(trackingdto.getLatitude(), trackingdto.getLongitude())
+					.thenApplyAsync((hubid) -> {
+						return this.internalTrackingProviderHub(trackingdto, hubid);			
+					}, this.execContext.getExecutor());
+	}
+	
+	
+	protected List<hms.dto.Provider> internalQueryProviders(List<UUID> hubids, hms.dto.Coordinate position, double distance){
+		return this.repo.queryProviders(hubids, position.getLatitude(), position.getLongitude(), distance)
+		.stream().map(p -> new hms.dto.Provider(p.getProviderid(), p.getName()))
+		.collect(Collectors.toList());
+	}
+	
+	@Override 
+	public CompletableFuture<List<hms.dto.Provider>> queryProviders(hms.dto.Coordinate position, double distance){
+		return this.hubservice.getConverHubIds(position.getLatitude(), position.getLongitude(), distance)
+			.thenApplyAsync((hubids) -> {
+				return this.internalQueryProviders(hubids, position, distance);	
+			},this.execContext.getExecutor());	
 	}
 }

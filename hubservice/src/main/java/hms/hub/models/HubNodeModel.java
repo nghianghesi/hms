@@ -59,7 +59,15 @@ public class HubNodeModel {
 	public void setHubid(UUID hubid) {
 		this.entity.setHubid(hubid);
 	}
-
+	
+	public double getLatitude() {
+		return this.entity.getLocation().getLatitude();
+	}
+	
+	public double getLongitude() {
+		return this.entity.getLocation().getLongitude();
+	}
+	
 	public Point getLocation() {
 		return this.entity.getLocation();
 	}
@@ -92,31 +100,74 @@ public class HubNodeModel {
 		this.entity.setMargin(margin);
 	}    
 	
+	private double inRangeDistance = -1;
+	private double getInRangeDistance() {
+		if(this.inRangeDistance < 0) {
+			return Math.max(this.geoDistance(this.getLatitude() - this.getLatitudeRange(), 
+												this.getLongitude() - this.getLongitudeRange()),
+					Math.max(this.geoDistance(this.getLatitude() - this.getLatitudeRange(), 
+												this.getLongitude() + this.getLongitudeRange()),
+					Math.max(this.geoDistance(this.getLatitude() + this.getLatitudeRange(), 
+													this.getLongitude() - this.getLongitudeRange()),
+							 this.geoDistance(this.getLatitude() + this.getLatitudeRange() , 
+														this.getLongitude() + this.getLongitudeRange()))));
+		}else {
+			return this.inRangeDistance;
+		}
+	}
+	
+	private double inMarginDistance = -1;
+	private double getInMarginDistance() {
+		if(this.inMarginDistance < 0) {
+			return Math.max(this.geoDistance(this.getLatitude() - this.getLatitudeRange() - this.getMargin(), 
+												this.getLongitude() - this.getLongitudeRange() - this.getMargin() ),
+					Math.max(this.geoDistance(this.getLatitude() - this.getLatitudeRange() - this.getMargin(), 
+												this.getLongitude() + this.getLongitudeRange() + this.getMargin()),
+					Math.max(this.geoDistance(this.getLatitude() + this.getLatitudeRange() + this.getMargin(), 
+													this.getLongitude() - this.getLongitudeRange() - this.getMargin()),
+								this.geoDistance(this.getLatitude() + this.getLatitudeRange() + this.getMargin(), 
+														this.getLongitude() + this.getLongitudeRange() + this.getMargin()))));
+		}else {
+			return this.inMarginDistance;
+		}
+	}	
+	
 	public boolean isRangeContains(double latitude, double longitude) {
-		return this.getLocation().getLatitude() - this.getLatitudeRange() <= latitude
-				 && this.getLocation().getLatitude() + this.getLatitudeRange() >= latitude
-				 && this.getLocation().getLongitude() - this.getLongitudeRange() <= longitude
-						 && this.getLocation().getLongitude() + this.getLongitudeRange() >= longitude;
+		return this.getLatitude() - this.getLatitudeRange() <= latitude
+				 && this.getLatitude() + this.getLatitudeRange() >= latitude
+				 && this.getLongitude() - this.getLongitudeRange() <= longitude
+						 && this.getLongitude() + this.getLongitudeRange() >= longitude;
 	}	
 	
 	public boolean isRangeMovedOut(double latitude, double longitude) {
-		return !(this.getLocation().getLatitude() - this.getLatitudeRange() - this.getMargin() <= latitude
-				 && this.getLocation().getLatitude() + this.getLatitudeRange() + this.getMargin() >= latitude
-				 && this.getLocation().getLongitude() - this.getLongitudeRange() - this.getMargin() <= longitude
-						 && this.getLocation().getLongitude() + this.getLongitudeRange() + this.getMargin() >= longitude);
+		return !(this.getLatitude() - this.getLatitudeRange() - this.getMargin() <= latitude
+				 && this.getLatitude() + this.getLatitudeRange() + this.getMargin() >= latitude
+				 && this.getLongitude() - this.getLongitudeRange() - this.getMargin() <= longitude
+						 && this.getLongitude() + this.getLongitudeRange() + this.getMargin() >= longitude);
 	}
 	
-	private double rangeDistance(double latitude, double longitude) {
-		return Math.sqrt(latitude - this.getLocation().getLatitude())
-				+ Math.sqrt(longitude - this.getLocation().getLongitude());
+	private double rangeEstimation(double latitude, double longitude) {
+		return Math.sqrt(latitude - this.getLatitude()) + Math.sqrt(longitude - this.getLongitude());
 	}
+	
+	private double geoDistance(double lat, double lng) {
+	    double earthRadius = 6371000; //meters
+	    double dLat = Math.toRadians(this.getLatitude()-lat);
+	    double dLng = Math.toRadians(this.getLongitude()-lng);
+	    double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+	               Math.cos(Math.toRadians(lat)) * Math.cos(Math.toRadians(this.getLatitude())) *
+	               Math.sin(dLng/2) * Math.sin(dLng/2);
+	    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+	    float dist = (float) (earthRadius * c);
+	    return dist;
+	}	
 	
 	public HubNodeModel getHostingHub(double latitude, double longitude) {
 		double minRange = -1.0, temptRangeDistance;
 		HubNodeModel res = null;
 		for(HubNodeModel node : this.subHubs) {
 			if(node.isRangeContains(latitude, longitude)) {
-				temptRangeDistance = node.rangeDistance(latitude, longitude);
+				temptRangeDistance = node.rangeEstimation(latitude, longitude);
 				if(minRange < 0 || minRange > temptRangeDistance) {
 					minRange = temptRangeDistance;
 					res = node;
@@ -126,11 +177,27 @@ public class HubNodeModel {
 		return res != null ? res.getHostingHub(latitude, longitude) : this;
 	}
 	
+	public List<HubNodeModel> getConveringHubIds(double latitude, double longitude, double distance){
+		List<HubNodeModel> res = new ArrayList<HubNodeModel>();
+		boolean needParent = true;
+		for(HubNodeModel node : this.subHubs) {
+			double nodeGeoDistance = node.geoDistance(latitude, longitude);
+			needParent = needParent && (nodeGeoDistance + distance > node.getInRangeDistance());
+			if((nodeGeoDistance - distance < node.getInMarginDistance())) {
+				res.addAll(node.getConveringHubIds(latitude, longitude, distance));
+			}
+		}
+		if(needParent) {
+			res.add(this);
+		}
+		return res;
+	}
+	
 	public String getDebugInfo() {
 		StringJoiner str = new StringJoiner(",");
 		str.add(this.entity.getHubid().toString());
-		str.add(""+this.getLocation().getLongitude());
-		str.add(""+this.getLocation().getLatitude());
+		str.add(""+this.getLongitude());
+		str.add(""+this.getLatitude());
 		str.add(""+this.getLatitudeRange());
 		str.add(""+this.getLongitudeRange());
 		str.add(""+this.getMargin());
