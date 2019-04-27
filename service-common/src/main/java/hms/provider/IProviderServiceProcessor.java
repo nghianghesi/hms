@@ -8,5 +8,5 @@ public interface IProviderServiceProcessor{
 	CompletableFuture<Boolean> clear();
 	CompletableFuture<Boolean> initprovider(hms.dto.Provider providerdto);
 	CompletableFuture<Boolean> tracking(hms.dto.ProviderTracking trackingdto, UUID hubid);
-	CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(List<UUID> hostids, hms.dto.GeoQuery query);
+	CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(List<UUID>hostids, hms.dto.GeoQuery query);
 }
