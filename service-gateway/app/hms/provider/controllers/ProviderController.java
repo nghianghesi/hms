@@ -20,7 +20,8 @@ import play.mvc.Result;
 
 public class ProviderController  extends Controller {	
 	private static final Logger logger = LoggerFactory.getLogger(ProviderController.class);
-
+	private final double QueryDistance = 1;
+	
     private IProviderService providerserivce;
     private HttpExecutionContext ec;
     @Inject
@@ -67,7 +68,8 @@ public class ProviderController  extends Controller {
     public CompletionStage<Result> query(Http.Request request) {
     	JsonNode json = request.body().asJson();
     	hms.dto.Coordinate position = Json.fromJson(json, hms.dto.Coordinate.class);
-    	return this.providerserivce.queryProviders(position).thenApplyAsync(t->{
+    	hms.dto.GeoQuery query = new hms.dto.GeoQuery(position.getLatitude(),position.getLongitude(),QueryDistance);
+    	return this.providerserivce.queryProviders(query).thenApplyAsync(t->{
     		return ok(Json.toJson(t));
     	}, ec.current());
     }

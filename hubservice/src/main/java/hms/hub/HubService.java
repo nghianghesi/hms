@@ -34,11 +34,11 @@ public class HubService implements IHubService, IHubServiceProcessor {
 		}, this.execContext.getExecutor());
 	}
 	
-	public CompletableFuture<List<UUID>> getConverHubIds(double latitude, double longitude, double distance)
+	public CompletableFuture<List<UUID>> getConverHubIds(hms.dto.GeoQuery query)
 	{
 		return CompletableFuture.supplyAsync(()->{
 			//TODO: need return hubid full-path
-			return this.rootNode.getConveringHubIds(latitude, longitude, distance).stream()
+			return this.rootNode.getConveringHubIds(query.getLatitude(), query.getLongitude(), query.getDistance()).stream()
 			.map(h->h.getHubid()).collect(Collectors.toList());
 		}, this.execContext.getExecutor());	
 	}

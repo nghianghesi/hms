@@ -60,7 +60,9 @@ public class HMSRESTClient{
 	public void queryProviders(Coordinate coordinate) {
 		try {			      
 			long startTime = System.currentTimeMillis();
-			this.serviceIntegration.queryProviders(coordinate).execute().body().string();
+			
+			logger.info(this.serviceIntegration.queryProviders(coordinate).execute().body().string().substring(0,30));
+            
 			trackingMaxResponseTime(System.currentTimeMillis() - startTime);
 		    
 		} catch (Exception e) {

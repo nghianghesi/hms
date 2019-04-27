@@ -7,6 +7,8 @@ public class KafkaProviderMeta {
 	public static final String InitproviderMessage  = TopicPrefix+"initprovider";
 	public static final String TrackingMessage  = TopicPrefix+"tracking";
 	public static final String TrackingWithHubMessage  = TopicPrefix+"tracking-with-hub";
+	public static final String QueryProvidersMessage  = TopicPrefix+"query";
+	public static final String QueryProvidersWithHubsMessage  = TopicPrefix+"query-with-hub";
 	
 	public static final String ProviderGroupConfigKey = "kafka.provider.group";
 }
