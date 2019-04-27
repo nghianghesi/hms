@@ -3,17 +3,12 @@ package controllers;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dslplatform.json.DslJson;
-import com.dslplatform.json.JsonWriter;
-import com.dslplatform.json.runtime.Settings;
 
 import hms.common.ServiceWaiter;
-import hms.provider.ProviderService;
+import hms.common.ServiceWaiter.IServiceChecker;
 import play.mvc.*;
 
 /**
@@ -33,19 +28,38 @@ public class HomeController extends Controller {
 	private class pack{
 		int count = 1;
 	}
-    public CompletableFuture<Result> index() {
-    	CompletableFuture<Result> action = CompletableFuture.supplyAsync(() -> {
-			return ok(views.html.index.render());
-    	});
-    	
+    public CompletableFuture<Result> index() {    	
     	pack p = new pack();
-    	return ServiceWaiter.getInstance().waitForSignal(action,()->{
-    		logger.info("checking for signal");
-    		return ++p.count > 100;
-    	},20000).thenApplyAsync((r)->{
-    		logger.info("Got signal");
-    		return r;
-    	});
+    	IServiceChecker<Result> waiter = new IServiceChecker<Result>() {
+
+			@Override
+			public boolean isReady() {    		
+				logger.info("checking for signal");
+				return ++p.count > 100;
+			}
+
+			@Override
+			public Result getResult() {
+				return ok(views.html.index.render());
+			}
+
+			@Override
+			public boolean isError() {
+				return false;
+			}
+
+			@Override
+			public Throwable getError() {
+				return null;
+			}
+    	};
+    	
+    	return ServiceWaiter.getInstance()
+    			.waitForSignal(waiter, 20000)
+    			.thenApplyAsync((r)->{
+		    		logger.info("Got signal");
+		    		return r;
+		    	});
     }
 
 }

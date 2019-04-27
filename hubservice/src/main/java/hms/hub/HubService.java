@@ -1,6 +1,5 @@
 package hms.hub;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -34,12 +33,14 @@ public class HubService implements IHubService, IHubServiceProcessor {
 		}, this.execContext.getExecutor());
 	}
 	
-	public CompletableFuture<List<UUID>> getConverHubIds(double latitude, double longitude, double distance)
+	public CompletableFuture<hms.dto.CoveringHubsResponse> getConveringHubs(hms.dto.GeoQuery query)
 	{
 		return CompletableFuture.supplyAsync(()->{
 			//TODO: need return hubid full-path
-			return this.rootNode.getConveringHubIds(latitude, longitude, distance).stream()
-			.map(h->h.getHubid()).collect(Collectors.toList());
+			hms.dto.CoveringHubsResponse res = new hms.dto.CoveringHubsResponse();
+			res.addAll(this.rootNode.getConveringHubIds(query.getLatitude(), query.getLongitude(), query.getDistance()).stream()
+			.map(h->h.getHubid()).collect(Collectors.toList()));
+			return res;
 		}, this.execContext.getExecutor());	
 	}
 }

@@ -2,6 +2,8 @@ package hms.kafka.provider;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -30,6 +32,8 @@ public class KafkaProviderProcessing implements Closeable {
 	KafkaStreamNodeBase<hms.dto.Provider, Boolean>  initProviderProcessor;
 	KafkaStreamNodeBase<hms.dto.ProviderTracking, Coordinate>  trackingProviderProcessor;	
 	KafkaStreamNodeBase<UUID, Boolean>  trackingProviderHubProcessor;
+	KafkaStreamNodeBase<hms.dto.GeoQuery, hms.dto.GeoQuery>  queryProvidersProcessor;	
+	KafkaStreamNodeBase<hms.dto.CoveringHubsResponse, hms.dto.ProvidersGeoQueryResponse>  queryProvidersHubProcessor;
 
 	private String kafkaserver;
 	private String providerGroup;
@@ -77,6 +81,8 @@ public class KafkaProviderProcessing implements Closeable {
 		this.buildInitProviderProcessor();
 		this.buildTrackingProviderProcessor();
 		this.buildTrackingProviderHubProcessor();	
+		this.buildQueryProvidersProcessor();
+		this.buildQueryProvidersHubProcessor();	
 
 		logger.info("Provider processing is ready");
 	}
@@ -190,6 +196,69 @@ public class KafkaProviderProcessing implements Closeable {
 			}	
 		};
 	}
+	
+	
+
+	private void buildQueryProvidersProcessor() {
+		this.queryProvidersProcessor = new ProviderProcessingNode<hms.dto.GeoQuery, hms.dto.GeoQuery>() {
+			@Override
+			protected hms.dto.GeoQuery processRequest(HMSMessage<hms.dto.GeoQuery> request) {	
+				return new hms.dto.GeoQuery(request.getData().getLatitude(),request.getData().getLongitude(), request.getData().getDistance());
+			}
+			
+			@Override
+			protected Class<hms.dto.GeoQuery> getTConsumeManifest() {
+				return hms.dto.GeoQuery.class;
+			}
+			
+			@Override
+			protected String getConsumeTopic() {
+				return KafkaProviderMeta.QueryProvidersMessage;
+			}		
+			
+			@Override
+			protected String getForwardTopic() {
+				return KafkaHubMeta.FindCoveringHubsMessage;
+			}	
+			
+			@Override
+			protected String getForwardBackTopic() {
+				return KafkaProviderMeta.QueryProvidersWithHubsMessage;
+			}				
+		};
+	}
+	
+	private void buildQueryProvidersHubProcessor(){
+		this.queryProvidersHubProcessor = new ProviderProcessingNode<hms.dto.CoveringHubsResponse, hms.dto.ProvidersGeoQueryResponse>() {
+			@Override
+			protected hms.dto.ProvidersGeoQueryResponse processRequest(HMSMessage<hms.dto.CoveringHubsResponse> request) {
+				hms.dto.CoveringHubsResponse hubids = request.getData();
+				hms.dto.GeoQuery querydto;
+				try {
+					querydto = request.popReponsePoint(hms.dto.GeoQuery.class).data;
+					return providerService.queryProviders(hubids, querydto).get();
+				} catch (IOException | InterruptedException | ExecutionException e) {
+					logger.error("Query Providers Hub Error {}", e.getMessage());
+					return null;
+				}
+			}
+
+			@Override
+			protected Class<hms.dto.CoveringHubsResponse> getTConsumeManifest() {
+				return hms.dto.CoveringHubsResponse.class;
+			}
+
+			@Override
+			protected String getConsumeTopic() {
+				return KafkaProviderMeta.TrackingWithHubMessage;
+			}		
+			
+			@Override
+			protected String getForwardTopic() {				
+				return KafkaProviderMeta.TrackingMessage + KafkaHMSMeta.ReturnTopicSuffix;
+			}	
+		};
+	}
 
 	@Override
 	public void close() {
@@ -198,5 +267,7 @@ public class KafkaProviderProcessing implements Closeable {
 		this.initProviderProcessor.shutDown();
 		this.trackingProviderProcessor.shutDown();
 		this.trackingProviderHubProcessor.shutDown();
+		this.queryProvidersProcessor.shutDown();
+		this.queryProvidersHubProcessor.shutDown();
 	}	
 }

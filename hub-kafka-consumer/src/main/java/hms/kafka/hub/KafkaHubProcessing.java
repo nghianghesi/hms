@@ -23,6 +23,7 @@ public class KafkaHubProcessing implements Closeable {
 	private IHubServiceProcessor hubService;
 	
 	KafkaStreamNodeBase<hms.dto.Coordinate, UUID>  getHubByCoordinateProcessor; 
+	KafkaStreamNodeBase<hms.dto.GeoQuery, hms.dto.CoveringHubsResponse>  getCoveringHubsProcessor; 
 
 	private String kafkaserver;
 	private String hubGroup;
@@ -66,10 +67,11 @@ public class KafkaHubProcessing implements Closeable {
 			this.hubGroup = config.getString(KafkaHubMeta.GroupConfigKey);
 		}
 		
-		this.buildHubByProviderCoordidateProcessor();
+		this.buildMappingHubProcessor();
+		this.buildGetCoveringHubsProcessor();
 	}
 	
-	private void buildHubByProviderCoordidateProcessor() {
+	private void buildMappingHubProcessor() {
 		this.getHubByCoordinateProcessor = new HubProcessingNode<hms.dto.Coordinate, UUID>() {
 			@Override
 			protected UUID processRequest(HMSMessage<hms.dto.Coordinate> request) {
@@ -92,11 +94,38 @@ public class KafkaHubProcessing implements Closeable {
 			}
 		};
 	}
+	
+
+	private void buildGetCoveringHubsProcessor() {
+
+		this.getCoveringHubsProcessor = new HubProcessingNode<hms.dto.GeoQuery, hms.dto.CoveringHubsResponse>() {
+			@Override
+			protected hms.dto.CoveringHubsResponse processRequest(HMSMessage<hms.dto.GeoQuery> request) {
+				try {
+					return hubService.getConveringHubs(request.getData()).get();
+				} catch (InterruptedException | ExecutionException e) {
+					logger.error("Get bub by provider coordinater error: {}", e.getMessage());
+					return null;
+				}				
+			}
+
+			@Override
+			protected Class<hms.dto.GeoQuery> getTConsumeManifest() {
+				return hms.dto.GeoQuery.class;
+			}
+
+			@Override
+			protected String getConsumeTopic() {
+				return KafkaHubMeta.FindCoveringHubsMessage;
+			}
+		};
+	}
 
 	@Override
 	public void close() throws IOException {
 		// TODO Auto-generated method stub
 		this.getHubByCoordinateProcessor.shutDown();
+		this.getCoveringHubsProcessor.shutDown();
 	}
 
 }

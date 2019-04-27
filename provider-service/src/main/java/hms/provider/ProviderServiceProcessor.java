@@ -30,14 +30,16 @@ public class ProviderServiceProcessor extends ProviderService implements IProvid
 	}
 	
 	@Override
-	public CompletableFuture<List<hms.dto.Provider>> queryProviders(hms.dto.Coordinate position, double distance){
+	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(hms.dto.GeoQuery query){
 		throw new Error("Invalid usage, don't call this directly");
 	}
 	
 	@Override
-	public CompletableFuture<List<hms.dto.Provider>> queryProviders(List<UUID>hostids, hms.dto.Coordinate position, double range){
+	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(List<UUID>hostids, hms.dto.GeoQuery query){
 		return CompletableFuture.supplyAsync(()->{
-			return this.internalQueryProviders(hostids, position, range);
+			hms.dto.ProvidersGeoQueryResponse res = new hms.dto.ProvidersGeoQueryResponse(); 
+			res.addAll(this.internalQueryProviders(hostids, query));
+			return res;
 		}, this.execContext.getExecutor());
 	}
 }

@@ -71,7 +71,7 @@ public abstract class StreamRoot<TStart, TRes>
 			request.addReponsePoint(this.getConsumeTopic());			
 			try {				
 				ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, this.getStartTopic());
-				this.getLogger().info("Start stream "+this.getStartTopic() + " " + request.getRequestId());
+				this.getLogger().info("Start stream " + this.getStartTopic() + " " + request.getRequestId());
 				this.producer.send(record).get(timeout, TimeUnit.MILLISECONDS);
 			} catch (IOException | InterruptedException | ExecutionException | TimeoutException e) {
 				this.handleRequestError(id, "Request error: "+e.getMessage());

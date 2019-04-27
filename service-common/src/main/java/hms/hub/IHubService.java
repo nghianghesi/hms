@@ -1,10 +1,9 @@
 package hms.hub;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface IHubService {
 	CompletableFuture<UUID> getHostingHubId(double latitude, double longitude);
-	public CompletableFuture<List<UUID>> getConverHubIds(double latitude, double longitude, double distance);	
+	public CompletableFuture<hms.dto.CoveringHubsResponse> getConveringHubs(hms.dto.GeoQuery query);	
 }

@@ -1,11 +1,8 @@
 package hms.common;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class ServiceWaiter {
@@ -47,8 +44,6 @@ public class ServiceWaiter {
 	}
 	
 	private class Result<T>{
-		T data;
-		Throwable ex;	
 		Runnable wrap;
 		long start =  java.lang.System.currentTimeMillis();
 	}
@@ -70,40 +65,7 @@ public class ServiceWaiter {
 					}
 				} catch (Exception e) {
 					finalWaiter.completeExceptionally(e);
-				}				
-			}
-		};
-		waiting.wrap.run();
-		return finalWaiter;
-	}
-
-	
-	public <T> CompletableFuture<T> waitForSignal(CompletableFuture<T> task, Callable<Boolean> quickcheck, int timeout){
-		CompletableFuture<T> finalWaiter = new CompletableFuture<T>();
-		final Result<T> waiting = new Result<>();
-		try {
-			waiting.data = task.get(timeout, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			waiting.ex = e;
-		}
-		
-		waiting.wrap = () -> {
-			if(java.lang.System.currentTimeMillis() - waiting.start > timeout) {
-				finalWaiter.completeExceptionally(new TimeoutException());
-			}else if(waiting.data != null) {
-				try {
-					if(quickcheck.call()) {
-						finalWaiter.complete(waiting.data);
-					}else {
-						CompletableFuture.runAsync(waiting.wrap, this.ec);
-					}
-				} catch (Exception e) {
-					finalWaiter.completeExceptionally(e);
-				}				
-			}else if(waiting.ex!=null) {
-				finalWaiter.completeExceptionally(waiting.ex);
-			}else {
-				finalWaiter.complete(waiting.data);
+				}
 			}
 		};
 		waiting.wrap.run();

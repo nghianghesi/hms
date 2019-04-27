@@ -74,17 +74,19 @@ public class ProviderService implements IProviderService{
 	}
 	
 	
-	protected List<hms.dto.Provider> internalQueryProviders(List<UUID> hubids, hms.dto.Coordinate position, double distance){
-		return this.repo.queryProviders(hubids, position.getLatitude(), position.getLongitude(), distance)
+	protected List<hms.dto.Provider> internalQueryProviders(List<UUID> hubids, hms.dto.GeoQuery query){
+		return this.repo.queryProviders(hubids, query.getLatitude(), query.getLongitude(), query.getDistance())
 		.stream().map(p -> new hms.dto.Provider(p.getProviderid(), p.getName()))
 		.collect(Collectors.toList());
 	}
 	
 	@Override 
-	public CompletableFuture<List<hms.dto.Provider>> queryProviders(hms.dto.Coordinate position, double distance){
-		return this.hubservice.getConverHubIds(position.getLatitude(), position.getLongitude(), distance)
+	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(hms.dto.GeoQuery query){
+		return this.hubservice.getConveringHubs(query)
 			.thenApplyAsync((hubids) -> {
-				return this.internalQueryProviders(hubids, position, distance);	
+				hms.dto.ProvidersGeoQueryResponse res = new hms.dto.ProvidersGeoQueryResponse(); 
+				res.addAll(this.internalQueryProviders(hubids, query));
+				return res;
 			},this.execContext.getExecutor());	
 	}
 }

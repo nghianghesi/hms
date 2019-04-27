@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
+import hms.dto.GeoQuery;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.StreamRoot;
 import hms.provider.IProviderService;
@@ -22,6 +23,7 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	StreamRoot<Void, Boolean>  clearStream; 
 	StreamRoot<hms.dto.Provider, Boolean>  initProviderStream;
 	StreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
+	StreamRoot<hms.dto.GeoQuery, hms.dto.ProvidersGeoQueryResponse>  queryProvidersStream;
 	String server, rootid;	
 
 	private abstract class ProviderStreamRoot<TStart,TRes> extends StreamRoot<TStart,TRes>{
@@ -78,7 +80,6 @@ public class KafkaProviderService implements IProviderService, Closeable{
 			};				
 			
 			trackingProviderStream = new ProviderStreamRoot<hms.dto.ProviderTracking, Boolean>(){
-
 				@Override
 				protected String getStartTopic() {
 					return KafkaProviderMeta.TrackingMessage;
@@ -88,10 +89,22 @@ public class KafkaProviderService implements IProviderService, Closeable{
 				protected Class<Boolean> getTConsumeManifest() {
 					return Boolean.class;
 				}				
-			};	
+			};
+			
+			queryProvidersStream = new ProviderStreamRoot<hms.dto.GeoQuery, hms.dto.ProvidersGeoQueryResponse>(){
+				@Override
+				protected String getStartTopic() {
+					return KafkaProviderMeta.QueryProvidersMessage;
+				}
+
+				@Override
+				protected Class<hms.dto.ProvidersGeoQueryResponse> getTConsumeManifest() {
+					return hms.dto.ProvidersGeoQueryResponse.class;
+				}
+			};				
 			
 		}else {
-			logger.error("Missing {} {} configuration",KafkaHMSMeta.ServerConfigKey,KafkaHMSMeta.RootIdConfigKey);
+			logger.error("Missing {} {} configuration", KafkaHMSMeta.ServerConfigKey, KafkaHMSMeta.RootIdConfigKey);
 			throw new Error(String.format("Missing {} {} configuration",KafkaHMSMeta.ServerConfigKey,KafkaHMSMeta.RootIdConfigKey));
 		}		
 	}
@@ -122,6 +135,14 @@ public class KafkaProviderService implements IProviderService, Closeable{
 		this.clearStream.shutDown();
 		this.initProviderStream.shutDown();
 		this.trackingProviderStream.shutDown();		
+		this.queryProvidersStream.shutDown();
+	}
+
+	@Override
+	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(GeoQuery query) {
+		return queryProvidersStream.startStream((requestid)->{		
+			return new HMSMessage<hms.dto.GeoQuery>(requestid, query);
+		});
 	}		
 	
 }
