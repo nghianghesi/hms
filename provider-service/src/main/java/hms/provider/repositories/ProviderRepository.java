@@ -1,29 +1,35 @@
 package hms.provider.repositories;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.*;
 import java.util.UUID;
 import javax.inject.Inject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
-import com.sun.net.ssl.internal.ssl.Provider;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 
 import hms.provider.entities.ProviderEntity;
 import hms.provider.entities.ProviderTrackingEntity;
 import hms.provider.models.ProviderModel;
 import xyz.morphia.Datastore;
 import xyz.morphia.FindAndModifyOptions;
-import xyz.morphia.query.FindOptions;
+import xyz.morphia.Morphia;
 import xyz.morphia.query.Query;
 import xyz.morphia.query.UpdateOperations;
+
 
 public class ProviderRepository implements IProviderRepository {
 
 	private Datastore datastore;
+	private Morphia morphia;
 	@Inject
-	public ProviderRepository(Datastore datastore) {
+	public ProviderRepository(Morphia morphia, Datastore datastore) {
 		this.datastore=datastore;
+		this.morphia = morphia;
 	}	
 
 	@Override
@@ -91,15 +97,45 @@ public class ProviderRepository implements IProviderRepository {
 	}
 	
 	@Override
-	public List<hms.provider.models.ProviderModel> queryProviders(List<UUID> hostids, double latitude, double longitude, double distance) {				
-		List<UUID> providerids =  this.datastore.find(ProviderTrackingEntity.class)
-				.field("HubId").in(hostids)
-				.field("Location").near(longitude, latitude, distance, true)
-				.asList()
-				.stream().map(e -> e.getProviderid()).collect(Collectors.toList());
-		
-		return this.datastore.find(ProviderEntity.class)
-					.field("ProviderId").in(providerids).asList()
-					.stream().map(e -> ProviderModel.load(e)).collect(Collectors.toList());
+	public List<hms.provider.models.ProviderModel> queryProviders(List<UUID> hostids, double latitude, double longitude, int distance) {
+		if(hostids.size()>0) {
+			List<UUID> parsedhostids = new ArrayList<>();
+			for(Object h:hostids) {
+				if(h.getClass().getName().contains("String")){
+					parsedhostids.add(UUID.fromString(h.toString()));
+				}else {
+					parsedhostids.add((UUID)h);
+				}
+			}
+
+			DBObject query = BasicDBObjectBuilder.start()
+					.add("hubid", new BasicDBObject("$in", parsedhostids))
+					.add("location", 
+							new BasicDBObject("$near", 
+									new BasicDBObject("$geometry", 
+											BasicDBObjectBuilder.start()
+												.add("type", "Point")
+												.add("coordinates", new double[] {longitude, latitude})
+												.add("$maxDistance", distance).get())))
+					.get();
+			
+			List<UUID> providerids = new ArrayList<>();
+			DBCursor dbCursor = datastore.getCollection(ProviderTrackingEntity.class).find(query);
+			
+			while (dbCursor.hasNext()) {
+			    DBObject obj = dbCursor.next();
+			    ProviderTrackingEntity t = morphia.fromDBObject(datastore, ProviderTrackingEntity.class, obj);
+			    providerids.add(t.getProviderid());
+			}
+			
+			if(providerids.size()>0) {
+				return this.datastore.createQuery(ProviderEntity.class)
+						.field("providerid").in(providerids).asList()
+						.stream().map(e -> ProviderModel.load(e)).collect(Collectors.toList());
+			}
+		}
+		return new ArrayList<>();
 	}
 }
+
+

@@ -82,7 +82,7 @@ public class ProviderService implements IProviderService{
 	
 	@Override 
 	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(hms.dto.GeoQuery query){
-		return this.hubservice.getConverHubIds(query)
+		return this.hubservice.getConveringHubs(query)
 			.thenApplyAsync((hubids) -> {
 				hms.dto.ProvidersGeoQueryResponse res = new hms.dto.ProvidersGeoQueryResponse(); 
 				res.addAll(this.internalQueryProviders(hubids, query));

@@ -10,7 +10,7 @@ import xyz.morphia.mapping.DefaultCreator;
 public class HMSDbFactory implements javax.inject.Provider<xyz.morphia.Datastore>{
 	PlayMorphia playmorphia;
 	@Inject
-	public HMSDbFactory(PlayMorphia playmorphia,Config config, Environment env) {
+	public HMSDbFactory(PlayMorphia playmorphia, Config config, Environment env) {
 		this.playmorphia = playmorphia;
 		
 		// Configuring class loader.

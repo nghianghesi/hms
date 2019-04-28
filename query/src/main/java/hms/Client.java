@@ -91,7 +91,7 @@ public class Client {
 		}			
 	}
 
-	private static Runnable buildUpdateProviderRunnable(HMSRESTClient client, List<ProviderQueryBuilder> list, int groupidx) {
+	private static Runnable buildQueryProvidersRunnable(HMSRESTClient client, List<ProviderQueryBuilder> list, int groupidx) {
 		return () -> {				
 				int startidx = groupidx * ITEM_PER_THREAD;
 				int endidx = (groupidx + 1) * ITEM_PER_THREAD;
@@ -126,7 +126,7 @@ public class Client {
 		
 		initCoordinates(list);
 		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 
-			groupRunners.add(CompletableFuture.runAsync(buildUpdateProviderRunnable(client, list, groupidx), myPool));				
+			groupRunners.add(CompletableFuture.runAsync(buildQueryProvidersRunnable(client, list, groupidx), myPool));				
 		}
 		
 		for (int groupidx = 0; groupidx < groupRunners.size(); groupidx++) {

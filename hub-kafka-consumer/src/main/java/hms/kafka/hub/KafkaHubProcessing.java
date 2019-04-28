@@ -3,7 +3,6 @@ package hms.kafka.hub;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
@@ -75,12 +74,7 @@ public class KafkaHubProcessing implements Closeable {
 		this.getHubByCoordinateProcessor = new HubProcessingNode<hms.dto.Coordinate, UUID>() {
 			@Override
 			protected UUID processRequest(HMSMessage<hms.dto.Coordinate> request) {
-				try {
-					return hubService.getHostingHubId(request.getData().getLatitude(), request.getData().getLongitude()).get();
-				} catch (InterruptedException | ExecutionException e) {
-					logger.error("Get bub by provider coordinater error: {}", e.getMessage());
-					return null;
-				}				
+				return hubService.getHostingHubId(request.getData().getLatitude(), request.getData().getLongitude()).join();
 			}
 
 			@Override
@@ -101,12 +95,7 @@ public class KafkaHubProcessing implements Closeable {
 		this.getCoveringHubsProcessor = new HubProcessingNode<hms.dto.GeoQuery, hms.dto.CoveringHubsResponse>() {
 			@Override
 			protected hms.dto.CoveringHubsResponse processRequest(HMSMessage<hms.dto.GeoQuery> request) {
-				try {
-					return hubService.getConveringHubs(request.getData()).get();
-				} catch (InterruptedException | ExecutionException e) {
-					logger.error("Get bub by provider coordinater error: {}", e.getMessage());
-					return null;
-				}				
+				return hubService.getConveringHubs(request.getData()).join();
 			}
 
 			@Override

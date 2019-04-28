@@ -15,6 +15,6 @@ public interface IProviderRepository {
 	
 	void clear();
 	
-	List<hms.provider.models.ProviderModel> queryProviders(List<UUID> hostid, double latitude, double longitude, double distance);
+	List<hms.provider.models.ProviderModel> queryProviders(List<UUID> hostid, double latitude, double longitude, int distance);
 
 }

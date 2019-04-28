@@ -131,19 +131,18 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	}
 
 	@Override
+	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(GeoQuery query) {
+		return queryProvidersStream.startStream((requestid)->{		
+			return new HMSMessage<hms.dto.GeoQuery>(requestid, query);
+		});
+	}			
+
+	@Override
 	public void close() throws IOException {
 		this.clearStream.shutDown();
 		this.initProviderStream.shutDown();
 		this.trackingProviderStream.shutDown();		
 		this.queryProvidersStream.shutDown();
-	}
-
-	@Override
-	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(GeoQuery query) {
-		return queryProvidersStream.startStream((requestid)->{		
-			return new HMSMessage<hms.dto.GeoQuery>(requestid, query);
-		});
-	}		
-	
+	}	
 }
 

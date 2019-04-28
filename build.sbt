@@ -120,6 +120,16 @@ lazy val query = (project in file("./query"))
 	  dependencies.slf4jimpl))
   .dependsOn(protocol)
   
+lazy val `test-mongo` = (project in file("./test-mongo"))
+  .settings(libraryDependencies ++=  Seq(
+      dependencies.junit,
+      dependencies.novocode,
+	  dependencies.retrofit2_converter_gson,	  
+	  dependencies.retrofit2,	  
+	  dependencies.slf4japi,	  
+	  dependencies.slf4jimpl,
+		dependencies.morphia))
+  .dependsOn(protocol)
   
 lazy val `service-gateway` = (project in file("./service-gateway"))
 	.enablePlugins(PlayJava)

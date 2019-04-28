@@ -91,12 +91,7 @@ public class KafkaProviderProcessing implements Closeable {
 		this.clearProcessor = new ProviderProcessingNode<Void, Boolean>() {
 			@Override
 			protected Boolean processRequest(HMSMessage<Void> request) {
-				try {
-					return providerService.clear().get();					
-				} catch (InterruptedException | ExecutionException e) {
-					logger.error("clear provider error {}", e.getMessage());
-					return false;
-				}				
+					return providerService.clear().join();	
 			}
 
 			@Override
@@ -173,8 +168,8 @@ public class KafkaProviderProcessing implements Closeable {
 				ResponsePoint<ProviderTracking> trackingdto;
 				try {
 					trackingdto = request.popReponsePoint(hms.dto.ProviderTracking.class);
-					return providerService.tracking(trackingdto.data, hubid).get();
-				} catch (IOException | InterruptedException | ExecutionException e) {
+					return providerService.tracking(trackingdto.data, hubid).join();
+				} catch (IOException e) {
 					logger.error("Tracking Provider Hub Error {}", e.getMessage());
 					return false;
 				}
@@ -236,8 +231,8 @@ public class KafkaProviderProcessing implements Closeable {
 				hms.dto.GeoQuery querydto;
 				try {
 					querydto = request.popReponsePoint(hms.dto.GeoQuery.class).data;
-					return providerService.queryProviders(hubids, querydto).get();
-				} catch (IOException | InterruptedException | ExecutionException e) {
+					return providerService.queryProviders(hubids, querydto).join();
+				} catch (IOException e) {
 					logger.error("Query Providers Hub Error {}", e.getMessage());
 					return null;
 				}
@@ -250,12 +245,12 @@ public class KafkaProviderProcessing implements Closeable {
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaProviderMeta.TrackingWithHubMessage;
+				return KafkaProviderMeta.QueryProvidersWithHubsMessage;
 			}		
 			
 			@Override
 			protected String getForwardTopic() {				
-				return KafkaProviderMeta.TrackingMessage + KafkaHMSMeta.ReturnTopicSuffix;
+				return KafkaProviderMeta.QueryProvidersMessage + KafkaHMSMeta.ReturnTopicSuffix;
 			}	
 		};
 	}

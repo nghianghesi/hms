@@ -61,12 +61,18 @@ public class HMSRESTClient{
 		try {			      
 			long startTime = System.currentTimeMillis();
 			
-			logger.info(this.serviceIntegration.queryProviders(coordinate).execute().body().string().substring(0,30));
+			ResponseBody body = this.serviceIntegration.queryProviders(coordinate).execute().body();
+			if(body!=null) {
+				String str = body.string();
+				logger.info(str.substring(0, Math.min(str.length(),30)));
+			}else {
+				logger.info("Empty providers");
+			}
             
 			trackingMaxResponseTime(System.currentTimeMillis() - startTime);
 		    
 		} catch (Exception e) {
-			logger.error("Tracking Provider", e);
+			logger.error("query Provider", e);
 		}
 	}	
 	
