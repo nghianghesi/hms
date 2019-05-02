@@ -1,25 +1,13 @@
-package hms;
-
-import java.util.UUID;
+package hms.kafka.streamming;
 
 import hms.common.ServiceWaiter.IServiceChecker;
 
 public class StreamResponse<T> implements IServiceChecker<T>{
-	private UUID requestId;	
-	private T data;
-	private enum STATUS{waiting, error, ready};
-	private STATUS status = STATUS.waiting;
+	protected T data;
+	protected enum STATUS{waiting, error, ready};
+	protected STATUS status = STATUS.waiting;	
+	protected String error; 
 	
-	//TODO: Need support relay response
-	private String error; 
-	
-	public StreamResponse(UUID requestId) {
-		this.requestId = requestId;
-	}
-	
-	public UUID getRequestId() {
-		return requestId;
-	}
 	
 	public T getResult() {
 		return data;
@@ -29,7 +17,7 @@ public class StreamResponse<T> implements IServiceChecker<T>{
 		this.data = data;
 		this.status = STATUS.ready;		
 	}
-	
+
 	public boolean isError() {
 		return this.status == STATUS.error;
 	}

@@ -19,6 +19,7 @@ public class KafkaMessageUtils {
 			Settings.withRuntime().allowArrayFormat(true).includeServiceLoader());
 	private static final String ForwarPointdHeaderName = "forward-points";
 	private static final String ForwarDataHeaderName = "forward-data";
+	private static final String TotalRequestsHeaderName = "total-requests";
 
 	public static byte[] convertObjecttoByteArray(Object data) throws IOException {
 		if (data != null) {
@@ -70,7 +71,12 @@ public class KafkaMessageUtils {
 		HMSMessage<T> req = new HMSMessage<T>(requestid);
 		Iterator<Header> hiPoints = record.headers().headers(ForwarPointdHeaderName).iterator();
 		Iterator<Header> hiData = record.headers().headers(ForwarDataHeaderName).iterator();
+		
 		req.setData(convertByteArrayToObject(manifest, record.value()));
+		Header totalRequestsHeader = record.headers().lastHeader(TotalRequestsHeaderName);
+		if(totalRequestsHeader!=null) {
+			req.setTotalRequests(bytesToInt(totalRequestsHeader.value()));
+		}
 		while (hiPoints.hasNext() && hiData.hasNext()) {
 			req.internalAddReponsePoint(new String(hiPoints.next().value()), hiData.next().value());
 		}
@@ -81,6 +87,11 @@ public class KafkaMessageUtils {
 			throws IOException {
 		byte[] body = convertObjecttoByteArray(req.getData());
 		ProducerRecord<UUID, byte[]> record = new ProducerRecord<>(topic, req.getRequestId(), body);
+
+		if(req.getTotalRequests()>1) {
+			record.headers().add(TotalRequestsHeaderName, intToBytes(req.getTotalRequests()));
+		}
+		
 		for (HMSMessage.BinaryResponsePoint respoint : req.getReponsePoints()) {
 			record.headers().add(ForwarPointdHeaderName, respoint.point.getBytes());
 			record.headers().add(ForwarDataHeaderName, respoint.data);

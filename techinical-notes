@@ -18,4 +18,6 @@ DslJson required default constructor & public getter/setter
 
 Simulate non-blocking while waiting for response from microservice.
 
+becare full with $in List<UUID> of mongodb driver (need parse because value of UUID could be String)
+
 

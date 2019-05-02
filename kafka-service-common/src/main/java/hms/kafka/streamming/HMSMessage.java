@@ -37,6 +37,7 @@ public class HMSMessage<T> {
 	private UUID requestId;	
 	private List<BinaryResponsePoint> responsePoints = new ArrayList<>();	
 	private T data;
+	private int totalRequests = 1;
 	public UUID getRequestId() {
 		return requestId;
 	}	
@@ -49,6 +50,14 @@ public class HMSMessage<T> {
 		this.data = data;
 	}
 	
+	public int getTotalRequests() {
+		return totalRequests;
+	}
+
+	public void setTotalRequests(int totalRequests) {
+		this.totalRequests = totalRequests;
+	}
+
 	List<BinaryResponsePoint> getReponsePoints() {
 		return this.responsePoints;
 	}	
@@ -84,9 +93,17 @@ public class HMSMessage<T> {
 	
 	public <F> HMSMessage<F> forwardRequest(){
 		HMSMessage<F> r = new HMSMessage<F>(this.requestId);
+		r.setTotalRequests(this.totalRequests);		
 		r.responsePoints.addAll(this.responsePoints);
 		return r;
 	}	
+	
+	public <F> HMSMessage<F> forwardRequest(int split){
+		//TODO: support multiple split phrases 
+		HMSMessage<F> r = this.forwardRequest();
+		r.setTotalRequests(split);
+		return r;
+	}		
 	
 	public String DebugInfo() {
 		java.util.StringJoiner str = new java.util.StringJoiner (",");

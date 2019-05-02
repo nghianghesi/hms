@@ -56,17 +56,19 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	}
 
 	protected void ensureTopic(String topic) {
-		Properties props = new Properties();
-		props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
-		AdminClient adminClient = AdminClient.create(props);
-
-		// by default, create topic with 1 partition, use Kafka tools to change this topic to scale.
-		NewTopic cTopic = new NewTopic(topic, 1, (short) 1);
-		CreateTopicsResult createTopicsResult = adminClient.createTopics(Arrays.asList(cTopic));
-		try {
-			createTopicsResult.all().get();
-		} catch (InterruptedException | ExecutionException e) {
-			this.getLogger().error("Create topic error {}", e.getMessage());
+		if(!topic.matches("{.*?}")) {
+			Properties props = new Properties();
+			props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
+			AdminClient adminClient = AdminClient.create(props);
+	
+			// by default, create topic with 1 partition, use Kafka tools to change this topic to scale.
+			NewTopic cTopic = new NewTopic(topic, 1, (short) 1);
+			CreateTopicsResult createTopicsResult = adminClient.createTopics(Arrays.asList(cTopic));
+			try {
+				createTopicsResult.all().get();
+			} catch (InterruptedException | ExecutionException e) {
+				this.getLogger().error("Create topic error {}", e.getMessage());
+			}
 		}
 	}
 
@@ -97,6 +99,10 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	protected void configConsummer(Properties consumerProps ) {
 		return;
 	}
+	
+	protected <T> String applyTemplateToRepForTopic(String topic, T res) {
+		return topic;
+	}
 
 	protected void createConsummer() {
 		Properties consumerProps = new Properties();
@@ -110,12 +116,11 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		this.configConsummer(consumerProps);
 		this.consumer = new KafkaConsumer<>(consumerProps);
 		this.consumer.subscribe(Collections.singletonList(this.getConsumeTopic()));
-
 		
 		{// process single record
 			java.util.function.Consumer<ConsumerRecord<UUID, byte[]>> processRecord = (record)->{
 				try {
-					//this.getLogger().info("Consuming {} {} {}",this.getConsumeTopic(), record.key() , new String(record.value()));					
+					this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
 					HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
 					TRep res = this.processRequest(request);
 					if(this.getForwardTopic()!=null) {
@@ -148,7 +153,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	protected void reply(HMSMessage<TCon> request, TRep value) {
 		HMSMessage<TRep> replymsg = request.forwardRequest();
 		replymsg.setData(value);
-		String replytop = request.getCurrentResponsePoint(this.getForwardTopic());
+		String replytop = applyTemplateToRepForTopic(request.getCurrentResponsePoint(this.getForwardTopic()), value);
 		try {
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
 			this.producer.send(record).get();
@@ -163,9 +168,10 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		try {
 			forwardReq.addReponsePoint(this.getForwardBackTopic(), request.getData());
 			//this.getLogger().info("forwarding:" + forwardReq.DebugInfo());			
-			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, this.getForwardTopic());					
-			this.producer.send(record);
-		} catch (IOException e) {
+			String forwardtopic = applyTemplateToRepForTopic(this.getForwardTopic(), value);
+			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, forwardtopic);					
+			this.producer.send(record).get();
+		} catch (IOException | InterruptedException | ExecutionException e) {
 			this.getLogger().error("Forward request error {}", e.getMessage());
 		}		
 	}
