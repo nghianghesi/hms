@@ -31,6 +31,7 @@ lazy val dependencies =
   
 lazy val protocol = (project in file("./protocol"))
 lazy val playmorphia = (project in file("./playmorphia"))
+lazy val jvptree = (project in file("./jvptree"))
 
 lazy val `service-common` = (project in file("./service-common"))
   .dependsOn(protocol)
@@ -83,6 +84,15 @@ lazy val hubservice = (project in file("./hubservice"))
 		dependencies.kafkaclient,
 		dependencies.kafka))
   .dependsOn(`service-common`, `kafka-serivce-common`, `provider-service`)  
+  
+  
+  lazy val `provider-inmem-consumer` = (project in file("./provider-inmem-consumer"))
+  .settings(libraryDependencies ++=  Seq(	  
+		guice,  
+		dependencies.kafkaclient,
+		dependencies.kafka))
+  .dependsOn(`service-common`, `kafka-serivce-common`, jvptree)  
+  
   
  lazy val `hub-kafka-producer` = (project in file("./hub-kafka-producer"))
   .settings(libraryDependencies ++=  Seq(	  
@@ -152,7 +162,7 @@ lazy val `processing-host` = (project in file("./processing-host"))
 		dependencies.morphia,
 		dependencies.modelmapper
 	))
-	.dependsOn(`provider-kafka-consumer`,`hub-kafka-consumer`, `hms-play`)	  
+	.dependsOn(`provider-kafka-consumer`,`hub-kafka-consumer`, `hms-play`,`service-common`)	  
 	
 lazy val global = project
   .in(file("."))
@@ -164,6 +174,7 @@ lazy val global = project
 	`provider-service`,
 	`provider-kafka-producer`,
 	`provider-kafka-consumer`,
+	`provider-inmem-consumer`,
 	`hub-kafka-producer`,
 	`hub-kafka-consumer`,	
     `service-gateway`,

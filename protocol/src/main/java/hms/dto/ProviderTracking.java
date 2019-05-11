@@ -1,7 +1,7 @@
 package hms.dto;
 import java.util.UUID;
 
-public class ProviderTracking {
+public class ProviderTracking implements LatLongLocation{
 	private UUID providerid;
 	private double latitude;
 	private double longitude;	

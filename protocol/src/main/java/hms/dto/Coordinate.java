@@ -1,6 +1,6 @@
 package hms.dto;
 
-public class Coordinate {
+public class Coordinate implements LatLongLocation{
 	private double latitude;
 	private double longitude;
 	public Coordinate() {

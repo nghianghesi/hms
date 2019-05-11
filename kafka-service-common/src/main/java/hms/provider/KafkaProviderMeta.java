@@ -11,4 +11,5 @@ public class KafkaProviderMeta {
 	public static final String QueryProvidersWithHubsMessage  = TopicPrefix+"query-with-hub";
 	
 	public static final String ProviderGroupConfigKey = "kafka.provider.group";
+	public static final String ProviderInmemHubIdConfigKey = "kafka.provider.inmem-hubid";
 }

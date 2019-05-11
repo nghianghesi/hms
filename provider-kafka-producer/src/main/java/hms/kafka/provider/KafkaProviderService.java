@@ -3,10 +3,14 @@ package hms.kafka.provider;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+
 import javax.inject.Inject;
 import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
+import hms.common.IHMSExecutorContext;
 import hms.dto.GeoQuery;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.StreamRoot;
@@ -25,6 +29,13 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	StreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
 	StreamRoot<hms.dto.GeoQuery, hms.dto.ProvidersGeoQueryResponse>  queryProvidersStream;
 	String server, rootid;	
+	
+	
+	IHMSExecutorContext ec;
+	@Inject
+	public KafkaProviderService(IHMSExecutorContext ec) {
+		this.ec = ec;
+	}
 
 	private abstract class ProviderStreamRoot<TStart,TRes> extends StreamRoot<TStart,TRes>{
 		@Override
@@ -46,6 +57,11 @@ public class KafkaProviderService implements IProviderService, Closeable{
 		protected String getForwardTopic() {
 			return null;
 		}	
+
+		@Override
+		protected Executor getExecutorService() {
+			return ec.getExecutor();
+		}
 	}
 	
 	@Inject

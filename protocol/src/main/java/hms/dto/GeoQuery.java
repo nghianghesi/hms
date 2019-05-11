@@ -1,6 +1,6 @@
 package hms.dto;
 
-public class GeoQuery {
+public class GeoQuery implements LatLongLocation{
 	private double latitude;
 	private double longitude;	
 	private int distance;	

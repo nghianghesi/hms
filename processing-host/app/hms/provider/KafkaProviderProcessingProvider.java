@@ -19,7 +19,8 @@ public class KafkaProviderProcessingProvider extends hms.commons.KafkaProcessing
 	protected KafkaProviderProcessing internalGet() {
 		return new KafkaProviderProcessing(
 				this.injector.getInstance(Config.class),
-				this.injector.getInstance(IProviderServiceProcessor.class));
+				this.injector.getInstance(IProviderServiceProcessor.class),
+				this.injector.getInstance(hms.common.IHMSExecutorContext));
 	}
 
 }

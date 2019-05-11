@@ -3,6 +3,7 @@ package hms.kafka.hub;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
+import hms.common.IHMSExecutorContext;
 import hms.dto.Coordinate;
 import hms.hub.IHubServiceProcessor;
 import hms.hub.KafkaHubMeta;
@@ -20,6 +22,7 @@ import hms.kafka.streamming.KafkaStreamNodeBase;
 public class KafkaHubProcessing implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(KafkaHubProcessing.class);
 	private IHubServiceProcessor hubService;
+	IHMSExecutorContext ec;
 	
 	KafkaStreamNodeBase<hms.dto.Coordinate, UUID>  getHubByCoordinateProcessor; 
 	KafkaStreamNodeBase<hms.dto.GeoQuery, hms.dto.CoveringHubsResponse>  getCoveringHubsProcessor; 
@@ -48,11 +51,17 @@ public class KafkaHubProcessing implements Closeable {
 		protected String getForwardTopic() {
 			return this.getConsumeTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 		}		
+		
+		@Override
+		protected Executor getExecutorService() {
+			return ec.getExecutor();
+		}		
 	}
 	
 	@Inject
-	public KafkaHubProcessing(Config config, IHubServiceProcessor hubService) {
+	public KafkaHubProcessing(Config config, IHubServiceProcessor hubService,IHMSExecutorContext ec) {
 		this.hubService = hubService;
+		this.ec= ec;
 		
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
 			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);

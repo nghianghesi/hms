@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+import hms.common.DistanceUtils;
 import hms.hub.entities.HubNodeEntity;
 import hms.hub.entities.HubRootEntity;
 import hms.hub.entities.HubSubEntity;
@@ -151,15 +152,7 @@ public class HubNodeModel {
 	}
 	
 	private double geoDistance(double lat, double lng) {
-	    double earthRadius = 6371000; //meters
-	    double dLat = Math.toRadians(this.getLatitude()-lat);
-	    double dLng = Math.toRadians(this.getLongitude()-lng);
-	    double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-	               Math.cos(Math.toRadians(lat)) * Math.cos(Math.toRadians(this.getLatitude())) *
-	               Math.sin(dLng/2) * Math.sin(dLng/2);
-	    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-	    float dist = (float) (earthRadius * c);
-	    return dist;
+	    return DistanceUtils.geoDistance(lat, lng, this.getLatitude(), this.getLongitude());
 	}	
 	
 	public HubNodeModel getHostingHub(double latitude, double longitude) {

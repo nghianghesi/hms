@@ -27,6 +27,7 @@ public class ServiceWaiter {
 		if(!this.shuttingdown) {
 			try {
 				Thread.sleep(this.IdleDuration);
+				this.currentStick = java.lang.System.currentTimeMillis();
 				CompletableFuture.runAsync(()->this.sleeping(),this.ec);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -43,32 +44,34 @@ public class ServiceWaiter {
 		this.shuttingdown = true;
 	}
 	
-	private class Result<T>{
+	private class WaitingWrapper{
 		Runnable wrap;
-		long start =  java.lang.System.currentTimeMillis();
+		final long start =  java.lang.System.currentTimeMillis();
 	}
 	
-	public <T> CompletableFuture<T> waitForSignal(IServiceChecker<T> waiter, int timeout){
-		CompletableFuture<T> finalWaiter = new CompletableFuture<T>();
-		final Result<T> waiting = new Result<>();
-		waiting.wrap = () -> {
-			if(java.lang.System.currentTimeMillis() - waiting.start > timeout) {
-				finalWaiter.completeExceptionally(new TimeoutException());
+	private long currentStick = java.lang.System.currentTimeMillis();
+	
+	public <T> CompletableFuture<T> waitForSignal(IServiceChecker<T> checker, int timeout){
+		CompletableFuture<T> locker = new CompletableFuture<T>();
+		final WaitingWrapper wrapper = new WaitingWrapper();
+		wrapper.wrap = () -> {
+			if(this.currentStick - wrapper.start > timeout) {
+				locker.completeExceptionally(new TimeoutException());
 			}else {
 				try {
-					if(waiter.isReady()) {
-						finalWaiter.complete(waiter.getResult());
-					}else if(waiter.isError()){
-						finalWaiter.completeExceptionally(waiter.getError());
+					if(checker.isReady()) {
+						locker.complete(checker.getResult());
+					}else if(checker.isError()){
+						locker.completeExceptionally(checker.getError());
 					}else {
-						CompletableFuture.runAsync(waiting.wrap, this.ec);
+						CompletableFuture.runAsync(wrapper.wrap, this.ec);
 					}
 				} catch (Exception e) {
-					finalWaiter.completeExceptionally(e);
+					locker.completeExceptionally(e);
 				}
 			}
 		};
-		waiting.wrap.run();
-		return finalWaiter;
+		wrapper.wrap.run();
+		return locker;
 	}
 }

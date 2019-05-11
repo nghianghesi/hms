@@ -6,7 +6,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -21,12 +25,13 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
+import hms.common.ServiceWaiter.IServiceChecker;
+
 public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	protected KafkaConsumer<UUID, byte[]> consumer;
 	protected KafkaProducer<UUID, byte[]> producer;
 
 
-	private Thread consumerThread = null;
 	protected int timeout = 5000;
 	private boolean shutdownNode = false; 
 
@@ -44,6 +49,8 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	
 	protected abstract String getGroupid();
 	protected abstract String getServer();
+	
+	protected abstract Executor getExecutorService();
 	
 	protected KafkaStreamNodeBase() {
 		this.ensureTopics();
@@ -103,7 +110,41 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	protected <T> String applyTemplateToRepForTopic(String topic, T res) {
 		return topic;
 	}
-
+	
+	private IServiceChecker<Void> consummerWaiter = new IServiceChecker<Void>(){
+		public boolean isReady() {
+			return true;
+		}
+		public Void getResult() {
+			return null;
+		}
+		public boolean isError() {
+			return false;
+		}
+		public Throwable getError() {		
+			return null;
+		}
+	};
+	
+	
+	private void processSingleRecord(ConsumerRecord<UUID, byte[]> record) {
+		try {
+			this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
+			HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
+			TRep res = this.processRequest(request);
+			if(this.getForwardTopic()!=null) {
+				if(this.getForwardBackTopic() == null) {
+					this.reply(request, res);
+				}else {
+					this.forward(request, res);
+				}
+			}
+		} catch (IOException e) {
+			this.getLogger().error("Consumer error {} {}", this.getConsumeTopic(), e.getMessage());
+		}
+	}
+	
+	private Runnable pollRequestFromConsummer;	
 	protected void createConsummer() {
 		Properties consumerProps = new Properties();
 		consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
@@ -117,35 +158,23 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		this.consumer = new KafkaConsumer<>(consumerProps);
 		this.consumer.subscribe(Collections.singletonList(this.getConsumeTopic()));
 		
-		{// process single record
-			java.util.function.Consumer<ConsumerRecord<UUID, byte[]>> processRecord = (record)->{
-				try {
-					this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
-					HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
-					TRep res = this.processRequest(request);
-					if(this.getForwardTopic()!=null) {
-						if(this.getForwardBackTopic() == null) {
-							this.reply(request, res);
-						}else {
-							this.forward(request, res);
-						}
-					}
-				} catch (IOException e) {
-					this.getLogger().error("Consumer error {} {}", this.getConsumeTopic(), e.getMessage());
+		this.pollRequestFromConsummer = () -> {		
+			if (!shutdownNode) {
+				ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(1));
+				for (ConsumerRecord<UUID, byte[]> record : records) {
+					this.processSingleRecord(record);
 				}
-			};
-			
-			// consumer thread.
-			this.consumerThread = new Thread(() -> {		
-				while (!shutdownNode) {
-					ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(500));
-					for (ConsumerRecord<UUID, byte[]> record : records) {
-						processRecord.accept(record);
-					}
+				
+				if (!shutdownNode) { 
+					hms.common.ServiceWaiter.getInstance()
+						.waitForSignal(consummerWaiter, Integer.MAX_VALUE) // by ServiceWaiter --> will idle 100ms each round
+					.thenRunAsync(this.pollRequestFromConsummer, this.getExecutorService());
+				}else {
+					this.notify();
 				}
-			});
-			this.consumerThread.start();
-		}
+			}
+		};
+		CompletableFuture.runAsync(this.pollRequestFromConsummer, this.getExecutorService());
 		
 		this.getLogger().info("Consumer {} ready", this.getConsumeTopic());						 
 	}
@@ -179,14 +208,9 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	protected abstract TRep processRequest(HMSMessage<TCon> record);
 	
 	public void shutDown() {
+		this.getLogger().info("Shutting down");
+		this.producer.close();
+		this.consumer.close();	
 		this.shutdownNode = true;
-		try {
-			this.getLogger().info("Shutting down");
-			this.consumerThread.join();
-			this.producer.close();
-			this.consumer.close();
-		} catch (InterruptedException e) {
-			this.getLogger().error("Shutdown error {}", e.getMessage());
-		}
 	}
 }

@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
+import hms.common.IHMSExecutorContext;
 import hms.dto.Coordinate;
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
@@ -25,6 +27,7 @@ import hms.provider.KafkaProviderMeta;
 public class KafkaProviderProcessing implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderProcessing.class);
 	private IProviderServiceProcessor providerService;
+	IHMSExecutorContext ec;
 	
 	KafkaStreamNodeBase<Void, Boolean>  clearProcessor; 
 	KafkaStreamNodeBase<hms.dto.Provider, Boolean>  initProviderProcessor;
@@ -56,12 +59,18 @@ public class KafkaProviderProcessing implements Closeable {
 		@Override
 		protected String getForwardTopic() {
 			return this.getConsumeTopic()+KafkaHMSMeta.ReturnTopicSuffix;
-		}		
+		}
+
+		@Override
+		protected Executor getExecutorService() {
+			return ec.getExecutor();
+		}
 	}
 	
 	@Inject
-	public KafkaProviderProcessing(Config config, IProviderServiceProcessor providerService) {
+	public KafkaProviderProcessing(Config config, IProviderServiceProcessor providerService, IHMSExecutorContext ec) {
 		this.providerService = providerService;	
+		this.ec = ec;
 
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
 			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);
