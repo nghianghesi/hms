@@ -2,6 +2,7 @@ package hms.kafka.hub;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
@@ -15,18 +16,21 @@ import com.typesafe.config.Config;
 import hms.KafkaHMSMeta;
 import hms.common.IHMSExecutorContext;
 import hms.dto.Coordinate;
+import hms.dto.GeoQuery;
 import hms.hub.IHubServiceProcessor;
 import hms.hub.KafkaHubMeta;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
+import hms.kafka.streamming.KafkaStreamSplitNodeBase;
 public class KafkaHubProcessing implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(KafkaHubProcessing.class);
 	private IHubServiceProcessor hubService;
 	IHMSExecutorContext ec;
 	
 	KafkaStreamNodeBase<hms.dto.Coordinate, UUID>  getHubByCoordinateProcessor; 
-	KafkaStreamNodeBase<hms.dto.GeoQuery, hms.dto.CoveringHubsResponse>  getCoveringHubsProcessor; 
-
+	KafkaStreamNodeBase<hms.dto.GeoQuery, hms.dto.CoveringHubsResponse>  getCoveringHubsProcessor; 	 
+	KafkaStreamSplitNodeBase<hms.dto.GeoQuery, UUID>  getAndSplitCoveringHubsProcessor;
+	
 	private String kafkaserver;
 	private String hubGroup;
 	
@@ -77,6 +81,7 @@ public class KafkaHubProcessing implements Closeable {
 		
 		this.buildMappingHubProcessor();
 		this.buildGetCoveringHubsProcessor();
+		this.buildGetAndSplitCoveringHubsProcessor();
 	}
 	
 	private void buildMappingHubProcessor() {
@@ -100,7 +105,6 @@ public class KafkaHubProcessing implements Closeable {
 	
 
 	private void buildGetCoveringHubsProcessor() {
-
 		this.getCoveringHubsProcessor = new HubProcessingNode<hms.dto.GeoQuery, hms.dto.CoveringHubsResponse>() {
 			@Override
 			protected hms.dto.CoveringHubsResponse processRequest(HMSMessage<hms.dto.GeoQuery> request) {
@@ -118,12 +122,63 @@ public class KafkaHubProcessing implements Closeable {
 			}
 		};
 	}
+	
+	private void buildGetAndSplitCoveringHubsProcessor() {
+		this.getAndSplitCoveringHubsProcessor = new KafkaStreamSplitNodeBase<GeoQuery, UUID>() {
+			
+			@Override
+			protected List<UUID> processRequest(HMSMessage<GeoQuery> request) {
+				return hubService.getConveringHubs(request.getData()).join();
+			}
+			
+			@Override
+			protected Class<GeoQuery> getTConsumeManifest() {
+				return GeoQuery.class;
+			}
+			
+			@Override
+			protected String getServer() {
+				return kafkaserver;
+			}
+			
+			@Override
+			protected Logger getLogger() {
+				return logger;
+			}
+			
+			@Override
+			protected String getGroupid() {
+				return hubGroup;
+			}
+			
+			@Override
+			protected String getForwardTopic() {
+				return this.getConsumeTopic()+KafkaHMSMeta.ReturnTopicSuffix+"{hubid}";
+			}
+			
+			@Override
+			protected Executor getExecutorService() {
+				return ec.getExecutor();
+			}
+			
+			@Override
+			protected String getConsumeTopic() {
+				return KafkaHubMeta.FindAndSplitCoveringHubsMessage;
+			}
+			
+			@Override
+			protected String applyTemplateToRepForTopic(String topic, Object value) {
+				return topic.replace("{hubid}",value!=null ? value.toString() : "");
+			} 
+		};
+	}
 
 	@Override
 	public void close() throws IOException {
 		// TODO Auto-generated method stub
 		this.getHubByCoordinateProcessor.shutDown();
 		this.getCoveringHubsProcessor.shutDown();
+		this.getAndSplitCoveringHubsProcessor.shutDown();
 	}
 
 }

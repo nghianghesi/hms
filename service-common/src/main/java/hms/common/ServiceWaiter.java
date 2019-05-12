@@ -20,15 +20,21 @@ public class ServiceWaiter {
 	}
 	
 	private ExecutorService ec = Executors.newFixedThreadPool(1);
-	private final int IdleDuration = 100;
+	private final int IdleDuration = 50;
 	private boolean shuttingdown = false;
 	
 	private void sleeping() {
 		if(!this.shuttingdown) {
 			try {
-				Thread.sleep(this.IdleDuration);
+				long prevstick = this.currentStick;
 				this.currentStick = java.lang.System.currentTimeMillis();
-				CompletableFuture.runAsync(()->this.sleeping(),this.ec);
+				if(this.currentStick - prevstick < this.IdleDuration) {
+					Thread.sleep(this.IdleDuration - this.currentStick + prevstick);
+				}
+				this.currentStick = java.lang.System.currentTimeMillis();
+				if(!shuttingdown) {
+					CompletableFuture.runAsync(()->this.sleeping(),this.ec);
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

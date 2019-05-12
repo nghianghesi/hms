@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -27,7 +26,7 @@ import org.slf4j.Logger;
 
 import hms.common.ServiceWaiter.IServiceChecker;
 
-public abstract class KafkaStreamNodeBase<TCon, TRep> {
+public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	protected KafkaConsumer<UUID, byte[]> consumer;
 	protected KafkaProducer<UUID, byte[]> producer;
 
@@ -48,9 +47,15 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 	}
 	
 	protected abstract String getGroupid();
-	protected abstract String getServer();
-	
+	protected abstract String getServer();	
 	protected abstract Executor getExecutorService();
+	protected boolean isChained() {
+		return false;
+	}
+	
+	protected List<? extends PollChainning> getSubChains() {
+		return null;
+	}
 	
 	protected KafkaStreamNodeBase() {
 		this.ensureTopics();
@@ -89,9 +94,11 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 			this.ensureTopic(this.getForwardBackTopic());
 		}
 	}
+	
 	protected void configProducer(Properties producerProps ) {
 		return;
 	}
+	
 	protected void createProducer() {
 		Properties props = new Properties();
 		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
@@ -107,7 +114,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		return;
 	}
 	
-	protected <T> String applyTemplateToRepForTopic(String topic, T res) {
+	protected String applyTemplateToRepForTopic(String topic, Object value) {
 		return topic;
 	}
 	
@@ -144,6 +151,27 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		}
 	}
 	
+	private void hookSubChains(CompletableFuture<Void> mychain) {
+		if(this.getSubChains()!=null) {
+			for(PollChainning sub:this.getSubChains()) {
+				sub.hookPolling(mychain);
+			}
+		}
+	}
+	
+	public void hookPolling(CompletableFuture<Void> dependency) {
+		hookSubChains(
+				dependency.thenRunAsync(this.pollRequestFromConsummer, this.getExecutorService())
+					.thenRunAsync(()->this.intervalCleanup()));
+	}	
+	
+	private void hookPollingAsRoot() {
+		if(!isChained()) {
+			hookPolling(hms.common.ServiceWaiter.getInstance()
+						.waitForSignal(consummerWaiter, Integer.MAX_VALUE));
+		}
+	}
+	
 	private Runnable pollRequestFromConsummer;	
 	protected void createConsummer() {
 		Properties consumerProps = new Properties();
@@ -166,16 +194,16 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 				}
 				
 				if (!shutdownNode) { 
-					hms.common.ServiceWaiter.getInstance()
-						.waitForSignal(consummerWaiter, Integer.MAX_VALUE) // by ServiceWaiter --> will idle 100ms each round
-					.thenRunAsync(this.pollRequestFromConsummer, this.getExecutorService());
+					this.hookPollingAsRoot();
 				}else {
 					this.notify();
 				}
+			}else {
+				this.notify();
 			}
 		};
-		CompletableFuture.runAsync(this.pollRequestFromConsummer, this.getExecutorService());
 		
+		this.hookPollingAsRoot();
 		this.getLogger().info("Consumer {} ready", this.getConsumeTopic());						 
 	}
 
@@ -205,7 +233,14 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> {
 		}		
 	}
 
-	protected abstract TRep processRequest(HMSMessage<TCon> record);
+	/**
+	 * note: these 2 (processRequest & processRequest) will be called in thread safe manner, worked as single thread
+	 * to enable multiple processing, need to create multiple processing nodes. 
+	 * */
+	protected abstract TRep processRequest(HMSMessage<TCon> record);	
+	protected void intervalCleanup() {
+		return;
+	}
 	
 	public void shutDown() {
 		this.getLogger().info("Shutting down");

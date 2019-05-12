@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import com.typesafe.config.Config;
@@ -24,6 +23,7 @@ import org.slf4j.LoggerFactory;
 public class KafkaProviderService implements IProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderService.class);
 
+	private KafkaProviderSettings topicSettings;
 	StreamRoot<Void, Boolean>  clearStream; 
 	StreamRoot<hms.dto.Provider, Boolean>  initProviderStream;
 	StreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
@@ -65,7 +65,8 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	}
 	
 	@Inject
-	public KafkaProviderService(Config config) {	
+	public KafkaProviderService(Config config, KafkaProviderSettings settings) {	
+		this.topicSettings = settings;
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)
 				&& config.hasPath(KafkaHMSMeta.RootIdConfigKey)) {
 			server = config.getString(KafkaHMSMeta.ServerConfigKey);
@@ -98,7 +99,7 @@ public class KafkaProviderService implements IProviderService, Closeable{
 			trackingProviderStream = new ProviderStreamRoot<hms.dto.ProviderTracking, Boolean>(){
 				@Override
 				protected String getStartTopic() {
-					return KafkaProviderMeta.TrackingMessage;
+					return topicSettings.getTrackingTopic();
 				}
 
 				@Override
@@ -110,7 +111,7 @@ public class KafkaProviderService implements IProviderService, Closeable{
 			queryProvidersStream = new ProviderStreamRoot<hms.dto.GeoQuery, hms.dto.ProvidersGeoQueryResponse>(){
 				@Override
 				protected String getStartTopic() {
-					return KafkaProviderMeta.QueryProvidersMessage;
+					return topicSettings.getQueryTopic();
 				}
 
 				@Override
