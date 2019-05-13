@@ -2,12 +2,14 @@ package hms.provider;
 
 import com.google.inject.AbstractModule;
 
+import hms.kafka.provider.InMemKafkaProviderSettings;
 import hms.kafka.provider.KafkaProviderSettings;
 
-public class KafkaProducerModule extends AbstractModule {
+public class InMemProviderModule  extends AbstractModule {
+	
 	@Override
 	protected void configure() {
-		bind(KafkaProviderSettings.class).to(KafkaProviderSettings.class);
+		bind(KafkaProviderSettings.class).to(InMemKafkaProviderSettings.class);		
         bind(hms.provider.IProviderService.class)
         	.toProvider(KafkaProducerServiceProvider.class);        
 	}

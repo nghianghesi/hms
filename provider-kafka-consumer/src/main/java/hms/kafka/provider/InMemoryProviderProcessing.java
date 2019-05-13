@@ -1,5 +1,7 @@
 package hms.kafka.provider;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.concurrent.Executor;
 import javax.inject.Inject;
 
@@ -17,7 +19,7 @@ import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
 import hms.provider.KafkaProviderMeta;
 
-public class InMemoryProviderProcessing {
+public class InMemoryProviderProcessing implements Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(InMemoryProviderProcessing.class);
 	IHMSExecutorContext ec;
 	
@@ -132,5 +134,12 @@ public class InMemoryProviderProcessing {
 				return KafkaProviderMeta.InMemQueryProvidersWithHubsMessage+"{hubid}";
 			}				
 		};
+	}
+
+
+	@Override
+	public void close() throws IOException {
+		trackingProviderProcessor.shutDown();	
+		queryProvidersProcessor.shutDown();		
 	}	
 }

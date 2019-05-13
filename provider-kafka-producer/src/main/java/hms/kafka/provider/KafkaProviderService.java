@@ -32,10 +32,6 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	
 	
 	IHMSExecutorContext ec;
-	@Inject
-	public KafkaProviderService(IHMSExecutorContext ec) {
-		this.ec = ec;
-	}
 
 	private abstract class ProviderStreamRoot<TStart,TRes> extends StreamRoot<TStart,TRes>{
 		@Override
@@ -65,8 +61,9 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	}
 	
 	@Inject
-	public KafkaProviderService(Config config, KafkaProviderSettings settings) {	
+	public KafkaProviderService(Config config,IHMSExecutorContext ec, KafkaProviderSettings settings) {	
 		this.topicSettings = settings;
+		this.ec = ec;
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)
 				&& config.hasPath(KafkaHMSMeta.RootIdConfigKey)) {
 			server = config.getString(KafkaHMSMeta.ServerConfigKey);
