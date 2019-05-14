@@ -11,6 +11,6 @@ public class InMemProviderModule  extends AbstractModule {
 	protected void configure() {
 		bind(KafkaProviderSettings.class).to(InMemKafkaProviderSettings.class);		
         bind(hms.provider.IProviderService.class)
-        	.toProvider(KafkaProducerServiceProvider.class);        
+        	.toProvider(KafkaProducerServiceProvider.class).asEagerSingleton();;        
 	}
 }

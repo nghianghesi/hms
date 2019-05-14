@@ -11,3 +11,5 @@ For ex: tracking provider need hubservice.maphub
 
 split/accumulate nodes
 assign consumer to partition scaling
+
+using completefuture to chain --> sync processing

@@ -21,3 +21,5 @@ Simulate non-blocking while waiting for response from microservice.
 becare full with $in List<UUID> of mongodb driver (need parse because value of UUID could be String)
 
 
+run sbt with config file sbt "service-gateway/run -Dconfig.file=service-gateway/conf/application1.conf"
+sbt "processing-host/runMain hms.AppStart -Dconfig.file=processing-host/conf/application1.conf"

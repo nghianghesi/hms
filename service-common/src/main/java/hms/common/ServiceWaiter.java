@@ -1,12 +1,11 @@
 package hms.common;
 
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
-public class ServiceWaiter {
-	
+public class ServiceWaiter {	
 	public static interface IServiceChecker<T>{
 		boolean isReady();
 		T getResult();
@@ -14,17 +13,25 @@ public class ServiceWaiter {
 		Throwable getError();
 	}
 	
+	private class IntervalStickObservable extends Observable{
+		public void onStick() {
+			this.setChanged();
+			this.notifyObservers();
+		}
+	}
+	
 	private static ServiceWaiter instance = new ServiceWaiter();
 	public static ServiceWaiter getInstance() {
 		return instance;
 	}
 	
-	private ExecutorService ec = Executors.newFixedThreadPool(1);
-	private final int IdleDuration = 50;
+	
+	private IntervalStickObservable serviceWaiterObservable = new IntervalStickObservable();
+	private final int IdleDuration = 100;
 	private boolean shuttingdown = false;
 	
 	private void sleeping() {
-		if(!this.shuttingdown) {
+		while(!this.shuttingdown) {
 			try {
 				long prevstick = this.currentStick;
 				this.currentStick = java.lang.System.currentTimeMillis();
@@ -32,8 +39,8 @@ public class ServiceWaiter {
 					Thread.sleep(this.IdleDuration - this.currentStick + prevstick);
 				}
 				this.currentStick = java.lang.System.currentTimeMillis();
-				if(!shuttingdown) {
-					CompletableFuture.runAsync(()->this.sleeping(),this.ec);
+				if(!this.shuttingdown) {				
+					serviceWaiterObservable.onStick();
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -42,42 +49,61 @@ public class ServiceWaiter {
 	}
 	
 	
-	private ServiceWaiter() {	
-		CompletableFuture.runAsync(()->this.sleeping(),this.ec);
+	private ServiceWaiter() {
+		new Thread(()->this.sleeping()).start();
 	}
 	
 	public void shutdown() {
 		this.shuttingdown = true;
 	}
 	
-	private class WaitingWrapper{
-		Runnable wrap;
+	private class WaitingWrapper<T> implements Observer{
 		final long start =  java.lang.System.currentTimeMillis();
+		final IServiceChecker<T> checker;
+		final long timeout;
+		final CompletableFuture<T> locker;
+		public WaitingWrapper(IServiceChecker<T> checker, long timeout, CompletableFuture<T> locker) {
+			this.checker = checker;
+			this.timeout = timeout;
+			this.locker = locker;
+			serviceWaiterObservable.addObserver(this);
+		}
+		
+		@Override
+		public void update(Observable arg0, Object arg1) {
+			if(currentStick - start > timeout) {
+				serviceWaiterObservable.deleteObserver(this);
+				locker.completeExceptionally(new TimeoutException());				
+			}else {
+				try {
+					if(checker.isReady()) {
+						serviceWaiterObservable.deleteObserver(this);
+						locker.complete(checker.getResult());						
+					}else if(checker.isError()){
+						serviceWaiterObservable.deleteObserver(this);
+						locker.completeExceptionally(checker.getError());						
+					}
+				} catch (Exception e) {
+					serviceWaiterObservable.deleteObserver(this);
+					locker.completeExceptionally(e);					
+				}
+			}
+		}
 	}
 	
 	private long currentStick = java.lang.System.currentTimeMillis();
 	
-	public <T> CompletableFuture<T> waitForSignal(IServiceChecker<T> checker, int timeout){
+	public <T> CompletableFuture<T> waitForSignal(IServiceChecker<T> checker, long timeout){
 		CompletableFuture<T> locker = new CompletableFuture<T>();
-		final WaitingWrapper wrapper = new WaitingWrapper();
-		wrapper.wrap = () -> {
-			if(this.currentStick - wrapper.start > timeout) {
-				locker.completeExceptionally(new TimeoutException());
-			}else {
-				try {
-					if(checker.isReady()) {
-						locker.complete(checker.getResult());
-					}else if(checker.isError()){
-						locker.completeExceptionally(checker.getError());
-					}else {
-						CompletableFuture.runAsync(wrapper.wrap, this.ec);
-					}
-				} catch (Exception e) {
-					locker.completeExceptionally(e);
-				}
-			}
-		};
-		wrapper.wrap.run();
+		new WaitingWrapper<T>(checker, timeout, locker);
 		return locker;
+	}
+	
+	public void addHeartbeatObserver(Observer observer) {
+		this.serviceWaiterObservable.addObserver(observer);
+	}
+	
+	public void removeHeartbeatObserver(Observer observer) {
+		this.serviceWaiterObservable.deleteObserver(observer);
 	}
 }

@@ -5,12 +5,11 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.typesafe.config.Config;
 
-import hms.kafka.provider.InMemoryProviderProcessing;
 import hms.kafka.provider.InMemoryProviderTrackingWithHubProcessing;
 import play.inject.ApplicationLifecycle;
 
 public class KafkaInMemHubProviderConsumerModule extends AbstractModule{
-	private static class InMemoryProviderTrackingWithHubProcessingProvider 
+	public static class InMemoryProviderTrackingWithHubProcessingProvider 
 		extends hms.commons.KafkaProcessingProvider<InMemoryProviderTrackingWithHubProcessing> {
 
 		@Inject

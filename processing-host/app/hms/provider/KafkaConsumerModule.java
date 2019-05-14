@@ -11,7 +11,7 @@ import play.inject.ApplicationLifecycle;
 
 public class KafkaConsumerModule extends AbstractModule {
 	
-	private static class KafkaProviderProcessingProvider extends hms.commons.KafkaProcessingProvider<KafkaProviderProcessing> {
+	public static class KafkaProviderProcessingProvider extends hms.commons.KafkaProcessingProvider<KafkaProviderProcessing> {
 
 		@Inject
 		public KafkaProviderProcessingProvider(ApplicationLifecycle app, Injector injector) {
