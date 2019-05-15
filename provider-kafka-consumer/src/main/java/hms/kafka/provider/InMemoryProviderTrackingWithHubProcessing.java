@@ -94,7 +94,7 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 		}		
 	}
 	
-	private class ProviderDistanceFunction implements DistanceFunction<LatLongLocation> {
+	private static class ProviderDistanceFunction implements DistanceFunction<LatLongLocation> {
 	    public double getDistance(final LatLongLocation firstPoint, final LatLongLocation secondPoint) {
 	        return DistanceUtils.geoDistance(firstPoint.getLatitude(), firstPoint.getLongitude(), 
 	        									secondPoint.getLatitude(), secondPoint.getLongitude());
@@ -161,11 +161,12 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	
 	private void buildTrackingProviderHubProcessor() {
 		this.trackingProviderHubProcessor = new ProviderProcessingNode<UUID, Boolean>() {
-			{
-				this.subchains.add(buildQueryProvidersHubProcessor());
-			}
 			
 			private final List<PollChainning> subchains = new LinkedList<PollChainning>();
+
+			{
+				this.subchains.add(buildQueryProvidersHubProcessor());
+			}			
 			@Override
 			protected List<? extends PollChainning> getSubChains() {
 				return subchains;

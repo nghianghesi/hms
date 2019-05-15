@@ -235,24 +235,26 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		replymsg.setData(value);
 		String replytop = applyTemplateToRepForTopic(request.getCurrentResponsePoint(this.getForwardTopic()), value);
 		try {
+			this.getLogger().info("Replying to {}", replytop);						 
+
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
 			this.producer.send(record).get();
 		} catch (IOException | InterruptedException | ExecutionException e) {
-			this.getLogger().error("Reply message error {}", e.getMessage());
+			this.getLogger().error("Reply message error {} {}", replytop, e.getMessage());
 		}
 	}
 	
 	protected void forward(HMSMessage<TCon> request, TRep value) {
 		HMSMessage<TRep> forwardReq = request.forwardRequest();
 		forwardReq.setData(value);
+		String forwardtopic = applyTemplateToRepForTopic(this.getForwardTopic(), value);
 		try {
 			forwardReq.addReponsePoint(this.getForwardBackTopic(), request.getData());
 			//this.getLogger().info("forwarding:" + forwardReq.DebugInfo());			
-			String forwardtopic = applyTemplateToRepForTopic(this.getForwardTopic(), value);
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, forwardtopic);					
 			this.producer.send(record).get();
 		} catch (IOException | InterruptedException | ExecutionException e) {
-			this.getLogger().error("Forward request error {}", e.getMessage());
+			this.getLogger().error("Forward request error {} {}", forwardtopic, e.getMessage());
 		}		
 	}
 

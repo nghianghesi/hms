@@ -28,14 +28,14 @@ public class HomeController extends Controller {
 	private class pack{
 		int count = 1;
 	}
-    public CompletableFuture<Result> index() {    	
-    	pack p = new pack();
+    public Result index() {    	
+    	/*pack p = new pack();
     	IServiceChecker<Result> waiter = new IServiceChecker<Result>() {
 
 			@Override
 			public boolean isReady() {    		
 				logger.info("checking for signal");
-				return ++p.count > 100;
+				return ++p.count > 1;
 			}
 
 			@Override
@@ -59,7 +59,8 @@ public class HomeController extends Controller {
     			.thenApplyAsync((r)->{
 		    		logger.info("Got signal");
 		    		return r;
-		    	});
+		    	});*/
+    	return ok("hms.provider.inmem-tracking-with-hub{hubid}".replaceAll("\\{hubid\\}", "replaced"));
     }
 
 }

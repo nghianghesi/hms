@@ -59,7 +59,19 @@ public class KafkaHubProcessing implements Closeable {
 		@Override
 		protected Executor getExecutorService() {
 			return ec.getExecutor();
-		}		
+		}	
+		
+
+		@Override
+		protected String applyTemplateToRepForTopic(String topic, Object value) {
+			try {
+				logger.info("replace topic hubid {} {}", topic, value.toString());
+				return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
+			}catch(Exception e){
+				logger.error("Error replace topic hubid {} {}", topic, e.getMessage() + e);
+				return null;
+			}
+		} 		
 	}
 	
 	@Inject
@@ -164,12 +176,7 @@ public class KafkaHubProcessing implements Closeable {
 			@Override
 			protected String getConsumeTopic() {
 				return KafkaHubMeta.FindAndSplitCoveringHubsMessage;
-			}
-			
-			@Override
-			protected String applyTemplateToRepForTopic(String topic, Object value) {
-				return topic.replace("{hubid}",value!=null ? value.toString() : "");
-			} 
+			}			
 		};
 	}
 
