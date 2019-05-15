@@ -162,14 +162,13 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	private void buildTrackingProviderHubProcessor() {
 		this.trackingProviderHubProcessor = new ProviderProcessingNode<UUID, Boolean>() {
 			
-			private final List<PollChainning> subchains = new LinkedList<PollChainning>();
-
+			private final List<PollChainning> querychain = new LinkedList<PollChainning>();
 			{
-				this.subchains.add(buildQueryProvidersHubProcessor());
+				this.querychain.add(buildQueryProvidersHubProcessor());
 			}			
 			@Override
 			protected List<? extends PollChainning> getSubChains() {
-				return subchains;
+				return querychain;
 			}
 			
 			@Override
@@ -180,17 +179,20 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 			@Override
 			protected Boolean processRequest(HMSMessage<UUID> request) {
 				UUID hubid = request.getData();
-				if(hubid == InMemoryProviderTrackingWithHubProcessing.this.hubid) {
+				if(hubid.equals(InMemoryProviderTrackingWithHubProcessing.this.hubid)) {
 					try {
 						ProviderTracking trackingdto = request.popReponsePoint(hms.dto.ProviderTracking.class).data;						
 						InMemProviderTracking newdata = new InMemProviderTracking(trackingdto);
-						InMemProviderTracking trackeddata = myproviders.putIfAbsent(trackingdto.getProviderid(), newdata);							
-						if(newdata != trackeddata) { // existing --> remove tracking to be re-indexed.
-							providerTrackingVPTree.remove(trackeddata);
-							trackeddata.setLatLong(trackingdto);
+						InMemProviderTracking existingdata = myproviders.putIfAbsent(trackingdto.getProviderid(), newdata);							
+						if(existingdata!=null) { // existing --> remove tracking to be re-indexed.
+							providerTrackingVPTree.remove(existingdata);
+							existingdata.setLatLong(trackingdto);
+						}else {
+							existingdata = newdata;
 						}
-						providerTrackingVPTree.add(trackeddata);
-						expiredTrackings.add(trackeddata);
+
+						providerTrackingVPTree.add(existingdata);
+						expiredTrackings.add(existingdata);
 						return true;
 					} catch (IOException e) {
 						logger.error("Tracking Provider Hub Error {}", e.getMessage());
@@ -243,7 +245,7 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 			@Override
 			protected hms.dto.ProvidersGeoQueryResponse processRequest(HMSMessage<UUID> request) {
 				UUID hubid = request.getData();
-				if(hubid == InMemoryProviderTrackingWithHubProcessing.this.hubid) {
+				if(hubid.equals(InMemoryProviderTrackingWithHubProcessing.this.hubid)) {
 					try {
 						hms.dto.GeoQuery querydto = request.popReponsePoint(hms.dto.GeoQuery.class).data;
 						ProvidersGeoQueryResponse res = new ProvidersGeoQueryResponse();

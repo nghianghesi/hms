@@ -7,6 +7,8 @@ import xyz.morphia.geo.Point;
 public interface HubNodeEntity { 
 	public UUID getHubid();
 	public void setHubid(UUID hubid);
+	public String getName();
+	public void setName(String name);
 	public Point getLocation();
 	public void setLocation(Point location);
 	public double getLatitudeRange();

@@ -26,6 +26,7 @@ public class HubRootEntity implements HubNodeEntity{
 	@Id
 	private ObjectId _id;
     private UUID hubid;
+    private String name;
     private Point location;   
 
 	private double latitudeRange;  // provider in hub when in range
@@ -40,6 +41,12 @@ public class HubRootEntity implements HubNodeEntity{
 	}
 	public void setHubid(UUID hubid) {
 		this.hubid = hubid;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 	public Point getLocation() {
 		return location;

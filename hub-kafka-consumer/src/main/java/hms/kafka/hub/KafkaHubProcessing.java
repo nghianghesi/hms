@@ -34,6 +34,11 @@ public class KafkaHubProcessing implements Closeable {
 	private String kafkaserver;
 	private String hubGroup;
 	
+	
+	private static String applyHubIdTemplateToRepForTopic(String topic, Object value) {
+		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
+	}
+	
 	private abstract class HubProcessingNode<TCon,TRep> extends KafkaStreamNodeBase<TCon,TRep>{
 		
 		@Override
@@ -61,16 +66,10 @@ public class KafkaHubProcessing implements Closeable {
 			return ec.getExecutor();
 		}	
 		
-
+	
 		@Override
 		protected String applyTemplateToRepForTopic(String topic, Object value) {
-			try {
-				logger.info("replace topic hubid {} {}", topic, value.toString());
-				return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
-			}catch(Exception e){
-				logger.error("Error replace topic hubid {} {}", topic, e.getMessage() + e);
-				return null;
-			}
+			return applyHubIdTemplateToRepForTopic(topic,value);
 		} 		
 	}
 	
@@ -165,7 +164,7 @@ public class KafkaHubProcessing implements Closeable {
 			
 			@Override
 			protected String getForwardTopic() {
-				return this.getConsumeTopic()+KafkaHMSMeta.ReturnTopicSuffix+"{hubid}";
+				return this.getConsumeTopic()+"{hubid}"+KafkaHMSMeta.ReturnTopicSuffix;
 			}
 			
 			@Override
@@ -176,7 +175,12 @@ public class KafkaHubProcessing implements Closeable {
 			@Override
 			protected String getConsumeTopic() {
 				return KafkaHubMeta.FindAndSplitCoveringHubsMessage;
-			}			
+			}		
+
+			@Override
+			protected String applyTemplateToRepForTopic(String topic, Object value) {
+				return applyHubIdTemplateToRepForTopic(topic,value);
+			} 					
 		};
 	}
 

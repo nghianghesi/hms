@@ -175,7 +175,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	public CompletableFuture<Void> hookPolling(CompletableFuture<Void> aheadtasks) {		
 			CompletableFuture<Void> mytask = 
 						aheadtasks.thenRunAsync(this.pollRequestFromConsummer, this.getExecutorService())
-								.thenRunAsync(()->this.intervalCleanup(), this.getExecutorService());
+								.thenRunAsync(this.intervalCleanupRunnable, this.getExecutorService());
 			return hookSubChains(mytask);
 	}	
 	
@@ -186,11 +186,14 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 			this.pendingHeartbeat += 1;
 			CompletableFuture<Void> mytask = (rootHook != null ? this.hookPolling(rootHook) :
 					CompletableFuture.runAsync(this.pollRequestFromConsummer, this.getExecutorService())
-							.thenRunAsync(()->this.intervalCleanup(), this.getExecutorService()));
-			this.rootHook = hookPolling(mytask)
-							.thenRunAsync(()->{this.pendingHeartbeat -= 1;}, this.getExecutorService());
+							.thenRunAsync(this.intervalCleanupRunnable, this.getExecutorService()));
+			this.rootHook = mytask.thenRunAsync(this.decreasePendingHeartbeat, this.getExecutorService());
 		}
 	}
+	
+	private Runnable decreasePendingHeartbeat = ()->{
+		this.pendingHeartbeat--;
+	};
 	
 	private Runnable pollRequestFromConsummer = () -> {		
 		if (!shutdownNode) {
@@ -200,6 +203,10 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 			}
 		}
 	};	
+	
+	private Runnable intervalCleanupRunnable = ()->{
+		this.intervalCleanup();
+	};
 	
 	private Observer heartbeatObserver;
 	
@@ -235,8 +242,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		replymsg.setData(value);
 		String replytop = applyTemplateToRepForTopic(request.getCurrentResponsePoint(this.getForwardTopic()), value);
 		try {
-			this.getLogger().info("Replying to {}", replytop);						 
-
+			this.getLogger().info("Replying to {}", replytop);
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
 			this.producer.send(record).get();
 		} catch (IOException | InterruptedException | ExecutionException e) {
@@ -250,12 +256,12 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		String forwardtopic = applyTemplateToRepForTopic(this.getForwardTopic(), value);
 		try {
 			forwardReq.addReponsePoint(this.getForwardBackTopic(), request.getData());
-			//this.getLogger().info("forwarding:" + forwardReq.DebugInfo());			
+			this.getLogger().info("forwarding: {}", forwardtopic);			
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, forwardtopic);					
 			this.producer.send(record).get();
 		} catch (IOException | InterruptedException | ExecutionException e) {
 			this.getLogger().error("Forward request error {} {}", forwardtopic, e.getMessage());
-		}		
+		}
 	}
 
 	/**
