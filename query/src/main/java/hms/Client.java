@@ -1,5 +1,6 @@
 package hms;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -7,6 +8,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import scala.Int;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
@@ -29,13 +32,13 @@ public class Client {
 	private static final double LONGITUDE_MOVE = 0.01;
 	private static final double LATITUDE_MOVE = 0.01;
 	
-	private static final int NUM_OF_LOOP = 10;
+	private static final int NUM_OF_LOOP = Int.MaxValue();
 	private static final int NUM_OF_THREAD = 100;
 	private static final int THREAD_DELAY = 100;
 	private static final int ITEM_PER_THREAD=NUM_OF_QUERIES/NUM_OF_THREAD;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     
-    
+    private static boolean shutdown = false;
 
 	private static double getRandomLatitude() {
 		return START_RANGE_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LATITUDE - START_RANGE_LATITUDE);
@@ -96,7 +99,7 @@ public class Client {
 				int startidx = groupidx * ITEM_PER_THREAD;
 				int endidx = (groupidx + 1) * ITEM_PER_THREAD;
 				
-				for(int loop = 0; loop < NUM_OF_LOOP; loop++) {									
+				for(int loop = 0; loop < NUM_OF_LOOP && !shutdown; loop++) {									
 					logger.info("Running group {}, loop {}", groupidx, loop);
 					for(int idx = startidx; idx < endidx && idx < list.size(); idx++) {					
 						ProviderQueryBuilder position = list.get(idx);
@@ -127,7 +130,15 @@ public class Client {
 		initCoordinates(list);
 		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 
 			groupRunners.add(CompletableFuture.runAsync(buildQueryProvidersRunnable(client, list, groupidx), myPool));				
+		}		
+		
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		shutdown = true;		
 		
 		for (int groupidx = 0; groupidx < groupRunners.size(); groupidx++) {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
