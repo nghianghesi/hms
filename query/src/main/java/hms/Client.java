@@ -33,7 +33,7 @@ public class Client {
 	
 	private static final int NUM_OF_LOOP = Int.MaxValue();
 	private static final int NUM_OF_THREAD = 1000;
-	private static final int THREAD_DELAY = 100;
+	private static final int THREAD_DELAY = 200;
 	private static final int ITEM_PER_THREAD=NUM_OF_CUSTOMERS/NUM_OF_THREAD;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     

@@ -31,7 +31,7 @@ public class Client {
 	private static final double LATITUDE_MOVE = 0.01;
 	
 	private static final int NUM_OF_LOOP = Integer.MAX_VALUE;
-	private static final int NUM_OF_THREAD = 500;
+	private static final int NUM_OF_THREAD = 300;
 	private static final int THREAD_DELAY = 100;
 	private static final int ITEM_PER_THREAD=NUM_OF_PROVIDER/NUM_OF_THREAD;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
