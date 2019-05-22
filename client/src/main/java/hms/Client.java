@@ -134,7 +134,7 @@ public class Client {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>();
-		String serviceUrl = "http://localhost:9000/";
+		String serviceUrl = args.length > 0 ? args[0] : "http://localhost:9000/";
 		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
 
 		initProvider(client, list);
