@@ -13,6 +13,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
 public class Client {
+	
+	private static final int UPDATE_INTERVAL = 30000;//30s;
 	private static final int NUM_OF_PROVIDER = 15000;
 	
 	private static final double MAX_LATITUDE = 90;		
@@ -31,12 +33,13 @@ public class Client {
 	private static final double LATITUDE_MOVE = 0.01;
 	
 	private static final int NUM_OF_LOOP = Integer.MAX_VALUE;
-	private static final int NUM_OF_THREAD = 300;
+	private static final int NUM_OF_THREAD = 500;
 	private static final int THREAD_DELAY = 100;
 	private static final int ITEM_PER_THREAD=NUM_OF_PROVIDER/NUM_OF_THREAD;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     
     private static boolean shutdown = false;
+    private static long countLongerThanInterval = 0;
 
 	private static double getRandomLatitude() {
 		return START_RANGE_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LATITUDE - START_RANGE_LATITUDE);
@@ -104,7 +107,7 @@ public class Client {
 		};
 	}
 	
-	private static void sleepWithoutException(int durationInMilisecond) {		
+	private static void sleepWithoutException(long delay) {		
 		try {
 			Thread.sleep(THREAD_DELAY);
 		} catch (Exception e) {
@@ -120,9 +123,10 @@ public class Client {
 			public void run() {				
 				int startidx = groupidx * ITEM_PER_THREAD;
 				int endidx = (groupidx + 1) * ITEM_PER_THREAD;
-				
+				long start = 0;
 				for(int loop = 0; loop < NUM_OF_LOOP && !shutdown; loop++) {									
 					logger.info("Running group {}, loop {}", groupidx, loop);
+					start = System.currentTimeMillis();
 					for(int idx = startidx; idx < endidx && idx < list.size(); idx++) {					
 						ProviderTrackingBuilder tracking = list.get(idx);
 						randomMove(tracking);	
@@ -135,7 +139,13 @@ public class Client {
 						sleepWithoutException(1+ThreadLocalRandom.current().nextInt()%5);
 					}	
 					
-					sleepWithoutException(THREAD_DELAY);
+					long delay = UPDATE_INTERVAL - (System.currentTimeMillis() - start);
+					if(delay>0) {
+						sleepWithoutException(delay);
+					}else{
+						logger.info("******************* longer than interval *********");
+						countLongerThanInterval+=1;
+					}
 				}
 			}	
 		};	
@@ -174,6 +184,6 @@ public class Client {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
 		
-		logger.info(client.getStats());
+		logger.info(client.getStats() + " Long update interval:" + countLongerThanInterval);
 	}
 }
