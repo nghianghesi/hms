@@ -68,18 +68,30 @@ public class Client {
 		}		
 	}
 	
-	private static void initProvider(HMSRESTClient client, List<ProviderTrackingBuilder> list) {		
+	private static void initProvider(HMSRESTClient client, List<ProviderTrackingBuilder> list, ForkJoinPool myPool) {		
 		logger.info("Init Providers:");
-		client.clearProvider();		
-		for(int idx = 0; idx < NUM_OF_PROVIDER; idx++) {	
-			ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder();
-			trackingBuilder.setProviderid(UUID.randomUUID());	
-			trackingBuilder.setLatitude(getRandomLatitude());
-			trackingBuilder.setLongitude(getRandomLongitude());
-			trackingBuilder.setName("Provider "+idx);
-			client.initProvider(trackingBuilder.buildProvider());
-			//client.trackingProvider(trackingBuilder.buildTracking());
-			list.add(trackingBuilder);
+		client.clearProvider();
+		list.set(NUM_OF_PROVIDER-1, null);
+		List<CompletableFuture<Void>>tasks = new ArrayList<>();
+		for(int groupid_loop= 0;groupid_loop<NUM_OF_THREAD;groupid_loop++) {
+			final int groupid = groupid_loop;
+			final int split = (NUM_OF_PROVIDER + NUM_OF_THREAD - 1)/NUM_OF_THREAD;
+			tasks.add(CompletableFuture.runAsync(() ->{
+				for(int idx = groupid*split; idx<(groupid+1)*split && idx < NUM_OF_PROVIDER; idx++) {	
+					ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder();
+					trackingBuilder.setProviderid(UUID.randomUUID());	
+					trackingBuilder.setLatitude(getRandomLatitude());
+					trackingBuilder.setLongitude(getRandomLongitude());
+					trackingBuilder.setName("Provider "+idx);
+					client.initProvider(trackingBuilder.buildProvider());
+					//client.trackingProvider(trackingBuilder.buildTracking());
+					list.set(idx, trackingBuilder);
+				}
+			}));
+		}
+		
+		for(CompletableFuture<Void> t: tasks) {
+			t.join();
 		}
 	}	
 
@@ -131,14 +143,21 @@ public class Client {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>();
+		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>(NUM_OF_PROVIDER);
 		String serviceUrl = args.length > 0 ? args[0] : "http://localhost:9000/";
 		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
 
-		initProvider(client, list);
-		logger.info("Tracking Providers:");
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
+		
+		initProvider(client, list, myPool);
+		logger.info("Tracking Providers:");
+		try {
+			System.in.read();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 
 			groupRunners.add(CompletableFuture.runAsync(buildUpdateProviderRunnable(client, list, groupidx), myPool));				
