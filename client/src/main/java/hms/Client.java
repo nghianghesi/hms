@@ -9,13 +9,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import scala.collection.generic.BitOperations.Int;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
 public class Client {
-	private static final int NUM_OF_PROVIDER = 100;
+	private static final int NUM_OF_PROVIDER = 15000;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
@@ -33,7 +31,7 @@ public class Client {
 	private static final double LATITUDE_MOVE = 0.01;
 	
 	private static final int NUM_OF_LOOP = Integer.MAX_VALUE;
-	private static final int NUM_OF_THREAD = 100;
+	private static final int NUM_OF_THREAD = 500;
 	private static final int THREAD_DELAY = 100;
 	private static final int ITEM_PER_THREAD=NUM_OF_PROVIDER/NUM_OF_THREAD;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
@@ -122,7 +120,7 @@ public class Client {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
 						
-						sleepWithoutException(1+ThreadLocalRandom.current().nextInt()%10);
+						sleepWithoutException(1+ThreadLocalRandom.current().nextInt()%5);
 					}	
 					
 					sleepWithoutException(THREAD_DELAY);

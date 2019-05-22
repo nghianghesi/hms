@@ -3,7 +3,6 @@ package hms;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
@@ -15,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
 public class Client {
-	private static final int NUM_OF_QUERIES = 100;
+	private static final int NUM_OF_CUSTOMERS = 50000;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
@@ -33,9 +32,9 @@ public class Client {
 	private static final double LATITUDE_MOVE = 0.01;
 	
 	private static final int NUM_OF_LOOP = Int.MaxValue();
-	private static final int NUM_OF_THREAD = 100;
+	private static final int NUM_OF_THREAD = 1000;
 	private static final int THREAD_DELAY = 100;
-	private static final int ITEM_PER_THREAD=NUM_OF_QUERIES/NUM_OF_THREAD;
+	private static final int ITEM_PER_THREAD=NUM_OF_CUSTOMERS/NUM_OF_THREAD;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     
     private static boolean shutdown = false;
@@ -71,7 +70,7 @@ public class Client {
 	}
 	
 	private static void initCoordinates(List<ProviderQueryBuilder> list) {		
-		for(int idx = 0; idx < NUM_OF_QUERIES; idx++) {	
+		for(int idx = 0; idx < NUM_OF_CUSTOMERS; idx++) {	
 			ProviderQueryBuilder queryBuilder = new ProviderQueryBuilder();
 			queryBuilder.setLatitude(getRandomLatitude());
 			queryBuilder.setLongitude(getRandomLongitude());
@@ -110,7 +109,7 @@ public class Client {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
 						
-						sleepWithoutException(5+ThreadLocalRandom.current().nextInt()%20);
+						sleepWithoutException(1+ThreadLocalRandom.current().nextInt()%10);
 					}	
 					
 					sleepWithoutException(THREAD_DELAY);
