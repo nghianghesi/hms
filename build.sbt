@@ -9,7 +9,7 @@ scalacOptions in ThisBuild := Seq("-Xexperimental", "-Xlint:_", "-unchecked", "-
 // javacOptions in ThisBuild := Seq("-Xlint:all")
 
 resolvers += "Local Cached Maven Repository" at Path.userHome.asFile.toURI.toURL + ".ivy2/cache"
-EclipseKeys.skipParents in ThisBuild := false
+//EclipseKeys.skipParents in ThisBuild := false
 
 lazy val dependencies =
   new {
