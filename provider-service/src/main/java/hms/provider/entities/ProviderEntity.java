@@ -41,6 +41,7 @@ public class ProviderEntity {
 	private ObjectId _id;
 	private UUID providerid;
 	private String name;
+	private String zone;
 	private ProviderTrackingStruct currentTracking;
 	@Transient
 	@NotSaved
@@ -60,6 +61,14 @@ public class ProviderEntity {
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getZone() {
+		return zone;
+	}
+
+	public void setZone(String zone) {
+		this.zone = zone;
 	}
 
 	public ProviderTrackingStruct getCurrentTracking() {

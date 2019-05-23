@@ -12,10 +12,16 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import hms.dto.Provider;
+
 public class Client {
 	
+	private static String ZONE="";
 	private static final int UPDATE_INTERVAL = 30000;//30s;
-	private static final int NUM_OF_PROVIDER = 15000;
+	private static int NUM_OF_PROVIDER = 15000;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
@@ -23,19 +29,17 @@ public class Client {
 	private static final double MAX_LONGITUDE = 180;		
 	private static final double MIN_LONGITUDE = -180;
 	
-	private static final double START_RANGE_LATITUDE = 33.587882;	
-	private static final double END_RANGE_LATITUDE = 34.185252;
+	private static double START_RANGE_LATITUDE = 33.587882;	
+	private static double END_RANGE_LATITUDE = 34.185252;
 
-	private static final double START_RANGE_LONGITUDE = -118.178919;	
-	private static final double END_RANGE_LONGITUDE = -117.959664;
+	private static double START_RANGE_LONGITUDE = -118.178919;	
+	private static double END_RANGE_LONGITUDE = -117.959664;
 	
 	private static final double LONGITUDE_MOVE = 0.01;
 	private static final double LATITUDE_MOVE = 0.01;
 	
 	private static final int NUM_OF_LOOP = Integer.MAX_VALUE;
-	private static final int NUM_OF_THREAD = 500;
-	private static final int THREAD_DELAY = 100;
-	private static final int ITEM_PER_THREAD=NUM_OF_PROVIDER/NUM_OF_THREAD;
+	private static int NUM_OF_THREAD = 500;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     
     private static boolean shutdown = false;
@@ -74,7 +78,9 @@ public class Client {
 	private static void initProvider(HMSRESTClient client, List<ProviderTrackingBuilder> list, ForkJoinPool myPool) {		
 		logger.info("Init Providers:");
 		client.clearProvider();
-		list.set(NUM_OF_PROVIDER-1, null);
+		for(int idx=0;idx<NUM_OF_PROVIDER;idx++){
+			list.add(null);
+		}
 		List<CompletableFuture<Void>>tasks = new ArrayList<>();
 		for(int groupid_loop= 0;groupid_loop<NUM_OF_THREAD;groupid_loop++) {
 			final int groupid = groupid_loop;
@@ -98,6 +104,21 @@ public class Client {
 		}
 	}	
 
+	private static List<ProviderTrackingBuilder> loadProviders(HMSRESTClient client) 		
+	{
+		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>();
+		List<Provider> providers = client.loadProvidersByZone(ZONE);
+		for(Provider p : providers) {
+			ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder();
+			trackingBuilder.setProviderid(p.getProviderid());	
+			trackingBuilder.setLatitude(getRandomLatitude());
+			trackingBuilder.setLongitude(getRandomLongitude());
+			trackingBuilder.setName(p.getName());
+			list.add(trackingBuilder);		
+		}
+		return list;
+	}
+		
 	private static Runnable buildEndGroupRunnable(int groupidx) {
 		return new Runnable(){	
 			@Override
@@ -109,7 +130,7 @@ public class Client {
 	
 	private static void sleepWithoutException(long delay) {		
 		try {
-			Thread.sleep(THREAD_DELAY);
+			Thread.sleep(delay);
 		} catch (Exception e) {
 			logger.error("Sleep Error {}", e);
 		}			
@@ -120,7 +141,9 @@ public class Client {
 			List<ProviderTrackingBuilder> list, int groupidx) {
 		return new Runnable(){			
 			@Override
-			public void run() {				
+			public void run() {			
+				int ITEM_PER_THREAD = (int)((NUM_OF_PROVIDER+NUM_OF_THREAD-1)/NUM_OF_THREAD);
+
 				int startidx = groupidx * ITEM_PER_THREAD;
 				int endidx = (groupidx + 1) * ITEM_PER_THREAD;
 				long start = 0;
@@ -151,34 +174,62 @@ public class Client {
 		};	
 	}
 	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>(NUM_OF_PROVIDER);
-		String serviceUrl = args.length > 0 ? args[0] : "http://localhost:9000/";
-		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
-
-		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
-		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
-		
-		initProvider(client, list, myPool);
-		logger.info("Tracking Providers:");
+	private static void waitingforEnter() {
 		try {
 			System.in.read();
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+	}
+	
+	public static void main(String[] args) {
+
+		Config conf = ConfigFactory.load();
+		ZONE = conf.getString("zone");
+		
+		if(conf.hasPath("num-of-provider")) {
+			NUM_OF_PROVIDER = conf.getInt("num-of-provider");
+		}		
+		
+		if(conf.hasPath("area")) {
+			START_RANGE_LATITUDE = conf.getDouble("area.start-lat");	
+			END_RANGE_LATITUDE = conf.getDouble("area.end-lat");
+
+			START_RANGE_LONGITUDE = conf.getDouble("area.start-long");
+			END_RANGE_LONGITUDE = conf.getDouble("area.end-long");
+		}
+		
+		if(conf.hasPath("num-of-thread")) {
+			NUM_OF_THREAD = conf.getInt("num-of-thread");
+		}
+		// TODO Auto-generated method stub
+		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>(NUM_OF_PROVIDER);
+		String serviceUrl = "http://localhost:9000/";
+		if(conf.hasPath("service-url")) {
+			serviceUrl=conf.getString("service-url");
+		}
+				
+		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
+		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
+		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
+		
+		if(args.length>0 && args[0] == "i") {
+			initProvider(client, list, myPool);
+		}else {
+			list = loadProviders(client);
+			NUM_OF_PROVIDER = list.size();
+		}
+		
+		
+		logger.info("Tracking Providers:");
+		waitingforEnter();
 		
 		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 
 			groupRunners.add(CompletableFuture.runAsync(buildUpdateProviderRunnable(client, list, groupidx), myPool));				
 		}
 		
-		try {
-			System.in.read();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		waitingforEnter();
 		shutdown = true;
 		for (int groupidx = 0; groupidx < groupRunners.size(); groupidx++) {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();

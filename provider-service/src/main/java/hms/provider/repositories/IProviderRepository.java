@@ -15,6 +15,11 @@ public interface IProviderRepository {
 	
 	void clear();
 	
-	List<hms.provider.models.ProviderModel> queryProviders(List<UUID> hostid, double latitude, double longitude, int distance);
-
+	void clearByZone(String name);
+	
+	List<hms.provider.models.ProviderModel> geoSearchProviders(List<UUID> hostid, double latitude, double longitude, int distance);
+	
+	List<hms.provider.models.ProviderModel> getProvidersByIds(List<UUID> providerids);
+	
+	List<hms.provider.models.ProviderModel> getProvidersByZone(String zone);
 }

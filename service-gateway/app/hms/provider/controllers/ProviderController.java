@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Injector;
 
 import hms.provider.IProviderService;
 import play.libs.Json;
@@ -21,11 +22,13 @@ import play.mvc.Result;
 public class ProviderController  extends Controller {	
 	private static final Logger logger = LoggerFactory.getLogger(ProviderController.class);
 	private final int QueryDistance = 10000;
+	private final Injector injector; 
 	
     private IProviderService providerserivce;
     private HttpExecutionContext ec;
     @Inject
-    public ProviderController(HttpExecutionContext ec, IProviderService providerservice) {
+    public ProviderController(HttpExecutionContext ec, IProviderService providerservice, Injector injector) {
+    	this.injector = injector;
     	this.providerserivce = providerservice;
     	this.ec = ec;
     }
@@ -37,7 +40,8 @@ public class ProviderController  extends Controller {
     public CompletionStage<Result> initprovider(Http.Request request) {
     	JsonNode json = request.body().asJson();
     	hms.dto.Provider providerdto = Json.fromJson(json, hms.dto.Provider.class);
-    	return this.providerserivce.initprovider(providerdto).thenApplyAsync( t ->{
+    	hms.provider.IProviderInitializingService initalizer= this.injector.getInstance(hms.provider.IProviderInitializingService.class);
+    	return initalizer.initprovider(providerdto).thenApplyAsync( t ->{
     		if(t) {
     			return ok("init provider");
     		}else {
@@ -46,8 +50,9 @@ public class ProviderController  extends Controller {
     	}, ec.current());
     }
     
-    public CompletionStage<Result> clear() {
-        return this.providerserivce.clear().thenApplyAsync(t->{
+    public CompletionStage<Result> clear(Http.Request request) {    	
+    	hms.provider.IProviderInitializingService initalizer= this.injector.getInstance(hms.provider.IProviderInitializingService.class);
+        return initalizer.clearByZone(request.body().asText()).thenApplyAsync(t->{
         	if(t) {
         		return ok("Clear");
         	}else {
@@ -65,11 +70,19 @@ public class ProviderController  extends Controller {
     }
     
     
-    public CompletionStage<Result> query(Http.Request request) {
+    public CompletionStage<Result> geoquery(Http.Request request) {
     	JsonNode json = request.body().asJson();
     	hms.dto.Coordinate position = Json.fromJson(json, hms.dto.Coordinate.class);
     	hms.dto.GeoQuery query = new hms.dto.GeoQuery(position.getLatitude(),position.getLongitude(),QueryDistance);
     	return this.providerserivce.queryProviders(query).thenApplyAsync(t->{
+    		return ok(Json.toJson(t));
+    	}, ec.current());
+    }
+    
+    public CompletionStage<Result> getByZone(Http.Request request){
+    	String zone = request.body().asText();
+    	hms.provider.IProviderInitializingService initalizer= this.injector.getInstance(hms.provider.IProviderInitializingService.class);
+    	return initalizer.loadByZone(zone).thenApplyAsync(t->{
     		return ok(Json.toJson(t));
     	}, ec.current());
     }

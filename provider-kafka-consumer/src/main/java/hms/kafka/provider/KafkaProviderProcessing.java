@@ -29,8 +29,6 @@ public class KafkaProviderProcessing implements Closeable {
 	private IProviderServiceProcessor providerService;
 	IHMSExecutorContext ec;
 	
-	KafkaStreamNodeBase<Void, Boolean>  clearProcessor; 
-	KafkaStreamNodeBase<hms.dto.Provider, Boolean>  initProviderProcessor;
 	KafkaStreamNodeBase<hms.dto.ProviderTracking, Coordinate>  trackingProviderProcessor;	
 	KafkaStreamNodeBase<UUID, Boolean>  trackingProviderHubProcessor;
 	KafkaStreamNodeBase<hms.dto.GeoQuery, hms.dto.GeoQuery>  queryProvidersProcessor;	
@@ -94,49 +92,6 @@ public class KafkaProviderProcessing implements Closeable {
 		logger.info("Provider processing is ready");
 	}
 		
-	private void buildClearProcessor() {
-		this.clearProcessor = new ProviderProcessingNode<Void, Boolean>() {
-			@Override
-			protected Boolean processRequest(HMSMessage<Void> request) {
-					return providerService.clear().join();	
-			}
-
-			@Override
-			protected Class<Void> getTConsumeManifest() {
-				return Void.class;
-			}
-
-			@Override
-			protected String getConsumeTopic() {
-				return KafkaProviderMeta.ClearMessage;
-			}
-
-		};
-	}
-	
-	private void buildInitProviderProcessor() {		
-		this.initProviderProcessor = new ProviderProcessingNode<hms.dto.Provider, Boolean>() {
-			@Override
-			protected Boolean processRequest(HMSMessage<hms.dto.Provider> request) {
-				try {
-					return providerService.initprovider(request.getData()).get();
-				} catch (InterruptedException | ExecutionException e) {
-					logger.error("Init provider error {}", e.getMessage());
-					return false;
-				}				
-			}
-
-			@Override
-			protected Class<Provider> getTConsumeManifest() {
-				return Provider.class;
-			}
-
-			@Override
-			protected String getConsumeTopic() {
-				return KafkaProviderMeta.InitproviderMessage;
-			}
-		};
-	}		
 	
 	private void buildTrackingProviderProcessor() {
 		this.trackingProviderProcessor = new ProviderProcessingNode<hms.dto.ProviderTracking, Coordinate>() {
@@ -265,8 +220,6 @@ public class KafkaProviderProcessing implements Closeable {
 	@Override
 	public void close() {
 		// TODO Auto-generated method stub
-		this.clearProcessor.shutDown();
-		this.initProviderProcessor.shutDown();
 		this.trackingProviderProcessor.shutDown();
 		this.trackingProviderHubProcessor.shutDown();
 		this.queryProvidersProcessor.shutDown();

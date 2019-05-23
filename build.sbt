@@ -27,6 +27,8 @@ lazy val dependencies =
 	var kafkastream = "org.apache.kafka" % "kafka-streams" % "2.2.0"
 	var dslplatform ="com.dslplatform" % "dsl-json-java8" % "1.8.5"
 	var playframwork="com.typesafe.play" %% "play" % "2.7"
+	var typesafeconfig="com.typesafe" % "config" % "1.2.1"
+	var gson = "com.google.code.gson" % "gson" % "2.8.5"
   }
   
 lazy val protocol = (project in file("./protocol"))
@@ -96,12 +98,13 @@ lazy val hubservice = (project in file("./hubservice"))
   
 lazy val client = (project in file("./client"))
   .settings(libraryDependencies ++=  Seq(
-      dependencies.junit,
       dependencies.novocode,
 	  dependencies.retrofit2_converter_gson,	  
 	  dependencies.retrofit2,	  
 	  dependencies.slf4japi,	  
-	  dependencies.slf4jimpl))
+	  dependencies.slf4jimpl,
+	  dependencies.typesafeconfig,
+	  dependencies.gson))
   .dependsOn(protocol)
   
   
@@ -112,7 +115,9 @@ lazy val query = (project in file("./query"))
 	  dependencies.retrofit2_converter_gson,	  
 	  dependencies.retrofit2,	  
 	  dependencies.slf4japi,	  
-	  dependencies.slf4jimpl))
+	  dependencies.slf4jimpl,
+	  dependencies.typesafeconfig,
+	  dependencies.gson))
   .dependsOn(protocol)
   
 lazy val `test-mongo` = (project in file("./test-mongo"))

@@ -23,9 +23,9 @@
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.okio\okio\docs\okio-1.15.0-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
-  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\srcs\gson-2.8.2-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\jars\gson-2.8.2.jar">
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\srcs\gson-2.8.5-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\jars\gson-2.8.5.jar">
     <attributes>
-      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\docs\gson-2.8.2-javadoc.jar!/"/>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\docs\gson-2.8.5-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-api\srcs\slf4j-api-1.7.25-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-api\jars\slf4j-api-1.7.25.jar">
@@ -41,6 +41,11 @@
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\log4j\log4j\srcs\log4j-1.2.17-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\log4j\log4j\bundles\log4j-1.2.17.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\log4j\log4j\docs\log4j-1.2.17-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.typesafe\config\srcs\config-1.2.1-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.typesafe\config\bundles\config-1.2.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.typesafe\config\docs\config-1.2.1-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\junit\junit\srcs\junit-4.12-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\junit\junit\jars\junit-4.12.jar">

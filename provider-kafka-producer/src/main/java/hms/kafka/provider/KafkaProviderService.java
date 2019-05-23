@@ -24,8 +24,6 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderService.class);
 
 	private KafkaProviderSettings topicSettings;
-	StreamRoot<Void, Boolean>  clearStream; 
-	StreamRoot<hms.dto.Provider, Boolean>  initProviderStream;
 	StreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
 	StreamRoot<hms.dto.GeoQuery, hms.dto.ProvidersGeoQueryResponse>  queryProvidersStream;
 	String server, rootid;	
@@ -68,31 +66,7 @@ public class KafkaProviderService implements IProviderService, Closeable{
 				&& config.hasPath(KafkaHMSMeta.RootIdConfigKey)) {
 			server = config.getString(KafkaHMSMeta.ServerConfigKey);
 			rootid = config.getString(KafkaHMSMeta.RootIdConfigKey);
-			
-			clearStream = new ProviderStreamRoot<Void, Boolean>(){
-				@Override
-				protected String getStartTopic() {
-					return KafkaProviderMeta.ClearMessage;
-				}
-
-				@Override
-				protected Class<Boolean> getTConsumeManifest() {
-					return Boolean.class;
-				}				
-			};
-			
-			initProviderStream = new ProviderStreamRoot<hms.dto.Provider, Boolean>(){
-				@Override
-				protected String getStartTopic() {
-					return KafkaProviderMeta.InitproviderMessage;
-				}
-
-				@Override
-				protected Class<Boolean> getTConsumeManifest() {
-					return Boolean.class;
-				}				
-			};				
-			
+						
 			trackingProviderStream = new ProviderStreamRoot<hms.dto.ProviderTracking, Boolean>(){
 				@Override
 				protected String getStartTopic() {
@@ -121,20 +95,6 @@ public class KafkaProviderService implements IProviderService, Closeable{
 			logger.error("Missing {} {} configuration", KafkaHMSMeta.ServerConfigKey, KafkaHMSMeta.RootIdConfigKey);
 			throw new Error(String.format("Missing {} {} configuration",KafkaHMSMeta.ServerConfigKey,KafkaHMSMeta.RootIdConfigKey));
 		}		
-	}
-	
-	@Override
-	public CompletableFuture<Boolean> clear() {
-		return clearStream.startStream((requestid)->{
-			return new HMSMessage<Void>(requestid);
-		});
-	}
-
-	@Override
-	public CompletableFuture<Boolean> initprovider(hms.dto.Provider providerdto) {
-		return initProviderStream.startStream((requestid)->{
-			return new HMSMessage<hms.dto.Provider>(requestid, providerdto);
- 		});
 	}
 
 	@Override

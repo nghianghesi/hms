@@ -1,6 +1,9 @@
 package hms;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 
 import hms.dto.Provider;
@@ -20,12 +23,15 @@ public class HMSRESTClient{
 		@GET("/provider/clear")
 		Call<ResponseBody> clearProvider();
 		@POST("/provider/init")
-		Call<ResponseBody> initProvider(@Body Provider provider);
+		Call<ResponseBody> initProvider(@Body Provider provider);		
+		@POST("/provider/get-by-zone")
+		Call<ResponseBody> loadByZone(@Body String zone);		
 	}
 	
 	private HMSServiceIntegration serviceIntegration;
 	private Logger logger;
 	private String serviceURL;
+	private com.google.gson.Gson gson = new com.google.gson.Gson();
 	private void buildIntegration() {
 		Retrofit retrofit = new Retrofit.Builder()
 			    .baseUrl(serviceURL)
@@ -81,6 +87,18 @@ public class HMSRESTClient{
 			logger.error("Init Provider", e);
 		}	
 	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Provider> loadProvidersByZone(String zone) {
+		try {			
+			String json = this.serviceIntegration.loadByZone(zone).execute().body().string();
+			ArrayList<Provider>t = new ArrayList<Provider>();
+			return (ArrayList<Provider>)gson.fromJson(json, t.getClass());
+		} catch (Exception e) {
+			logger.error("Init Provider", e);
+			return new ArrayList<Provider>();
+		}	
+	}	
 
 	public void clearProvider() {
 		try {			

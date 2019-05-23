@@ -83,6 +83,13 @@ public class ProviderModel{
 		this.entity.setName(name);
 	}
 	
+	public String getZone() {
+		return this.entity.getZone();
+	}
+	
+	public void setZone(String zone) {
+		this.entity.setZone(zone);
+	}
 	
 	public ProviderTrackingModel getCurrentTracking() {
 		return currentTracking;

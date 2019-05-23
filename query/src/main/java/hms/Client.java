@@ -8,13 +8,16 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
 import scala.Int;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
 public class Client {
-	private static final int NUM_OF_CUSTOMERS = 50000;
+	private static int NUM_OF_CUSTOMERS = 50000;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
@@ -22,19 +25,18 @@ public class Client {
 	private static final double MAX_LONGITUDE = 180;		
 	private static final double MIN_LONGITUDE = -180;
 	
-	private static final double START_RANGE_LATITUDE = 33.587882;	
-	private static final double END_RANGE_LATITUDE = 34.185252;
+	private static double START_RANGE_LATITUDE = 33.587882;	
+	private static double END_RANGE_LATITUDE = 34.185252;
 
-	private static final double START_RANGE_LONGITUDE = -118.178919;	
-	private static final double END_RANGE_LONGITUDE = -117.959664;
+	private static double START_RANGE_LONGITUDE = -118.178919;	
+	private static double END_RANGE_LONGITUDE = -117.959664;
 	
 	private static final double LONGITUDE_MOVE = 0.01;
 	private static final double LATITUDE_MOVE = 0.01;
 	
 	private static final int NUM_OF_LOOP = Int.MaxValue();
-	private static final int NUM_OF_THREAD = 1000;
-	private static final int THREAD_DELAY = 200;
-	private static final int ITEM_PER_THREAD=NUM_OF_CUSTOMERS/NUM_OF_THREAD;
+	private static int NUM_OF_THREAD = 1000;
+	private static int THREAD_DELAY = 200;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     
     private static boolean shutdown = false;
@@ -87,7 +89,7 @@ public class Client {
 	
 	private static void sleepWithoutException(int durationInMilisecond) {		
 		try {
-			Thread.sleep(THREAD_DELAY);
+			Thread.sleep(durationInMilisecond);
 		} catch (Exception e) {
 			logger.error("Sleep Error {}", e);
 		}			
@@ -95,6 +97,7 @@ public class Client {
 
 	private static Runnable buildQueryProvidersRunnable(HMSRESTClient client, List<ProviderQueryBuilder> list, int groupidx) {
 		return () -> {				
+				int ITEM_PER_THREAD = (int)((NUM_OF_CUSTOMERS + NUM_OF_THREAD-1) / NUM_OF_THREAD);
 				int startidx = groupidx * ITEM_PER_THREAD;
 				int endidx = (groupidx + 1) * ITEM_PER_THREAD;
 				
@@ -117,7 +120,39 @@ public class Client {
 		};	
 	}
 	
+	private static void waitingforEnter() {
+		try {
+			System.in.read();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args) {
+		Config conf = ConfigFactory.load();
+		
+		if(conf.hasPath("num-of-customer")) {
+			NUM_OF_CUSTOMERS = conf.getInt("num-of-customer");
+		}	
+		
+		if(conf.hasPath("thread-delay")) {
+			THREAD_DELAY = conf.getInt("thread-delay");
+		}	
+		
+		if(conf.hasPath("num-of-thread")) {
+			NUM_OF_THREAD = conf.getInt("num-of-thread");
+		}
+		
+		if(conf.hasPath("area")) {
+			START_RANGE_LATITUDE = conf.getDouble("area.start-lat");	
+			END_RANGE_LATITUDE = conf.getDouble("area.end-lat");
+
+			START_RANGE_LONGITUDE = conf.getDouble("area.start-long");
+			END_RANGE_LONGITUDE = conf.getDouble("area.end-long");
+		}
+		
+		
 		// TODO Auto-generated method stub
 		List<ProviderQueryBuilder> list = new ArrayList<ProviderQueryBuilder>(NUM_OF_CUSTOMERS);
 		String serviceUrl = args.length>0?args[0]:"http://localhost:9000/";
@@ -131,12 +166,7 @@ public class Client {
 			groupRunners.add(CompletableFuture.runAsync(buildQueryProvidersRunnable(client, list, groupidx), myPool));				
 		}		
 		
-		try {
-			System.in.read();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		waitingforEnter();
 		shutdown = true;		
 		
 		for (int groupidx = 0; groupidx < groupRunners.size(); groupidx++) {

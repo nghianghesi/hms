@@ -97,7 +97,34 @@ public class ProviderRepository implements IProviderRepository {
 	}
 	
 	@Override
-	public List<hms.provider.models.ProviderModel> queryProviders(List<UUID> hostids, double latitude, double longitude, int distance) {
+	public void clearByZone(String name) {
+		DBCollection collection = datastore.getCollection(ProviderEntity.class);
+        if(collection!=null) {
+        	BasicDBObject document = new BasicDBObject().append("zone", name);
+        	collection.remove(document);
+        }
+	}
+	
+	@Override
+	public List<hms.provider.models.ProviderModel> getProvidersByIds(List<UUID> providerids){
+		if(providerids.size()>0) {
+			return this.datastore.createQuery(ProviderEntity.class)
+					.field("providerid").in(providerids).asList()
+					.stream().map(e -> ProviderModel.load(e)).collect(Collectors.toList());
+		}
+		return new ArrayList<>();
+	}
+	
+	@Override
+	public List<hms.provider.models.ProviderModel> getProvidersByZone(String zone){
+		return this.datastore.createQuery(ProviderEntity.class)
+				.field("zone").equal(zone).asList()
+				.stream().map(e -> ProviderModel.load(e)).collect(Collectors.toList());
+	}
+	
+	
+	@Override
+	public List<hms.provider.models.ProviderModel> geoSearchProviders(List<UUID> hostids, double latitude, double longitude, int distance) {
 		if(hostids.size()>0) {
 			List<UUID> parsedhostids = new ArrayList<>();
 			for(Object h:hostids) {

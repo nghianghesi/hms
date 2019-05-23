@@ -8,9 +8,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import hms.common.ExceptionWrapper;
 import hms.common.IHMSExecutorContext;
 import hms.dto.ProviderTracking;
@@ -20,8 +17,6 @@ import hms.provider.models.ProviderModel.ProviderTrackingModel;
 import hms.provider.repositories.IProviderRepository;
 
 public class ProviderService implements IProviderService{    
-	private static final Logger logger = LoggerFactory.getLogger(ProviderService.class);
-
 	private IProviderRepository repo;
 	private IHubService hubservice;
 	protected IHMSExecutorContext execContext;
@@ -75,8 +70,8 @@ public class ProviderService implements IProviderService{
 	
 	
 	protected List<hms.dto.Provider> internalQueryProviders(List<UUID> hubids, hms.dto.GeoQuery query){
-		return this.repo.queryProviders(hubids, query.getLatitude(), query.getLongitude(), query.getDistance())
-		.stream().map(p -> new hms.dto.Provider(p.getProviderid(), p.getName()))
+		return this.repo.geoSearchProviders(hubids, query.getLatitude(), query.getLongitude(), query.getDistance())
+		.stream().map(p -> new hms.dto.Provider(p.getProviderid(), p.getZone(), p.getName()))
 		.collect(Collectors.toList());
 	}
 	
