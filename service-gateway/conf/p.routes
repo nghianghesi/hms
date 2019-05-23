@@ -1,6 +1,6 @@
 # Routes
 GET			/			hms.provider.controllers.ProviderController.index()
-GET			/clear		hms.provider.controllers.ProviderController.clear()
+POST			/clear		hms.provider.controllers.ProviderController.clear(request:Request)
 POST		/init		hms.provider.controllers.ProviderController.initprovider(request:Request)
 POST		/tracking	hms.provider.controllers.ProviderController.tracking(request:Request)
 POST		/geoquery	hms.provider.controllers.ProviderController.geoquery(request:Request)

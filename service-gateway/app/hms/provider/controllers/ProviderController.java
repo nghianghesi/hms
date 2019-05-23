@@ -50,9 +50,10 @@ public class ProviderController  extends Controller {
     	}, ec.current());
     }
     
-    public CompletionStage<Result> clear(Http.Request request) {    	
+    public CompletionStage<Result> clear(Http.Request request) {
+    	String zone = request.body().asText();
     	hms.provider.IProviderInitializingService initalizer= this.injector.getInstance(hms.provider.IProviderInitializingService.class);
-        return initalizer.clearByZone(request.body().asText()).thenApplyAsync(t->{
+        return initalizer.clearByZone(zone).thenApplyAsync(t->{
         	if(t) {
         		return ok("Clear");
         	}else {

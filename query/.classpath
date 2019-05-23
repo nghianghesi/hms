@@ -28,6 +28,11 @@
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.google.code.gson\gson\docs\gson-2.8.5-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
+  <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\converter-scalars\srcs\converter-scalars-2.5.0-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\converter-scalars\jars\converter-scalars-2.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\com.squareup.retrofit2\converter-scalars\docs\converter-scalars-2.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
   <classpathentry sourcepath="C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-api\srcs\slf4j-api-1.7.25-sources.jar" kind="lib" path="C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-api\jars\slf4j-api-1.7.25.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:C:\Users\Admin\.ivy2\cache\org.slf4j\slf4j-api\docs\slf4j-api-1.7.25-javadoc.jar!/"/>

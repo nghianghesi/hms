@@ -113,8 +113,6 @@ public class KafkaProviderService implements IProviderService, Closeable{
 
 	@Override
 	public void close() throws IOException {
-		this.clearStream.shutDown();
-		this.initProviderStream.shutDown();
 		this.trackingProviderStream.shutDown();		
 		this.queryProvidersStream.shutDown();
 	}	

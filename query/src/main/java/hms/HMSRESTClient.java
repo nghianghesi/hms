@@ -1,10 +1,13 @@
 package hms;
 
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
+
+import com.google.gson.reflect.TypeToken;
 
 import hms.dto.Coordinate;
 import hms.dto.Provider;
@@ -37,7 +40,7 @@ public class HMSRESTClient{
 	private long timeLimits[] = new long[] {1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
 	private long coutingRequestByTimeLimits[] = new long[timeLimits.length] ;
 	private com.google.gson.Gson gson = new com.google.gson.Gson();
-	class ArrayListProvider extends ArrayList<Provider>{};
+	Type providerListType = new TypeToken<ArrayList<Provider>>(){}.getType();
 
 	private void trackingMaxResponseTime(long elapsedTime) {
 		synchronized(this) {
@@ -71,8 +74,7 @@ public class HMSRESTClient{
 			List<Provider> res = null;
 			if(body!=null) {
 				String str = body.string();
-				res = gson.fromJson(str, ArrayListProvider.class);
-				
+				res = 	gson.fromJson(str, providerListType);				
 				if(res!=null && res.size()>0) {
 					logger.info("providers {}", res.size());
 					for(int i=0;i<res.size()&&i<3;i++) {

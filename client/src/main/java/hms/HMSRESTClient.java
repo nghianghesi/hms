@@ -6,24 +6,32 @@ import java.util.List;
 
 import org.slf4j.Logger;
 
+import com.google.gson.reflect.TypeToken;
+
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 import retrofit2.http.Body;
-import retrofit2.http.GET;
 import retrofit2.http.POST;
+import java.lang.reflect.Type;
+import com.google.gson.reflect.TypeToken;
+
 
 public class HMSRESTClient{
 	public interface HMSServiceIntegration{
 		@POST("/provider/tracking")
 		Call<ResponseBody> trackingProvider(@Body ProviderTracking tracking);
-		@GET("/provider/clear")
+		
+		@POST("/provider/clear")
 		Call<ResponseBody> clearProvider();
+		
 		@POST("/provider/init")
-		Call<ResponseBody> initProvider(@Body Provider provider);		
+		Call<ResponseBody> initProvider(@Body Provider provider);	
+		
 		@POST("/provider/get-by-zone")
 		Call<ResponseBody> loadByZone(@Body String zone);		
 	}
@@ -31,10 +39,14 @@ public class HMSRESTClient{
 	private HMSServiceIntegration serviceIntegration;
 	private Logger logger;
 	private String serviceURL;
+	
+	Type providerListType = new TypeToken<ArrayList<Provider>>(){}.getType();
+
 	private com.google.gson.Gson gson = new com.google.gson.Gson();
 	private void buildIntegration() {
 		Retrofit retrofit = new Retrofit.Builder()
 			    .baseUrl(serviceURL)
+			    .addConverterFactory(ScalarsConverterFactory.create())
 			    .addConverterFactory(GsonConverterFactory.create())
 			    .build();
 		
@@ -88,12 +100,10 @@ public class HMSRESTClient{
 		}	
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Provider> loadProvidersByZone(String zone) {
 		try {			
 			String json = this.serviceIntegration.loadByZone(zone).execute().body().string();
-			ArrayList<Provider>t = new ArrayList<Provider>();
-			return (ArrayList<Provider>)gson.fromJson(json, t.getClass());
+			return gson.fromJson(json, providerListType);
 		} catch (Exception e) {
 			logger.error("Init Provider", e);
 			return new ArrayList<Provider>();

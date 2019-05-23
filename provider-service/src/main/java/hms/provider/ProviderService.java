@@ -12,7 +12,6 @@ import hms.common.ExceptionWrapper;
 import hms.common.IHMSExecutorContext;
 import hms.dto.ProviderTracking;
 import hms.hub.IHubService;
-import hms.provider.models.ProviderModel;
 import hms.provider.models.ProviderModel.ProviderTrackingModel;
 import hms.provider.repositories.IProviderRepository;
 
@@ -28,27 +27,6 @@ public class ProviderService implements IProviderService{
 		this.execContext = ec;
 	}
 	
-	@Override
-	public CompletableFuture<Boolean> clear() {
-		return CompletableFuture.supplyAsync(() -> {
-			this.repo.clear();
-			return true;
-		},this.execContext.getExecutor());		
-	}
-
-	@Override
-	public CompletableFuture<Boolean> initprovider(hms.dto.Provider providerdto) {
-		return CompletableFuture.supplyAsync(()->{
-			ProviderModel provider = this.repo.LoadById(providerdto.getProviderid());
-			if(provider == null) {
-				provider = new ProviderModel();			
-			}
-			provider.load(providerdto);
-			this.repo.Save(provider);
-			return true;
-		}, this.execContext.getExecutor());
-	}	
-
 	protected Boolean internalTrackingProviderHub(ProviderTracking trackingdto, UUID hubid) {		
 		hms.provider.models.ProviderModel provider = this.repo.LoadById(trackingdto.getProviderid());
 		if(provider == null) {

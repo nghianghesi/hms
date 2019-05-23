@@ -18,6 +18,7 @@ lazy val dependencies =
     val mongodb     = "org.mongodb" % "mongo-java-driver" % "3.10.1"
 	var retrofit2_converter_gson = "com.squareup.retrofit2" % "converter-gson" % "2.5.0"
 	var retrofit2 = "com.squareup.retrofit2" % "retrofit" % "2.5.0"
+	var retrofit2_converter_scalars = "com.squareup.retrofit2" % "converter-scalars" % "2.5.0"
 	var slf4japi = "org.slf4j" % "slf4j-api" % "1.7.25"
 	var slf4jimpl = "org.slf4j" % "slf4j-log4j12" % "1.7.25"
 	var morphia = "xyz.morphia.morphia" % "core" % "1.4.0"
@@ -99,7 +100,8 @@ lazy val hubservice = (project in file("./hubservice"))
 lazy val client = (project in file("./client"))
   .settings(libraryDependencies ++=  Seq(
       dependencies.novocode,
-	  dependencies.retrofit2_converter_gson,	  
+	  dependencies.retrofit2_converter_gson,	
+		dependencies.retrofit2_converter_scalars,	  
 	  dependencies.retrofit2,	  
 	  dependencies.slf4japi,	  
 	  dependencies.slf4jimpl,
@@ -112,7 +114,8 @@ lazy val query = (project in file("./query"))
   .settings(libraryDependencies ++=  Seq(
       dependencies.junit,
       dependencies.novocode,
-	  dependencies.retrofit2_converter_gson,	  
+	  dependencies.retrofit2_converter_gson,
+		dependencies.retrofit2_converter_scalars,	  	  
 	  dependencies.retrofit2,	  
 	  dependencies.slf4japi,	  
 	  dependencies.slf4jimpl,

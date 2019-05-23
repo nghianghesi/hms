@@ -7,7 +7,11 @@ public class ProviderTrackingBuilder {
 	private String name;
 	private double latitude;
 	private double longitude;
+	private String zone;
 	
+	public ProviderTrackingBuilder(String zone) {
+		this.zone = zone;
+	}
 	
 	public UUID getProviderid() {
 		return providerid;
@@ -34,7 +38,7 @@ public class ProviderTrackingBuilder {
 		this.name = name;
 	}
 	public hms.dto.Provider buildProvider(){
-		return new hms.dto.Provider(this.providerid, this.name);
+		return new hms.dto.Provider(this.providerid, this.zone, this.name);
 	}
 	public hms.dto.ProviderTracking buildTracking(){
 		return new hms.dto.ProviderTracking(this.providerid, this.latitude, this.longitude);

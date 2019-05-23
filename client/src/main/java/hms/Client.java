@@ -87,7 +87,7 @@ public class Client {
 			final int split = (NUM_OF_PROVIDER + NUM_OF_THREAD - 1)/NUM_OF_THREAD;
 			tasks.add(CompletableFuture.runAsync(() ->{
 				for(int idx = groupid*split; idx<(groupid+1)*split && idx < NUM_OF_PROVIDER; idx++) {	
-					ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder();
+					ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder(ZONE);
 					trackingBuilder.setProviderid(UUID.randomUUID());	
 					trackingBuilder.setLatitude(getRandomLatitude());
 					trackingBuilder.setLongitude(getRandomLongitude());
@@ -109,7 +109,7 @@ public class Client {
 		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>();
 		List<Provider> providers = client.loadProvidersByZone(ZONE);
 		for(Provider p : providers) {
-			ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder();
+			ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder(ZONE);
 			trackingBuilder.setProviderid(p.getProviderid());	
 			trackingBuilder.setLatitude(getRandomLatitude());
 			trackingBuilder.setLongitude(getRandomLongitude());

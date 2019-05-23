@@ -6,6 +6,9 @@ import java.util.stream.*;
 import java.util.UUID;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
@@ -23,6 +26,7 @@ import xyz.morphia.query.UpdateOperations;
 
 
 public class ProviderRepository implements IProviderRepository {
+	private static final Logger logger = LoggerFactory.getLogger(ProviderRepository.class);
 
 	private Datastore datastore;
 	private Morphia morphia;
@@ -117,6 +121,7 @@ public class ProviderRepository implements IProviderRepository {
 	
 	@Override
 	public List<hms.provider.models.ProviderModel> getProvidersByZone(String zone){
+		logger.info("getProvidersByZone {}", zone);
 		return this.datastore.createQuery(ProviderEntity.class)
 				.field("zone").equal(zone).asList()
 				.stream().map(e -> ProviderModel.load(e)).collect(Collectors.toList());
