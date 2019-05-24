@@ -20,7 +20,7 @@ import retrofit2.http.POST;
 
 public class HMSRESTClient{
 	public interface HMSServiceIntegration{
-		@POST("/provider/query")
+		@POST("/provider/geoquery")
 		Call<ResponseBody> queryProviders(@Body Coordinate tracking);
 	}
 	

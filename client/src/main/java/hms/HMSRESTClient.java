@@ -18,7 +18,6 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 import java.lang.reflect.Type;
-import com.google.gson.reflect.TypeToken;
 
 
 public class HMSRESTClient{

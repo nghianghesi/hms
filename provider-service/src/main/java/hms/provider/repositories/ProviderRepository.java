@@ -109,8 +109,23 @@ public class ProviderRepository implements IProviderRepository {
         }
 	}
 	
+	private List<UUID> ensureListUUID(List<UUID> source){
+		List<UUID> ids= new ArrayList<>();
+
+		for(Object h:source) {
+			if(h.getClass().getName().contains("String")){
+				ids.add(UUID.fromString(h.toString()));
+			}else {
+				ids.add((UUID)h);
+			}
+		}		
+		
+		return ids;
+	}
+	
 	@Override
-	public List<hms.provider.models.ProviderModel> getProvidersByIds(List<UUID> providerids){
+	public List<hms.provider.models.ProviderModel> getProvidersByIds(List<UUID> ids){
+		List<UUID> providerids= ensureListUUID(ids);		
 		if(providerids.size()>0) {
 			return this.datastore.createQuery(ProviderEntity.class)
 					.field("providerid").in(providerids).asList()
@@ -131,17 +146,10 @@ public class ProviderRepository implements IProviderRepository {
 	@Override
 	public List<hms.provider.models.ProviderModel> geoSearchProviders(List<UUID> hostids, double latitude, double longitude, int distance) {
 		if(hostids.size()>0) {
-			List<UUID> parsedhostids = new ArrayList<>();
-			for(Object h:hostids) {
-				if(h.getClass().getName().contains("String")){
-					parsedhostids.add(UUID.fromString(h.toString()));
-				}else {
-					parsedhostids.add((UUID)h);
-				}
-			}
+			hostids = ensureListUUID(hostids);
 
 			DBObject query = BasicDBObjectBuilder.start()
-					.add("hubid", new BasicDBObject("$in", parsedhostids))
+					.add("hubid", new BasicDBObject("$in", hostids))
 					.add("location", 
 							new BasicDBObject("$near", 
 									new BasicDBObject("$geometry", 
@@ -160,11 +168,7 @@ public class ProviderRepository implements IProviderRepository {
 			    providerids.add(t.getProviderid());
 			}
 			
-			if(providerids.size()>0) {
-				return this.datastore.createQuery(ProviderEntity.class)
-						.field("providerid").in(providerids).asList()
-						.stream().map(e -> ProviderModel.load(e)).collect(Collectors.toList());
-			}
+			return getProvidersByIds(providerids);
 		}
 		return new ArrayList<>();
 	}

@@ -3,6 +3,7 @@ package hms;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
@@ -112,7 +113,7 @@ public class Client {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
 						
-						sleepWithoutException(1+ThreadLocalRandom.current().nextInt()%10);
+						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%10);
 					}	
 					
 					sleepWithoutException(THREAD_DELAY);
@@ -120,13 +121,9 @@ public class Client {
 		};	
 	}
 	
+	private static Scanner inScanner = new Scanner(System.in);
 	private static void waitingforEnter() {
-		try {
-			System.in.read();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		inScanner.nextLine();
 	}
 	
 	public static void main(String[] args) {

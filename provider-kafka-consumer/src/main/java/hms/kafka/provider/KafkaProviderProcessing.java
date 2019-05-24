@@ -82,8 +82,6 @@ public class KafkaProviderProcessing implements Closeable {
 			this.providerGroup = config.getString(KafkaProviderMeta.ProviderGroupConfigKey);
 		}
 		
-		this.buildClearProcessor();
-		this.buildInitProviderProcessor();
 		this.buildTrackingProviderProcessor();
 		this.buildTrackingProviderHubProcessor();	
 		this.buildQueryProvidersProcessor();

@@ -3,6 +3,7 @@ package hms;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -40,6 +41,8 @@ public class Client {
 	
 	private static final int NUM_OF_LOOP = Integer.MAX_VALUE;
 	private static int NUM_OF_THREAD = 500;
+	private static String SERVICE_URL= "http://localhost:9000/";
+	private static boolean INIT_PROVIDERS = false;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     
     private static boolean shutdown = false;
@@ -106,6 +109,7 @@ public class Client {
 
 	private static List<ProviderTrackingBuilder> loadProviders(HMSRESTClient client) 		
 	{
+		logger.info("Loading providers");
 		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>();
 		List<Provider> providers = client.loadProvidersByZone(ZONE);
 		for(Provider p : providers) {
@@ -159,7 +163,7 @@ public class Client {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
 						
-						sleepWithoutException(1+ThreadLocalRandom.current().nextInt()%5);
+						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%5);
 					}	
 					
 					long delay = UPDATE_INTERVAL - (System.currentTimeMillis() - start);
@@ -174,18 +178,12 @@ public class Client {
 		};	
 	}
 	
+	private static Scanner inScanner = new Scanner(System.in);
 	private static void waitingforEnter() {
-		try {
-			System.in.read();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		inScanner.nextLine();
 	}
 	
-	public static void main(String[] args) {
-
-		Config conf = ConfigFactory.load();
+	private static void loadConfigs(Config conf) {
 		ZONE = conf.getString("zone");
 		
 		if(conf.hasPath("num-of-provider")) {
@@ -203,18 +201,28 @@ public class Client {
 		if(conf.hasPath("num-of-thread")) {
 			NUM_OF_THREAD = conf.getInt("num-of-thread");
 		}
+		
+		if(conf.hasPath("service-url")) {
+			SERVICE_URL=conf.getString("service-url");
+		}			
+		if(conf.hasPath("init-providers")) {
+			INIT_PROVIDERS=conf.getBoolean("init-providers");
+		}			
+	}
+	
+	public static void main(String[] args) {
+
+		Config conf = ConfigFactory.load();
+		loadConfigs(conf);
+		
 		// TODO Auto-generated method stub
 		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>(NUM_OF_PROVIDER);
-		String serviceUrl = "http://localhost:9000/";
-		if(conf.hasPath("service-url")) {
-			serviceUrl=conf.getString("service-url");
-		}
 				
-		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
+		HMSRESTClient client = new HMSRESTClient(SERVICE_URL, logger);
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
 		
-		if(args.length>0 && args[0] == "i") {
+		if(INIT_PROVIDERS) {
 			initProvider(client, list, myPool);
 		}else {
 			list = loadProviders(client);
@@ -222,7 +230,7 @@ public class Client {
 		}
 		
 		
-		logger.info("Tracking Providers:");
+		logger.info("Tracking Providers: {}, threads {}", list.size(), NUM_OF_THREAD);
 		waitingforEnter();
 		
 		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 

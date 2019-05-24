@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -31,10 +32,13 @@ import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
 import hms.kafka.streamming.PollChainning;
 import hms.provider.KafkaProviderMeta;
+import hms.provider.models.ProviderModel;
+import hms.provider.repositories.IProviderRepository;
 
 public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(InMemoryProviderTrackingWithHubProcessing.class);
 	IHMSExecutorContext ec;
+	IProviderRepository repo;
 	
 	KafkaStreamNodeBase<UUID, Boolean>  trackingProviderHubProcessor;
 	KafkaStreamNodeBase<UUID, hms.dto.ProvidersGeoQueryResponse>  queryProvidersHubProcessor;
@@ -130,8 +134,9 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	}
 	
 	@Inject
-	public InMemoryProviderTrackingWithHubProcessing(Config config, IHMSExecutorContext ec) {
+	public InMemoryProviderTrackingWithHubProcessing(Config config, IHMSExecutorContext ec, IProviderRepository repo) {
 		this.ec = ec;
+		this.repo = repo;
 
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
 			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);
@@ -242,6 +247,8 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	
 	private KafkaStreamNodeBase<UUID, hms.dto.ProvidersGeoQueryResponse> buildQueryProvidersHubProcessor(){
 		return this.queryProvidersHubProcessor = new ProviderProcessingNode<UUID, hms.dto.ProvidersGeoQueryResponse>() {
+			private Object ob1,ob2,ob3;
+			
 			@Override
 			protected hms.dto.ProvidersGeoQueryResponse processRequest(HMSMessage<UUID> request) {
 				UUID hubid = request.getData();
@@ -250,9 +257,13 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 						hms.dto.GeoQuery querydto = request.popReponsePoint(hms.dto.GeoQuery.class).data;
 						ProvidersGeoQueryResponse res = new ProvidersGeoQueryResponse();
 						List<InMemProviderTracking> nearTrackings = providerTrackingVPTree.getAllWithinDistance(querydto, querydto.getDistance());
-						for (InMemProviderTracking i : nearTrackings){
-							res.add(new Provider(i.getProviderId(), "Should be loaded by provider id"));
+						List<UUID> providerids= nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
+						this.ob1= providerids;
+						List<ProviderModel> providers = repo.getProvidersByIds(providerids);
+						for (ProviderModel p : providers){
+							res.add(new Provider(p.getProviderid(), p.getZone(), p.getName()));
 						}
+						this.ob2=res;
 						return res;
 					} catch (IOException e) {
 						logger.error("Query Providers Hub Error {}", e.getMessage());

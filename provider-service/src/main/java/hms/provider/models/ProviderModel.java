@@ -61,6 +61,7 @@ public class ProviderModel{
 	public void load(hms.dto.Provider dto) {
 		this.setProviderid(dto.getProviderid());
 		this.setName(dto.getName());
+		this.setZone(dto.getZone());
 	}
 	
 	public hms.provider.entities.ProviderEntity persistance() {
