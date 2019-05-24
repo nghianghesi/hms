@@ -247,8 +247,7 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	
 	private KafkaStreamNodeBase<UUID, hms.dto.ProvidersGeoQueryResponse> buildQueryProvidersHubProcessor(){
 		return this.queryProvidersHubProcessor = new ProviderProcessingNode<UUID, hms.dto.ProvidersGeoQueryResponse>() {
-			private Object ob1,ob2,ob3;
-			
+		
 			@Override
 			protected hms.dto.ProvidersGeoQueryResponse processRequest(HMSMessage<UUID> request) {
 				UUID hubid = request.getData();
@@ -258,12 +257,10 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 						ProvidersGeoQueryResponse res = new ProvidersGeoQueryResponse();
 						List<InMemProviderTracking> nearTrackings = providerTrackingVPTree.getAllWithinDistance(querydto, querydto.getDistance());
 						List<UUID> providerids= nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
-						this.ob1= providerids;
 						List<ProviderModel> providers = repo.getProvidersByIds(providerids);
 						for (ProviderModel p : providers){
 							res.add(new Provider(p.getProviderid(), p.getZone(), p.getName()));
 						}
-						this.ob2=res;
 						return res;
 					} catch (IOException e) {
 						logger.error("Query Providers Hub Error {}", e.getMessage());
