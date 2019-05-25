@@ -16,10 +16,13 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public class HMSRESTClient{
 	public interface HMSServiceIntegration{
+		@GET("/")
+		Call<ResponseBody> initRequest();
 		@POST("/provider/geoquery")
 		Call<ResponseBody> queryProviders(@Body Coordinate tracking);
 	}
@@ -64,6 +67,14 @@ public class HMSRESTClient{
 		this.serviceURL = Url;
 		this.logger = logger;
 		buildIntegration();
+	}
+	
+	public void initRequest() {
+		try {			      
+			this.serviceIntegration.initRequest().execute().body().string();		    
+		} catch (Exception e) {
+			logger.error("Tracking Provider", e);
+		}	
 	}
 	
 	public List<Provider> queryProviders(Coordinate coordinate) {

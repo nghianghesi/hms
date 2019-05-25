@@ -1,6 +1,5 @@
 package hms;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -219,6 +218,7 @@ public class Client {
 		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>(NUM_OF_PROVIDER);
 				
 		HMSRESTClient client = new HMSRESTClient(SERVICE_URL, logger);
+		client.initRequest();
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
 		
