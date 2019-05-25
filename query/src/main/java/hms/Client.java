@@ -88,7 +88,7 @@ public class Client {
 		};
 	}
 	
-	private static void sleepWithoutException(int durationInMilisecond) {		
+	private static void sleepWithoutException(long durationInMilisecond) {		
 		try {
 			Thread.sleep(durationInMilisecond);
 		} catch (Exception e) {
@@ -118,7 +118,7 @@ public class Client {
 						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%10);
 					}	
 					
-					int delay = QUERY_INTERVAL - (System.currentTimeMillis() - start);
+					long delay = QUERY_INTERVAL - (System.currentTimeMillis() - start);
 					if(delay>0) {
 						sleepWithoutException(delay);
 					}else{
