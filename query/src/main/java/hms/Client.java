@@ -38,6 +38,7 @@ public class Client {
 	
 	private static final int NUM_OF_LOOP = Int.MaxValue();
 	private static int NUM_OF_THREAD = 1000;
+	private static String SERVICE_URL= "http://localhost:9000/";
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     
     private static boolean shutdown = false;
