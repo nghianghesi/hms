@@ -118,7 +118,7 @@ public class Client {
 						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%10);
 					}	
 					
-					long delay = QUERY_INTERVAL - (System.currentTimeMillis() - start);
+					int delay = QUERY_INTERVAL - (System.currentTimeMillis() - start);
 					if(delay>0) {
 						sleepWithoutException(delay);
 					}else{
@@ -155,6 +155,7 @@ public class Client {
 		
 		logger.info("Query: {}, threads {}", NUM_OF_CUSTOMERS, NUM_OF_THREAD);
 
+		waitingforEnter();
 		// TODO Auto-generated method stub
 		List<ProviderQueryBuilder> list = new ArrayList<ProviderQueryBuilder>(NUM_OF_CUSTOMERS);
 		String serviceUrl = args.length>0?args[0]:"http://localhost:9000/";
