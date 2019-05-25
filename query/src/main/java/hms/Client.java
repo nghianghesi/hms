@@ -17,7 +17,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
 public class Client {
-	private static int NUM_OF_CUSTOMERS = 50000;
+	private static int NUM_OF_CUSTOMERS = 20000;
+	
+	private static final int QUERY_INTERVAL = 30000;//30s;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
@@ -40,7 +42,7 @@ public class Client {
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     
     private static boolean shutdown = false;
-
+	private int countLongerThanInterval = 0;
 	private static double getRandomLatitude() {
 		return START_RANGE_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LATITUDE - START_RANGE_LATITUDE);
 	}
@@ -100,9 +102,11 @@ public class Client {
 				int ITEM_PER_THREAD = (int)((NUM_OF_CUSTOMERS + NUM_OF_THREAD-1) / NUM_OF_THREAD);
 				int startidx = groupidx * ITEM_PER_THREAD;
 				int endidx = (groupidx + 1) * ITEM_PER_THREAD;
-				
+								
+				long start = 0;
 				for(int loop = 0; loop < NUM_OF_LOOP && !shutdown; loop++) {									
 					logger.info("Running group {}, loop {}", groupidx, loop);
+					start = System.currentTimeMillis();
 					for(int idx = startidx; idx < endidx && idx < list.size(); idx++) {					
 						ProviderQueryBuilder position = list.get(idx);
 						randomMove(position);	
@@ -115,7 +119,13 @@ public class Client {
 						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%10);
 					}	
 					
-					sleepWithoutException(THREAD_DELAY);
+					long delay = QUERY_INTERVAL - (System.currentTimeMillis() - start);
+					if(delay>0) {
+						sleepWithoutException(delay);
+					}else{
+						logger.info("******************* longer than interval *********");
+						countLongerThanInterval+=1;
+					}
 				}
 		};	
 	}
@@ -169,6 +179,6 @@ public class Client {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
 		
-		logger.info(client.getStats());
+		logger.info(client.getStats() + " Long update interval:" + countLongerThanInterval);
 	}
 }
