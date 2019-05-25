@@ -38,11 +38,10 @@ public class Client {
 	
 	private static final int NUM_OF_LOOP = Int.MaxValue();
 	private static int NUM_OF_THREAD = 1000;
-	private static int THREAD_DELAY = 200;
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     
     private static boolean shutdown = false;
-	private int countLongerThanInterval = 0;
+	private static int countLongerThanInterval = 0;
 	private static double getRandomLatitude() {
 		return START_RANGE_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LATITUDE - START_RANGE_LATITUDE);
 	}
@@ -142,10 +141,6 @@ public class Client {
 			NUM_OF_CUSTOMERS = conf.getInt("num-of-customer");
 		}	
 		
-		if(conf.hasPath("thread-delay")) {
-			THREAD_DELAY = conf.getInt("thread-delay");
-		}	
-		
 		if(conf.hasPath("num-of-thread")) {
 			NUM_OF_THREAD = conf.getInt("num-of-thread");
 		}
@@ -158,7 +153,8 @@ public class Client {
 			END_RANGE_LONGITUDE = conf.getDouble("area.end-long");
 		}
 		
-		
+		logger.info("Query: {}, threads {}", NUM_OF_CUSTOMERS, NUM_OF_THREAD);
+
 		// TODO Auto-generated method stub
 		List<ProviderQueryBuilder> list = new ArrayList<ProviderQueryBuilder>(NUM_OF_CUSTOMERS);
 		String serviceUrl = args.length>0?args[0]:"http://localhost:9000/";
