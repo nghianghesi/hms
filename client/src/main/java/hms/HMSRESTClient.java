@@ -3,6 +3,7 @@ package hms;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
@@ -10,6 +11,8 @@ import com.google.gson.reflect.TypeToken;
 
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
+import okhttp3.ConnectionPool;
+import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -46,7 +49,14 @@ public class HMSRESTClient{
 
 	private com.google.gson.Gson gson = new com.google.gson.Gson();
 	private void buildIntegration() {
+		ConnectionPool pool = new ConnectionPool(1000, 1, TimeUnit.MINUTES);
+
+		OkHttpClient client = new OkHttpClient.Builder()
+		                              .connectionPool(pool)
+		                              .build();
+		
 		Retrofit retrofit = new Retrofit.Builder()
+                .client(client)
 			    .baseUrl(serviceURL)
 			    .addConverterFactory(ScalarsConverterFactory.create())
 			    .addConverterFactory(GsonConverterFactory.create())
