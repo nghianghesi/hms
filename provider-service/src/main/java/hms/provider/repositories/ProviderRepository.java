@@ -136,7 +136,6 @@ public class ProviderRepository implements IProviderRepository {
 	
 	@Override
 	public List<hms.provider.models.ProviderModel> getProvidersByZone(String zone){
-		logger.info("getProvidersByZone {}", zone);
 		return this.datastore.createQuery(ProviderEntity.class)
 				.field("zone").equal(zone).asList()
 				.stream().map(e -> ProviderModel.load(e)).collect(Collectors.toList());
