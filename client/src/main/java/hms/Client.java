@@ -153,7 +153,7 @@ public class Client {
 				for(int loop = 0; loop < NUM_OF_LOOP && !shutdown; loop++) {									
 					logger.info("Running group {}, loop {}", groupidx, loop);
 					start = System.currentTimeMillis();
-					for(int idx = startidx; idx < endidx && idx < list.size(); idx++) {					
+					for(int idx = startidx; idx < endidx && idx < list.size()&& !shutdown; idx++) {					
 						ProviderTrackingBuilder tracking = list.get(idx);
 						randomMove(tracking);	
 						try {
