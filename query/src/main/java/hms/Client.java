@@ -153,13 +153,16 @@ public class Client {
 			END_RANGE_LONGITUDE = conf.getDouble("area.end-long");
 		}
 		
+		if(conf.hasPath("service-url")) {
+			SERVICE_URL=conf.getString("service-url");
+		}			
+		
 		logger.info("Query: {}, threads {}", NUM_OF_CUSTOMERS, NUM_OF_THREAD);
 
 		waitingforEnter();
 		// TODO Auto-generated method stub
 		List<ProviderQueryBuilder> list = new ArrayList<ProviderQueryBuilder>(NUM_OF_CUSTOMERS);
-		String serviceUrl = args.length>0?args[0]:"http://localhost:9000/";
-		HMSRESTClient client = new HMSRESTClient(serviceUrl, logger);
+		HMSRESTClient client = new HMSRESTClient(SERVICE_URL, logger);
 		client.initRequest();
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
