@@ -152,10 +152,9 @@ public class ProviderRepository implements IProviderRepository {
 					.add("location", 
 							new BasicDBObject("$near", 
 									new BasicDBObject("$geometry", 
-											BasicDBObjectBuilder.start()
-												.add("type", "Point")
-												.add("coordinates", new double[] {longitude, latitude})
-												.add("$maxDistance", distance).get())))
+												new BasicDBObject("type", "Point")
+													.append("coordinates", new double[] {longitude, latitude}))
+											.append("$maxDistance", distance)))
 					.get();
 			
 			List<UUID> providerids = new ArrayList<>();

@@ -21,7 +21,7 @@ import play.mvc.Result;
 
 public class ProviderController  extends Controller {	
 	private static final Logger logger = LoggerFactory.getLogger(ProviderController.class);
-	private final int QueryDistance = 10000;
+	private final int QueryDistance = 1000;
 	private final Injector injector; 
 	
     private IProviderService providerserivce;
