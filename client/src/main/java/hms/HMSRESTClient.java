@@ -58,7 +58,7 @@ public class HMSRESTClient{
 	private long maxResponseTime;
 	private long timeLimits[] = new long[] {1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
 	private long coutingRequestByTimeLimits[] = new long[timeLimits.length] ;
-	
+	private long failedRequestCount = 0;
 	private void trackingMaxResponseTime(long elapsedTime) {
 		synchronized(this) {
 			maxResponseTime = Math.max(this.maxResponseTime, elapsedTime);
@@ -98,6 +98,7 @@ public class HMSRESTClient{
 			trackingMaxResponseTime(System.currentTimeMillis() - startTime);
 		    
 		} catch (Exception e) {
+			failedRequestCount+=1;
 			logger.error("Tracking Provider", e);
 		}
 	}	
@@ -129,7 +130,7 @@ public class HMSRESTClient{
 	}
 	
 	public String getStats() {
-		String s = String.format("Response time: max %d", this.maxResponseTime);
+		String s = String.format("Response time: max %d, Failed %d", this.maxResponseTime, failedRequestCount);
 		for(int i=0;i<this.timeLimits.length;i++) {
 			s = String.format("%s, %d - %d", s, this.timeLimits[i], this.coutingRequestByTimeLimits[i]);
 		}

@@ -42,6 +42,8 @@ public class HMSRESTClient{
 	private long maxResponseTime;
 	private long timeLimits[] = new long[] {1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
 	private long coutingRequestByTimeLimits[] = new long[timeLimits.length] ;
+
+	private long failedRequestCount = 0;	
 	private com.google.gson.Gson gson = new com.google.gson.Gson();
 	Type providerListType = new TypeToken<ArrayList<Provider>>(){}.getType();
 
@@ -101,12 +103,13 @@ public class HMSRESTClient{
 		    return res;
 		} catch (Exception e) {
 			logger.error("query Provider", e);
+			failedRequestCount+=1;
 			return new ArrayList<Provider>();
 		}
 	}	
 	
 	public String getStats() {
-		String s = String.format("Response time: max %d", this.maxResponseTime);
+		String s = String.format("Response time: max %d, Faield %d", this.maxResponseTime, failedRequestCount);
 		for(int i=0;i<this.timeLimits.length;i++) {
 			s = String.format("%s, %d - %d", s, this.timeLimits[i], this.coutingRequestByTimeLimits[i]);
 		}
