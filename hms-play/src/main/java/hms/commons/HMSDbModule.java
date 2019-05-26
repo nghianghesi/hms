@@ -2,9 +2,6 @@ package hms.commons;
 
 import com.google.inject.AbstractModule;
 
-import hms.common.IHMSExecutorContext;
-
-
 public class HMSDbModule extends AbstractModule {
 	@Override
 	protected void configure() {
