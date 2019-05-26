@@ -182,7 +182,7 @@ public class Client {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
 		
-		long testDuration = System.currentTimeMillis();
+		long testDuration = System.currentTimeMillis() - startTest;
 		logger.info("{}, Long Interval {}, Duration {}", client.getStats(), countLongerThanInterval, testDuration );
 	}
 }
