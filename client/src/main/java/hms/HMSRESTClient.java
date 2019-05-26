@@ -43,6 +43,47 @@ public class HMSRESTClient{
 		Call<ResponseBody> loadByZone(@Body String zone);		
 	}
 	
+	public static class ClientStats{
+		private long maxResponseTime;
+		private long numOfRequests = 0;
+		private long timeTotal = 0;
+		private static long timeLimits[] = new long[] {0, 1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
+		private long coutingRequestByTimeLimits[] = new long[timeLimits.length] ;
+		private long failedRequestCount = 0;
+			
+		private void trackingMaxResponseTime(long elapsedTime) {
+			maxResponseTime = Math.max(this.maxResponseTime, elapsedTime);
+			numOfRequests++;
+			timeTotal+=elapsedTime;
+					
+			for(int i=timeLimits.length-1;i>=0;i--) {
+				if(elapsedTime >= timeLimits[i]) {
+					coutingRequestByTimeLimits[i] += 1;
+					break;
+				}
+			}
+		}		
+		
+		public void accumulateOtherStats(ClientStats other) {
+			this.maxResponseTime = Math.max(this.maxResponseTime, other.maxResponseTime);
+			this.numOfRequests+=other.numOfRequests;
+			this.timeTotal+=other.timeTotal;
+
+			for(int i=timeLimits.length-1;i>=0;i--) {
+				this.coutingRequestByTimeLimits[i]+=other.coutingRequestByTimeLimits[i];
+			}
+			this.failedRequestCount+=other.failedRequestCount;
+		}
+
+		public String getStats() {
+			String s = String.format("Response time: max %d, Faield %d, Total: %d, Time %d", this.maxResponseTime, failedRequestCount, this.numOfRequests, this.timeTotal);
+			for(int i=0;i<timeLimits.length;i++) {
+				s = String.format("%s, %d - %d", s, timeLimits[i], this.coutingRequestByTimeLimits[i]);
+			}
+			return s;
+		}		
+	}
+	
 	private HMSServiceIntegration serviceIntegration;
 	private Logger logger;
 	private String serviceURL;
@@ -68,32 +109,6 @@ public class HMSRESTClient{
 		this.serviceIntegration = retrofit.create(HMSServiceIntegration.class);
 	}
 	
-	private long maxResponseTime;
-	private long numOfRequests = 0;
-	private long timeTotal = 0;
-	private long timeLimits[] = new long[] {0, 1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
-	private long coutingRequestByTimeLimits[] = new long[timeLimits.length] ;
-	private long failedRequestCount = 0;
-	private void trackingMaxResponseTime(long elapsedTime) {
-		synchronized(this) {
-			maxResponseTime = Math.max(this.maxResponseTime, elapsedTime);
-			numOfRequests++;
-			timeTotal+=elapsedTime;
-		}
-		
-		if(elapsedTime == maxResponseTime) {
-			logger.info("Response time: {}", maxResponseTime);
-		}
-		
-		for(int i=timeLimits.length-1;i>=0;i--) {
-			if(elapsedTime >= timeLimits[i]) {
-				coutingRequestByTimeLimits[i] += 1;
-				logger.info("Response time: max {}, elapsed {}, limit {}, count {}",maxResponseTime, elapsedTime, timeLimits[i], coutingRequestByTimeLimits[i]);
-				break;
-			}
-		}
-	}
-	
 	public HMSRESTClient(String Url, Logger logger) {
 		this.serviceURL = Url;
 		this.logger = logger;
@@ -108,18 +123,22 @@ public class HMSRESTClient{
 		}	
 	}
 	
-	public void trackingProvider(ProviderTracking tracking) {
+	public void trackingProvider(ProviderTracking tracking, ClientStats stats) {
 		try {			      
 			long startTime = System.currentTimeMillis();
 			Response<ResponseBody> body = this.serviceIntegration.trackingProvider(tracking).execute();
 			if(body!=null && body.body()!=null && body.isSuccessful()) {
-				trackingMaxResponseTime(System.currentTimeMillis() - startTime);
+				long elapsedTime = System.currentTimeMillis() - startTime;
+				stats.trackingMaxResponseTime(elapsedTime);
+				if(elapsedTime == stats.maxResponseTime) {
+					logger.info("Response time: {}", stats.maxResponseTime);
+				}				
 			}else {
 				logger.info("Empty response");
-				failedRequestCount+=1;
+				stats.failedRequestCount+=1;
 			}		    
 		} catch (Exception e) {
-			failedRequestCount+=1;
+			stats.failedRequestCount+=1;
 			logger.error("Tracking Provider", e);
 		}
 	}	
@@ -148,13 +167,5 @@ public class HMSRESTClient{
 		} catch (Exception e) {
 			logger.error("Tracking Provider", e);
 		}
-	}
-	
-	public String getStats() {
-		String s = String.format("Response time: max %d, Faield %d, Total: %d, Time %d", this.maxResponseTime, failedRequestCount, this.numOfRequests, this.timeTotal);
-		for(int i=0;i<this.timeLimits.length;i++) {
-			s = String.format("%s, %d - %d", s, this.timeLimits[i], this.coutingRequestByTimeLimits[i]);
-		}
-		return s;
-	}
+	}	
 }

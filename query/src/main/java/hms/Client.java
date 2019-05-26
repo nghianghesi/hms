@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-import scala.Int;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
@@ -36,7 +35,7 @@ public class Client {
 	private static final double LONGITUDE_MOVE = 0.01;
 	private static final double LATITUDE_MOVE = 0.01;
 	
-	private static final int NUM_OF_LOOP = Int.MaxValue();
+	private static final int NUM_OF_LOOP = Integer.MAX_VALUE;
 	private static int NUM_OF_THREAD = 1000;
 	private static String SERVICE_URL= "http://localhost:9000/";
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
@@ -98,7 +97,7 @@ public class Client {
 		}			
 	}
 
-	private static Runnable buildQueryProvidersRunnable(HMSRESTClient client, List<ProviderQueryBuilder> list, int groupidx) {
+	private static Runnable buildQueryProvidersRunnable(HMSRESTClient client, HMSRESTClient.ClientStats stats, List<ProviderQueryBuilder> list, int groupidx) {
 		return () -> {				
 				int ITEM_PER_THREAD = (int)((NUM_OF_CUSTOMERS + NUM_OF_THREAD-1) / NUM_OF_THREAD);
 				int startidx = groupidx * ITEM_PER_THREAD;
@@ -112,7 +111,7 @@ public class Client {
 						ProviderQueryBuilder position = list.get(idx);
 						randomMove(position);	
 						try {
-							client.queryProviders(position.build());
+							client.queryProviders(position.build(),stats);
 						} catch (Exception e) {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
@@ -168,11 +167,14 @@ public class Client {
 		client.initRequest();
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
-		
+		List<HMSRESTClient.ClientStats> clientStats = new ArrayList<HMSRESTClient.ClientStats>();
+
 		initCoordinates(list);
 		startTest = System.currentTimeMillis();
-		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 
-			groupRunners.add(CompletableFuture.runAsync(buildQueryProvidersRunnable(client, list, groupidx), myPool));				
+		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 		
+			HMSRESTClient.ClientStats stats = new HMSRESTClient.ClientStats();
+			clientStats.add(stats);
+			groupRunners.add(CompletableFuture.runAsync(buildQueryProvidersRunnable(client, stats, list, groupidx), myPool));				
 		}		
 		
 		waitingforEnter();
@@ -182,7 +184,13 @@ public class Client {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
 		
+		
+		HMSRESTClient.ClientStats finalstats = new HMSRESTClient.ClientStats();
+		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) {
+			finalstats.accumulateOtherStats(clientStats.get(groupidx));
+		}
+		
 		long testDuration = System.currentTimeMillis() - startTest;
-		logger.info("{}, Long Interval {}, Duration {}", client.getStats(), countLongerThanInterval, testDuration );
+		logger.info("{}, Long Interval {}, Duration {}", finalstats.getStats(), countLongerThanInterval, testDuration );
 	}
 }

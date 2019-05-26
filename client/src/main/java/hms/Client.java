@@ -140,7 +140,7 @@ public class Client {
 	}
 
 	private static Runnable buildUpdateProviderRunnable(
-			HMSRESTClient client, 
+			HMSRESTClient client, HMSRESTClient.ClientStats clientStats,
 			List<ProviderTrackingBuilder> list, int groupidx) {
 		return new Runnable(){			
 			@Override
@@ -157,7 +157,7 @@ public class Client {
 						ProviderTrackingBuilder tracking = list.get(idx);
 						randomMove(tracking);	
 						try {
-							client.trackingProvider(tracking.buildTracking());
+							client.trackingProvider(tracking.buildTracking(),clientStats);
 						} catch (Exception e) {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
@@ -166,9 +166,7 @@ public class Client {
 					}	
 					
 					long delay = UPDATE_INTERVAL - (System.currentTimeMillis() - start);
-					if(delay>0) {
-						//sleepWithoutException(delay);
-					}else{
+					if(delay<0) {
 						logger.info("******************* longer than interval *********");
 						countLongerThanInterval+=1;
 					}
@@ -221,7 +219,8 @@ public class Client {
 		client.initRequest();
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
-		
+		List<HMSRESTClient.ClientStats> clientStats = new ArrayList<HMSRESTClient.ClientStats>();
+
 		if(INIT_PROVIDERS) {
 			initProvider(client, list, myPool);
 		}else {
@@ -234,8 +233,10 @@ public class Client {
 		waitingforEnter();
 		startTest = System.currentTimeMillis();
 
-		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 
-			groupRunners.add(CompletableFuture.runAsync(buildUpdateProviderRunnable(client, list, groupidx), myPool));				
+		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) {
+			HMSRESTClient.ClientStats stats = new HMSRESTClient.ClientStats();
+			clientStats.add(stats);
+			groupRunners.add(CompletableFuture.runAsync(buildUpdateProviderRunnable(client,stats, list, groupidx), myPool));				
 		}
 		
 		waitingforEnter();
@@ -244,7 +245,12 @@ public class Client {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
 		long testDuration = System.currentTimeMillis() - startTest;
+		
 
-		logger.info("{}, Long Interval {}, Duration {}", client.getStats(), countLongerThanInterval, testDuration );
+		HMSRESTClient.ClientStats finalstats = new HMSRESTClient.ClientStats();
+		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) {
+			finalstats.accumulateOtherStats(clientStats.get(groupidx));
+		}
+		logger.info("{}, Long Interval {}, Duration {}", finalstats.getStats(), countLongerThanInterval, testDuration );
 	}
 }
