@@ -46,7 +46,7 @@ public class Client {
     
     private static boolean shutdown = false;
     private static long countLongerThanInterval = 0;
-
+	private static long startTest = 0;
 	private static double getRandomLatitude() {
 		return START_RANGE_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LATITUDE - START_RANGE_LATITUDE);
 	}
@@ -162,12 +162,12 @@ public class Client {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
 						
-						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%10);
+						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%5);
 					}	
 					
 					long delay = UPDATE_INTERVAL - (System.currentTimeMillis() - start);
 					if(delay>0) {
-						sleepWithoutException(delay);
+						//sleepWithoutException(delay);
 					}else{
 						logger.info("******************* longer than interval *********");
 						countLongerThanInterval+=1;
@@ -232,7 +232,8 @@ public class Client {
 		
 		logger.info("Tracking Providers: {}, threads {}", list.size(), NUM_OF_THREAD);
 		waitingforEnter();
-		
+		startTest = System.currentTimeMillis();
+
 		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 
 			groupRunners.add(CompletableFuture.runAsync(buildUpdateProviderRunnable(client, list, groupidx), myPool));				
 		}
@@ -242,7 +243,8 @@ public class Client {
 		for (int groupidx = 0; groupidx < groupRunners.size(); groupidx++) {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
-		
-		logger.info(client.getStats() + " Long update interval:" + countLongerThanInterval);
+		long testDuration = System.currentTimeMillis();
+
+		logger.info("{}, Long Interval {}, Duration {}", client.getStats(), countLongerThanInterval, testDuration );
 	}
 }

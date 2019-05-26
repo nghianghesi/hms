@@ -43,6 +43,7 @@ public class Client {
     
     private static boolean shutdown = false;
 	private static int countLongerThanInterval = 0;
+	private static long startTest = 0;
 	private static double getRandomLatitude() {
 		return START_RANGE_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LATITUDE - START_RANGE_LATITUDE);
 	}
@@ -116,7 +117,7 @@ public class Client {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
 						
-						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%10);
+						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%5);
 					}	
 					
 					long delay = QUERY_INTERVAL - (System.currentTimeMillis() - start);
@@ -169,6 +170,7 @@ public class Client {
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
 		
 		initCoordinates(list);
+		startTest = System.currentTimeMillis();
 		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 
 			groupRunners.add(CompletableFuture.runAsync(buildQueryProvidersRunnable(client, list, groupidx), myPool));				
 		}		
@@ -180,6 +182,7 @@ public class Client {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
 		
-		logger.info(client.getStats() + " Long update interval:" + countLongerThanInterval);
+		long testDuration = System.currentTimeMillis();
+		logger.info("{}, Long Interval {}, Duration {}", client.getStats(), countLongerThanInterval, testDuration );
 	}
 }
