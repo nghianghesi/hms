@@ -23,3 +23,7 @@ becare full with $in List<UUID> of mongodb driver (need parse because value of U
 
 run sbt with config file sbt "service-gateway/run -Dconfig.file=service-gateway/conf/application1.conf"
 sbt "processing-host/runMain hms.AppStart -Dconfig.file=processing-host/conf/application1.conf"
+
+
+ java.net.ConnectException: Connection refused: connect
+ Connection pool for REST request
