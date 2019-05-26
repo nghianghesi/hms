@@ -15,6 +15,7 @@ import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
@@ -22,6 +23,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import java.lang.reflect.Type;
+import java.time.Duration;
 
 
 public class HMSRESTClient{
@@ -52,6 +54,7 @@ public class HMSRESTClient{
 		ConnectionPool pool = new ConnectionPool(1000, 1, TimeUnit.MINUTES);
 
 		OkHttpClient client = new OkHttpClient.Builder()
+									  .readTimeout(Duration.ofSeconds(20))
 		                              .connectionPool(pool)
 		                              .build();
 		
@@ -66,7 +69,7 @@ public class HMSRESTClient{
 	}
 	
 	private long maxResponseTime;
-	private long timeLimits[] = new long[] {1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
+	private long timeLimits[] = new long[] {0, 1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
 	private long coutingRequestByTimeLimits[] = new long[timeLimits.length] ;
 	private long failedRequestCount = 0;
 	private void trackingMaxResponseTime(long elapsedTime) {
@@ -104,9 +107,13 @@ public class HMSRESTClient{
 	public void trackingProvider(ProviderTracking tracking) {
 		try {			      
 			long startTime = System.currentTimeMillis();
-			this.serviceIntegration.trackingProvider(tracking).execute().body().string();
-			trackingMaxResponseTime(System.currentTimeMillis() - startTime);
-		    
+			Response<ResponseBody> body = this.serviceIntegration.trackingProvider(tracking).execute();
+			if(body!=null && body.body()!=null && body.isSuccessful()) {
+				trackingMaxResponseTime(System.currentTimeMillis() - startTime);
+			}else {
+				logger.info("Empty response");
+				failedRequestCount+=1;
+			}		    
 		} catch (Exception e) {
 			failedRequestCount+=1;
 			logger.error("Tracking Provider", e);

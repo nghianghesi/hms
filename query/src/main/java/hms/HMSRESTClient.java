@@ -2,6 +2,7 @@ package hms;
 
 
 import java.lang.reflect.Type;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
@@ -38,6 +40,7 @@ public class HMSRESTClient{
 
 		OkHttpClient client = new OkHttpClient.Builder()
 		                              .connectionPool(pool)
+		                              .readTimeout(Duration.ofSeconds(20))
 		                              .build();
 		Retrofit retrofit = new Retrofit.Builder()
                 .client(client)
@@ -49,7 +52,7 @@ public class HMSRESTClient{
 	}
 	
 	private long maxResponseTime;
-	private long timeLimits[] = new long[] {1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
+	private long timeLimits[] = new long[] {0, 1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
 	private long coutingRequestByTimeLimits[] = new long[timeLimits.length] ;
 
 	private long failedRequestCount = 0;	
@@ -92,24 +95,16 @@ public class HMSRESTClient{
 		try {			      
 			long startTime = System.currentTimeMillis();
 			logger.info("query providers {} {}", coordinate.getLatitude(), coordinate.getLongitude());
-			ResponseBody body = this.serviceIntegration.queryProviders(coordinate).execute().body();
-			List<Provider> res = null;
-			if(body!=null) {
-				String str = body.string();
-				res = 	gson.fromJson(str, providerListType);				
-				if(res!=null && res.size()>0) {
-					logger.info("providers {}", res.size());
-					for(int i=0;i<res.size()&&i<3;i++) {
-						logger.info("providers {} {}", res.get(i).getProviderid(), res.get(i).getZone());
-					}
-				}else {
-					logger.info("Empty providers");
-				}
+			Response<ResponseBody> body = this.serviceIntegration.queryProviders(coordinate).execute();
+			if(body!=null && body.body()!=null && body.isSuccessful()) {
+				String str = body.body().string();
+				trackingMaxResponseTime(System.currentTimeMillis() - startTime);				
+				return gson.fromJson(str, providerListType);
 			}else {
-				logger.info("Empty providers");
-			}            
-			trackingMaxResponseTime(System.currentTimeMillis() - startTime);
-		    return res;
+				failedRequestCount+=1;
+				logger.info("Empty response");
+				return new ArrayList<Provider>();
+			}            			
 		} catch (Exception e) {
 			logger.error("query Provider", e);
 			failedRequestCount+=1;
