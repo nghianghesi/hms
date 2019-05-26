@@ -89,13 +89,6 @@ public class Client {
 		};
 	}
 	
-	private static void sleepWithoutException(long durationInMilisecond) {		
-		try {
-			Thread.sleep(durationInMilisecond);
-		} catch (Exception e) {
-			logger.error("Sleep Error {}", e);
-		}			
-	}
 
 	private static Runnable buildQueryProvidersRunnable(HMSRESTClient client, HMSRESTClient.ClientStats stats, List<ProviderQueryBuilder> list, int groupidx) {
 		return () -> {				
@@ -114,15 +107,11 @@ public class Client {
 							client.queryProviders(position.build(),stats);
 						} catch (Exception e) {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
-						}		
-						
-						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%5);
+						}						
 					}	
 					
 					long delay = QUERY_INTERVAL - (System.currentTimeMillis() - start);
-					if(delay>0) {
-						sleepWithoutException(delay);
-					}else{
+					if(delay<0) {
 						logger.info("******************* longer than interval *********");
 						countLongerThanInterval+=1;
 					}

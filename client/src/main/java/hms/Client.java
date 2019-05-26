@@ -130,14 +130,6 @@ public class Client {
 			}
 		};
 	}
-	
-	private static void sleepWithoutException(long delay) {		
-		try {
-			Thread.sleep(delay);
-		} catch (Exception e) {
-			logger.error("Sleep Error {}", e);
-		}			
-	}
 
 	private static Runnable buildUpdateProviderRunnable(
 			HMSRESTClient client, HMSRESTClient.ClientStats clientStats,
@@ -161,8 +153,6 @@ public class Client {
 						} catch (Exception e) {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
-						
-						sleepWithoutException(1+(ThreadLocalRandom.current().nextInt()& Integer.MAX_VALUE)%5);
 					}	
 					
 					long delay = UPDATE_INTERVAL - (System.currentTimeMillis() - start);
