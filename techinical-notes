@@ -27,3 +27,7 @@ sbt "processing-host/runMain hms.AppStart -Dconfig.file=processing-host/conf/app
 
  java.net.ConnectException: Connection refused: connect
  Connection pool for REST request
+ 
+
+https://docs.mongodb.com/manual/tutorial/deploy-shard-cluster/
+can't use localhost as a shard since all shards need to communicate. either use all shards and configdbs in localhost or all in actual IPs host

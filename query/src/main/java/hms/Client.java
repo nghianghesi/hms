@@ -43,8 +43,6 @@ public class Client {
     
     private static boolean shutdown = false;
 	private static int countLongerThanInterval = 0;
-    private static long numberOfRequest = 0;
-    private static long teststarted = 0;
 	private static double getRandomLatitude() {
 		return START_RANGE_LATITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LATITUDE - START_RANGE_LATITUDE);
 	}
@@ -114,7 +112,6 @@ public class Client {
 						randomMove(position);	
 						try {
 							client.queryProviders(position.build());
-							numberOfRequest++;
 						} catch (Exception e) {
 							logger.error("Error call service: group {}, loop {}", groupidx, loop);
 						}		
@@ -172,7 +169,6 @@ public class Client {
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
 		
 		initCoordinates(list);
-		teststarted = System.currentTimeMillis();
 		for(int groupidx = 0; groupidx < NUM_OF_THREAD; groupidx++) { 
 			groupRunners.add(CompletableFuture.runAsync(buildQueryProvidersRunnable(client, list, groupidx), myPool));				
 		}		
@@ -184,7 +180,6 @@ public class Client {
 			groupRunners.get(groupidx).thenRun(buildEndGroupRunnable(groupidx)).join();
 		}
 		
-		logger.info(client.getStats() + " Long update interval:" + countLongerThanInterval
-					+ " Total: "+numberOfRequest+ "Time" + (System.currentTimeMillis() - teststarted));
+		logger.info(client.getStats() + " Long update interval:" + countLongerThanInterval);
 	}
 }

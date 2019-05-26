@@ -52,6 +52,8 @@ public class HMSRESTClient{
 	}
 	
 	private long maxResponseTime;
+	private long numOfRequests = 0;
+	private long timeTotal = 0;
 	private long timeLimits[] = new long[] {0, 1000,1500,2000,2500,3000,5000,10000, 15000, 20000};
 	private long coutingRequestByTimeLimits[] = new long[timeLimits.length] ;
 
@@ -62,6 +64,8 @@ public class HMSRESTClient{
 	private void trackingMaxResponseTime(long elapsedTime) {
 		synchronized(this) {
 			maxResponseTime = Math.max(this.maxResponseTime, elapsedTime);
+			numOfRequests++;
+			timeTotal+=elapsedTime;
 		}
 		
 		if(elapsedTime == maxResponseTime) {
@@ -113,7 +117,7 @@ public class HMSRESTClient{
 	}	
 	
 	public String getStats() {
-		String s = String.format("Response time: max %d, Faield %d", this.maxResponseTime, failedRequestCount);
+		String s = String.format("Response time: max %d, Faield %d, Total: %d, Time %d", this.maxResponseTime, failedRequestCount, this.numOfRequests, this.timeTotal);
 		for(int i=0;i<this.timeLimits.length;i++) {
 			s = String.format("%s, %d - %d", s, this.timeLimits[i], this.coutingRequestByTimeLimits[i]);
 		}
