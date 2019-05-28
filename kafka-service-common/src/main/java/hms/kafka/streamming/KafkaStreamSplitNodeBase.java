@@ -17,7 +17,7 @@ public abstract class KafkaStreamSplitNodeBase <TCon, TRepItem>
 			replymsg.setData(value);
 			String replytop = applyTemplateToRepForTopic(request.getCurrentResponsePoint(this.getForwardTopic()), value);
 			try {
-				this.getLogger().info("Replying to {}", replytop);
+				//this.getLogger().info("Replying to {}", replytop);
 				ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
 				this.producer.send(record).get();
 			} catch (IOException | InterruptedException | ExecutionException e) {
