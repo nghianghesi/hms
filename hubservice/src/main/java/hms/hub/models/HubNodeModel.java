@@ -61,6 +61,14 @@ public class HubNodeModel {
 		this.entity.setHubid(hubid);
 	}
 	
+    public String getName() {
+		return this.entity.getName();
+	}
+
+	public void setHubid(String name) {
+		this.entity.setName(name);
+	}	
+	
 	public double getLatitude() {
 		return this.entity.getLocation().getLatitude();
 	}
@@ -194,6 +202,8 @@ public class HubNodeModel {
 		str.add(""+this.getLatitudeRange());
 		str.add(""+this.getLongitudeRange());
 		str.add(""+this.getMargin());
+		str.add(this.getName());
+		str.add("\n");
 		if(this.subHubs.size()>0) {
 			str.add("[");
 			for(HubNodeModel node : this.subHubs) {

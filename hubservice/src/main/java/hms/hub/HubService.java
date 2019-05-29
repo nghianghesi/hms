@@ -21,6 +21,7 @@ public class HubService implements IHubService, IHubServiceProcessor {
 	@Inject
 	public HubService(IHMSExecutorContext ec, IHubNodeRepository repo) {
 		this.rootNode = repo.getRootNode();
+		logger.info(this.rootNode.getDebugInfo());
 		this.execContext = ec;
 	}
 
