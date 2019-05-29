@@ -215,7 +215,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 					hms.common.ServiceWaiter.getInstance().removeHeartbeatObserver(this.heartbeatObserver);
 				}
 			};
-			hms.common.ServiceWaiter.getInstance().addHeartbeatObserver(this.heartbeatObserver);
+			hms.common.ServiceWaiter.getInstance(10).addHeartbeatObserver(this.heartbeatObserver);
 		}
 		
 		this.getLogger().info("Consumer {} ready", this.getConsumeTopic());						 
