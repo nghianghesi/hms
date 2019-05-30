@@ -2,6 +2,8 @@ package hms.kafka.provider;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -11,21 +13,19 @@ import com.typesafe.config.Config;
 import hms.KafkaHMSMeta;
 import hms.common.IHMSExecutorContext;
 import hms.dto.GeoQuery;
-import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.StreamRoot;
-import hms.provider.IProviderService;
-import hms.provider.KafkaProviderMeta;
+import hms.provider.IAsynProviderService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class KafkaProviderService implements IProviderService, Closeable{
+public class KafkaProviderService implements IAsynProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderService.class);
 
 	private KafkaProviderSettings topicSettings;
 	StreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
-	StreamRoot<hms.dto.GeoQuery, hms.dto.ProvidersGeoQueryResponse>  queryProvidersStream;
+	StreamRoot<hms.dto.GeoQuery, List<hms.dto.Provider>>  queryProvidersStream;
 	String server, rootid;	
 	
 	
@@ -79,15 +79,17 @@ public class KafkaProviderService implements IProviderService, Closeable{
 				}				
 			};
 			
-			queryProvidersStream = new ProviderStreamRoot<hms.dto.GeoQuery, hms.dto.ProvidersGeoQueryResponse>(){
+			queryProvidersStream = new ProviderStreamRoot<hms.dto.GeoQuery, List<hms.dto.Provider>>(){
+				@SuppressWarnings("unchecked")
+				private Class<? extends List<hms.dto.Provider>> template = (Class<? extends List<hms.dto.Provider>>)(new ArrayList<hms.dto.Provider>()).getClass();
 				@Override
 				protected String getStartTopic() {
 					return topicSettings.getQueryTopic();
 				}
 
 				@Override
-				protected Class<hms.dto.ProvidersGeoQueryResponse> getTConsumeManifest() {
-					return hms.dto.ProvidersGeoQueryResponse.class;
+				protected Class<? extends List<hms.dto.Provider>> getTConsumeManifest() {
+					return template;
 				}
 			};				
 			
@@ -98,17 +100,13 @@ public class KafkaProviderService implements IProviderService, Closeable{
 	}
 
 	@Override
-	public CompletableFuture<Boolean> tracking(hms.dto.ProviderTracking trackingdto) {
-		return trackingProviderStream.startStream((requestid)->{		
-			return new HMSMessage<hms.dto.ProviderTracking>(requestid, trackingdto);
-		});
+	public CompletableFuture<Boolean> asynTracking(hms.dto.ProviderTracking trackingdto) {
+		return trackingProviderStream.startStream(trackingdto);
 	}
 
 	@Override
-	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(GeoQuery query) {
-		return queryProvidersStream.startStream((requestid)->{		
-			return new HMSMessage<hms.dto.GeoQuery>(requestid, query);
-		});
+	public CompletableFuture<List<hms.dto.Provider>> asynQueryProviders(GeoQuery query) {
+		return queryProvidersStream.startStream(query);
 	}			
 
 	@Override

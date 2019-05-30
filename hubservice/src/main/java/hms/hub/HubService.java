@@ -1,5 +1,6 @@
 package hms.hub;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import hms.common.IHMSExecutorContext;
+import hms.dto.GeoQuery;
 import hms.hub.models.HubNodeModel;
 import hms.hub.repositories.IHubNodeRepository;
 
@@ -25,23 +27,28 @@ public class HubService implements IHubService, IHubServiceProcessor {
 		this.execContext = ec;
 	}
 
-	public CompletableFuture<UUID> getHostingHubId(double latitude, double longitude)
+	public CompletableFuture<UUID> asynGetHostingHubId(double latitude, double longitude)
 	{
 		return CompletableFuture.supplyAsync(()->{
-			//TODO: need return hubid full-path
-			UUID hubid = this.rootNode.getHostingHub(latitude, longitude).getHubid();
-			return hubid;
+			return this.getHostingHubId(latitude, longitude);
 		}, this.execContext.getExecutor());
 	}
 	
-	public CompletableFuture<hms.dto.CoveringHubsResponse> getConveringHubs(hms.dto.GeoQuery query)
+	public CompletableFuture<List<UUID>> asynGetConveringHubs(hms.dto.GeoQuery query)
 	{
 		return CompletableFuture.supplyAsync(()->{
-			//TODO: need return hubid full-path
-			hms.dto.CoveringHubsResponse res = new hms.dto.CoveringHubsResponse();
-			res.addAll(this.rootNode.getConveringHubIds(query.getLatitude(), query.getLongitude(), query.getDistance()).stream()
-			.map(h->h.getHubid()).collect(Collectors.toList()));
-			return res;
+			return this.getConveringHubs(query);
 		}, this.execContext.getExecutor());	
+	}
+
+	@Override
+	public UUID getHostingHubId(double latitude, double longitude) {
+		return this.rootNode.getHostingHub(latitude, longitude).getHubid();
+	}
+
+	@Override
+	public List<UUID> getConveringHubs(GeoQuery query) {
+		return this.rootNode.getConveringHubIds(query.getLatitude(), query.getLongitude(), query.getDistance()).stream()
+		.map(h->h.getHubid()).collect(Collectors.toList());
 	}
 }

@@ -65,7 +65,7 @@ public class KafkaMessageUtils {
 		return buffer.array();
 	}
 
-	public static <T> HMSMessage<T> getHMSMessage(Class<T> manifest, ConsumerRecord<UUID, byte[]> record)
+	public static <T> HMSMessage<T> getHMSMessage(Class<? extends T> manifest, ConsumerRecord<UUID, byte[]> record)
 			throws IOException {
 		UUID requestid = record.key();
 		HMSMessage<T> req = new HMSMessage<T>(requestid);

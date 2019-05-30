@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Injector;
 
+import hms.provider.IAsynProviderService;
 import hms.provider.IProviderService;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
@@ -24,10 +25,10 @@ public class ProviderController  extends Controller {
 	private final int QueryDistance = 1000;
 	private final Injector injector; 
 	
-    private IProviderService providerserivce;
+    private IAsynProviderService providerserivce;
     private HttpExecutionContext ec;
     @Inject
-    public ProviderController(HttpExecutionContext ec, IProviderService providerservice, Injector injector) {
+    public ProviderController(HttpExecutionContext ec, IAsynProviderService providerservice, Injector injector) {
     	this.injector = injector;
     	this.providerserivce = providerservice;
     	this.ec = ec;
@@ -65,7 +66,7 @@ public class ProviderController  extends Controller {
     public CompletionStage<Result> tracking(Http.Request request) {    	
     	JsonNode json = request.body().asJson();
     	hms.dto.ProviderTracking trackingdto = Json.fromJson(json, hms.dto.ProviderTracking.class);
-    	return this.providerserivce.tracking(trackingdto).thenApplyAsync(t->{
+    	return this.providerserivce.asynTracking(trackingdto).thenApplyAsync(t->{
     		return ok(Json.toJson(t));
     	}, ec.current());
     }
@@ -75,7 +76,7 @@ public class ProviderController  extends Controller {
     	JsonNode json = request.body().asJson();
     	hms.dto.Coordinate position = Json.fromJson(json, hms.dto.Coordinate.class);
     	hms.dto.GeoQuery query = new hms.dto.GeoQuery(position.getLatitude(),position.getLongitude(),QueryDistance);
-    	return this.providerserivce.queryProviders(query).thenApplyAsync(t->{
+    	return this.providerserivce.asynQueryProviders(query).thenApplyAsync(t->{
     		return ok(Json.toJson(t));
     	}, ec.current());
     }

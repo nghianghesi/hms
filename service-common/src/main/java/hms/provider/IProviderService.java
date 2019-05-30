@@ -1,9 +1,9 @@
 package hms.provider;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
-public interface IProviderService {
-	CompletableFuture<Boolean> tracking(hms.dto.ProviderTracking trackingdto);
-	CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(hms.dto.GeoQuery query);
+public interface IProviderService extends IAsynProviderService {
+	Boolean tracking(hms.dto.ProviderTracking trackingdto);
+	List<hms.dto.Provider> queryProviders(hms.dto.GeoQuery query);	
 }
 

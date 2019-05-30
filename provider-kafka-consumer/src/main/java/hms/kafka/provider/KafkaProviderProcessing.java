@@ -2,8 +2,9 @@ package hms.kafka.provider;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
@@ -15,7 +16,6 @@ import com.typesafe.config.Config;
 import hms.KafkaHMSMeta;
 import hms.common.IHMSExecutorContext;
 import hms.dto.Coordinate;
-import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import hms.hub.KafkaHubMeta;
 import hms.kafka.streamming.HMSMessage;
@@ -32,7 +32,7 @@ public class KafkaProviderProcessing implements Closeable {
 	KafkaStreamNodeBase<hms.dto.ProviderTracking, Coordinate>  trackingProviderProcessor;	
 	KafkaStreamNodeBase<UUID, Boolean>  trackingProviderHubProcessor;
 	KafkaStreamNodeBase<hms.dto.GeoQuery, hms.dto.GeoQuery>  queryProvidersProcessor;	
-	KafkaStreamNodeBase<hms.dto.CoveringHubsResponse, hms.dto.ProvidersGeoQueryResponse>  queryProvidersHubProcessor;
+	KafkaStreamNodeBase<List<UUID>, List<hms.dto.Provider>>  queryProvidersHubProcessor;
 
 	private String kafkaserver;
 	private String providerGroup;
@@ -128,7 +128,7 @@ public class KafkaProviderProcessing implements Closeable {
 				ResponsePoint<ProviderTracking> trackingdto;
 				try {
 					trackingdto = request.popReponsePoint(hms.dto.ProviderTracking.class);
-					return providerService.tracking(trackingdto.data, hubid).join();
+					return providerService.tracking(trackingdto.data, hubid);
 				} catch (IOException e) {
 					logger.error("Tracking Provider Hub Error {}", e.getMessage());
 					return false;
@@ -184,14 +184,16 @@ public class KafkaProviderProcessing implements Closeable {
 	}
 	
 	private void buildQueryProvidersHubProcessor(){
-		this.queryProvidersHubProcessor = new ProviderProcessingNode<hms.dto.CoveringHubsResponse, hms.dto.ProvidersGeoQueryResponse>() {
+		this.queryProvidersHubProcessor = new ProviderProcessingNode<List<UUID>, List<hms.dto.Provider>>() {
+			@SuppressWarnings("unchecked")
+			private Class<? extends List<UUID>> template = (Class<? extends List<UUID>>)(new ArrayList<UUID>()).getClass();
 			@Override
-			protected hms.dto.ProvidersGeoQueryResponse processRequest(HMSMessage<hms.dto.CoveringHubsResponse> request) {
-				hms.dto.CoveringHubsResponse hubids = request.getData();
+			protected List<hms.dto.Provider> processRequest(HMSMessage<List<UUID>> request) {
+				List<UUID> hubids = request.getData();
 				hms.dto.GeoQuery querydto;
 				try {
 					querydto = request.popReponsePoint(hms.dto.GeoQuery.class).data;
-					return providerService.queryProviders(hubids, querydto).join();
+					return providerService.queryProviders(hubids, querydto);
 				} catch (IOException e) {
 					logger.error("Query Providers Hub Error {}", e.getMessage());
 					return null;
@@ -199,8 +201,8 @@ public class KafkaProviderProcessing implements Closeable {
 			}
 
 			@Override
-			protected Class<hms.dto.CoveringHubsResponse> getTConsumeManifest() {
-				return hms.dto.CoveringHubsResponse.class;
+			protected Class<? extends List<UUID>> getTConsumeManifest() {
+				return template;
 			}
 
 			@Override

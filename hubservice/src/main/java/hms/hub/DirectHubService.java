@@ -1,17 +1,18 @@
 package hms.hub;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
-import hms.dto.CoveringHubsResponse;
 import hms.dto.GeoQuery;
 
 public class DirectHubService implements IHubService{
 
 	private final UUID onlyhubid = UUID.fromString("eca3229d-c616-491a-aee6-44bcd902cb1b");	
-	private final CoveringHubsResponse onlyConverHub = new CoveringHubsResponse();
+	private final List<UUID> onlyConverHub = new ArrayList<UUID>();
 	
 	@Inject
 	public DirectHubService() {
@@ -19,13 +20,25 @@ public class DirectHubService implements IHubService{
 	}
 
 	@Override
-	public CompletableFuture<UUID> getHostingHubId(double latitude, double longitude) {
+	public CompletableFuture<UUID> asynGetHostingHubId(double latitude, double longitude) {
 		return CompletableFuture.supplyAsync(()->onlyhubid);
 	}
 
 	@Override
-	public CompletableFuture<CoveringHubsResponse> getConveringHubs(GeoQuery query) {
+	public CompletableFuture<List<UUID>> asynGetConveringHubs(GeoQuery query) {
 		return CompletableFuture.supplyAsync(()->onlyConverHub);
+	}
+
+	@Override
+	public UUID getHostingHubId(double latitude, double longitude) {
+		// TODO Auto-generated method stub
+		return onlyhubid;
+	}
+
+	@Override
+	public List<UUID> getConveringHubs(GeoQuery query) {
+		// TODO Auto-generated method stub
+		return onlyConverHub;
 	}
 
 }

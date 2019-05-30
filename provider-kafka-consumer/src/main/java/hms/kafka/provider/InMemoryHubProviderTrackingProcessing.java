@@ -1,7 +1,6 @@
 package hms.kafka.provider;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,23 +24,22 @@ import com.typesafe.config.Config;
 import hms.KafkaHMSMeta;
 import hms.common.DistanceUtils;
 import hms.common.IHMSExecutorContext;
+import hms.dto.HubProviderTracking;
 import hms.dto.LatLongLocation;
 import hms.dto.Provider;
-import hms.dto.ProviderTracking;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
 import hms.kafka.streamming.PollChainning;
 import hms.provider.KafkaProviderMeta;
-import hms.provider.models.ProviderModel;
 import hms.provider.repositories.IProviderRepository;
 
-public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
-	private static final Logger logger = LoggerFactory.getLogger(InMemoryProviderTrackingWithHubProcessing.class);
+public class InMemoryHubProviderTrackingProcessing implements Closeable{
+	private static final Logger logger = LoggerFactory.getLogger(InMemoryHubProviderTrackingProcessing.class);
 	IHMSExecutorContext ec;
 	IProviderRepository repo;
 	
-	KafkaStreamNodeBase<UUID, Boolean>  trackingProviderHubProcessor;
-	KafkaStreamNodeBase<UUID, List<hms.dto.Provider>>  queryProvidersHubProcessor;
+	KafkaStreamNodeBase<hms.dto.HubProviderTracking, Boolean>  trackingProviderHubProcessor;
+	KafkaStreamNodeBase<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>>  queryProvidersHubProcessor;
 
 	private final String kafkaserver;
 	private final String providerGroup;
@@ -92,7 +90,7 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 			return providerId;
 		}
 		
-		public InMemProviderTracking(hms.dto.ProviderTracking dto) {		
+		public InMemProviderTracking(HubProviderTracking dto) {		
 			this.providerId = dto.getProviderid();
 			this.setLatLong(dto);
 		}		
@@ -134,7 +132,7 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	}
 	
 	@Inject
-	public InMemoryProviderTrackingWithHubProcessing(Config config, IHMSExecutorContext ec, IProviderRepository repo) {
+	public InMemoryHubProviderTrackingProcessing(Config config, IHMSExecutorContext ec, IProviderRepository repo) {
 		this.ec = ec;
 		this.repo = repo;
 
@@ -165,7 +163,7 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	
 	
 	private void buildTrackingProviderHubProcessor() {
-		this.trackingProviderHubProcessor = new ProviderProcessingNode<UUID, Boolean>() {
+		this.trackingProviderHubProcessor = new ProviderProcessingNode<hms.dto.HubProviderTracking, Boolean>() {
 			
 			private final List<PollChainning> querychain = new LinkedList<PollChainning>();
 			{
@@ -182,27 +180,22 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 			}
 			
 			@Override
-			protected Boolean processRequest(HMSMessage<UUID> request) {
-				UUID hubid = request.getData();
-				if(hubid.equals(InMemoryProviderTrackingWithHubProcessing.this.hubid)) {
-					try {
-						ProviderTracking trackingdto = request.popReponsePoint(hms.dto.ProviderTracking.class).data;						
-						InMemProviderTracking newdata = new InMemProviderTracking(trackingdto);
-						InMemProviderTracking existingdata = myproviders.putIfAbsent(trackingdto.getProviderid(), newdata);							
-						if(existingdata!=null) { // existing --> remove tracking to be re-indexed.
-							providerTrackingVPTree.remove(existingdata);
-							existingdata.setLatLong(trackingdto);
-						}else {
-							existingdata = newdata;
-						}
-
-						providerTrackingVPTree.add(existingdata);
-						expiredTrackings.add(existingdata);
-						return true;
-					} catch (IOException e) {
-						logger.error("Tracking Provider Hub Error {}", e.getMessage());
-						return false;
+			protected Boolean processRequest(HMSMessage<hms.dto.HubProviderTracking> request) {
+				UUID hubid = request.getData().getHubid();
+				if(hubid.equals(InMemoryHubProviderTrackingProcessing.this.hubid)) {
+					HubProviderTracking trackingdto = request.getData();						
+					InMemProviderTracking newdata = new InMemProviderTracking(trackingdto);
+					InMemProviderTracking existingdata = myproviders.putIfAbsent(trackingdto.getProviderid(), newdata);							
+					if(existingdata!=null) { // existing --> remove tracking to be re-indexed.
+						providerTrackingVPTree.remove(existingdata);
+						existingdata.setLatLong(trackingdto);
+					}else {
+						existingdata = newdata;
 					}
+
+					providerTrackingVPTree.add(existingdata);
+					expiredTrackings.add(existingdata);
+					return true;
 				}else {
 					return false;
 				}
@@ -229,13 +222,13 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 			}
 
 			@Override
-			protected Class<? extends UUID> getTConsumeManifest() {
-				return UUID.class;
+			protected Class<? extends HubProviderTracking> getTConsumeManifest() {
+				return HubProviderTracking.class;
 			}
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaProviderMeta.InMemTrackingWithHubMessage+hubid.toString();
+				return KafkaProviderMeta.InMemTrackingMessage + hubid.toString();
 			}		
 			
 			@Override
@@ -245,40 +238,31 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 		};
 	}	
 	
-	private KafkaStreamNodeBase<UUID, List<hms.dto.Provider>> buildQueryProvidersHubProcessor(){
-		return this.queryProvidersHubProcessor = new ProviderProcessingNode<UUID, List<hms.dto.Provider>>() {
-		
+	private KafkaStreamNodeBase<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>> buildQueryProvidersHubProcessor(){
+		return this.queryProvidersHubProcessor = new ProviderProcessingNode<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>>() {		
 			@Override
-			protected List<hms.dto.Provider> processRequest(HMSMessage<UUID> request) {
-				UUID hubid = request.getData();
-				if(hubid.equals(InMemoryProviderTrackingWithHubProcessing.this.hubid)) {
-					try {
-						hms.dto.GeoQuery querydto = request.popReponsePoint(hms.dto.GeoQuery.class).data;
-						List<hms.dto.Provider> res = new ArrayList<hms.dto.Provider>();
-						List<InMemProviderTracking> nearTrackings = providerTrackingVPTree.getAllWithinDistance(querydto, querydto.getDistance());
-						List<UUID> providerids= nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
-						List<ProviderModel> providers = repo.getProvidersByIds(providerids);
-						for (ProviderModel p : providers){
-							res.add(new Provider(p.getProviderid(), p.getZone(), p.getName()));
-						}
-						return res;
-					} catch (IOException e) {
-						logger.error("Query Providers Hub Error {}", e.getMessage());
-						return null;
-					}
+			protected List<hms.dto.Provider> processRequest(HMSMessage<hms.dto.HubProviderGeoQuery> request) {
+				UUID hubid = request.getData().getHubid();
+				if(hubid.equals(InMemoryHubProviderTrackingProcessing.this.hubid)) {
+					hms.dto.HubProviderGeoQuery querydto = request.getData();
+					List<InMemProviderTracking> nearTrackings = providerTrackingVPTree.getAllWithinDistance(querydto, querydto.getDistance());
+					List<UUID> providerids= nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
+					return repo.getProvidersByIds(providerids).stream()
+							.map(p -> new Provider(p.getProviderid(), p.getZone(), p.getName()))
+							.collect(Collectors.toList());
 				}else {
 					return new ArrayList<hms.dto.Provider>();
 				}
 			}
 
 			@Override
-			protected Class<? extends UUID> getTConsumeManifest() {
-				return UUID.class;
+			protected Class<? extends hms.dto.HubProviderGeoQuery> getTConsumeManifest() {
+				return hms.dto.HubProviderGeoQuery.class;
 			}
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaProviderMeta.InMemQueryProvidersWithHubsMessage+hubid.toString();
+				return KafkaProviderMeta.InMemQueryProvidersMessage+hubid.toString();
 			}		
 			
 			@Override

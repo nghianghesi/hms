@@ -10,6 +10,8 @@ import javax.inject.Inject;
 
 import hms.common.ExceptionWrapper;
 import hms.common.IHMSExecutorContext;
+import hms.dto.GeoQuery;
+import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import hms.hub.IHubService;
 import hms.provider.models.ProviderModel.ProviderTrackingModel;
@@ -39,8 +41,8 @@ public class ProviderService implements IProviderService{
 	}	
 	
 	@Override
-	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto) {
-		return this.hubservice.getHostingHubId(trackingdto.getLatitude(), trackingdto.getLongitude())
+	public CompletableFuture<Boolean> asynTracking(ProviderTracking trackingdto) {
+		return this.hubservice.asynGetHostingHubId(trackingdto.getLatitude(), trackingdto.getLongitude())
 					.thenApplyAsync((hubid) -> {
 						return this.internalTrackingProviderHub(trackingdto, hubid);			
 					}, this.execContext.getExecutor());
@@ -54,12 +56,21 @@ public class ProviderService implements IProviderService{
 	}
 	
 	@Override 
-	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(hms.dto.GeoQuery query){
-		return this.hubservice.getConveringHubs(query)
+	public CompletableFuture<List<hms.dto.Provider>> asynQueryProviders(hms.dto.GeoQuery query){
+		return this.hubservice.asynGetConveringHubs(query)
 			.thenApplyAsync((hubids) -> {
-				hms.dto.ProvidersGeoQueryResponse res = new hms.dto.ProvidersGeoQueryResponse(); 
-				res.addAll(this.internalQueryProviders(hubids, query));
-				return res;
+				return this.internalQueryProviders(hubids, query);
 			},this.execContext.getExecutor());	
+	}
+
+	@Override
+	public Boolean tracking(ProviderTracking trackingdto) {
+		return this.internalTrackingProviderHub(trackingdto, 
+				this.hubservice.getHostingHubId(trackingdto.getLatitude(), trackingdto.getLongitude()));
+	}
+
+	@Override
+	public List<Provider> queryProviders(GeoQuery query) {
+		return this.internalQueryProviders(this.hubservice.getConveringHubs(query),query);
 	}
 }

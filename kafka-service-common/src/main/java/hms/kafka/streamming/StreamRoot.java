@@ -41,7 +41,7 @@ public abstract class StreamRoot<TStart, TRes>
 		return _waiters;
 	}
 	
-	private UUID nextId() {
+	protected UUID nextId() {
 		return UUID.randomUUID();
 	} 
 	
@@ -61,8 +61,8 @@ public abstract class StreamRoot<TStart, TRes>
 		}
 	}	
 	
-	public CompletableFuture<TRes> startStream(java.util.function.Function<UUID,HMSMessage<TStart>> createRequest) {
-		return this.startStream(createRequest, this.timeout);
+	public CompletableFuture<TRes> startStream(TStart data) {
+		return this.startStream(data, this.timeout);
 	}
 	
 	
@@ -72,21 +72,18 @@ public abstract class StreamRoot<TStart, TRes>
 		return waiter;
 	}
 	
-	public CompletableFuture<TRes> startStream(java.util.function.Function<UUID,HMSMessage<TStart>> createRequest, int timeout) {
+	public CompletableFuture<TRes> startStream(TStart data, int timeout) {
 		UUID id = this.nextId();
 		StreamResponse<TRes> waiter = this.createReponseInstance(id);	
-		HMSMessage<TStart> request = createRequest.apply(id);
-		if(request != null) {
-			request.addReponsePoint(this.getConsumeTopic());			
-			try {				
-				ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, this.getStartTopic());
-				//this.getLogger().info("Start stream {} {}", this.getStartTopic(), request.getRequestId());
-				this.producer.send(record).get(timeout, TimeUnit.MILLISECONDS);
-			} catch (IOException | InterruptedException | ExecutionException | TimeoutException e) {
-				this.handleRequestError(id, "Request error:"+e.getMessage());
-			}
-		}else {
-			this.handleRequestError(id, "Empty Request");
+		HMSMessage<TStart> request = new HMSMessage<TStart>(id, data);
+		request.addReponsePoint(this.getConsumeTopic());			
+		try {				
+			String startTopic = this.applyTemplateToRepForTopic(this.getStartTopic(), data); 			
+			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, startTopic);
+			//this.getLogger().info("Start stream {} {}", this.getStartTopic(), request.getRequestId());
+			this.producer.send(record).get(timeout, TimeUnit.MILLISECONDS);
+		} catch (IOException | InterruptedException | ExecutionException | TimeoutException e) {
+			this.handleRequestError(id, "Request error:"+e.getMessage());
 		}
 		return hms.common.ServiceWaiter.getInstance().waitForSignal(waiter,timeout);
 	}	

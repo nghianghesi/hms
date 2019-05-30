@@ -18,28 +18,22 @@ public class ProviderServiceProcessor extends ProviderService implements IProvid
 	}	
 
 	@Override
-	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto) {
+	public CompletableFuture<Boolean> asynTracking(ProviderTracking trackingdto) {
 		throw new Error("Invalid usage, don't call this directly");
 	}
 
 	@Override
-	public CompletableFuture<Boolean> tracking(ProviderTracking trackingdto, UUID hubid) {
-		return CompletableFuture.supplyAsync(()->{
-			return this.internalTrackingProviderHub(trackingdto, hubid);
-		}, this.execContext.getExecutor());
+	public Boolean tracking(ProviderTracking trackingdto, UUID hubid) {
+		return this.internalTrackingProviderHub(trackingdto, hubid);
 	}
 	
 	@Override
-	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(hms.dto.GeoQuery query){
+	public CompletableFuture<List<hms.dto.Provider>> asynQueryProviders(hms.dto.GeoQuery query){
 		throw new Error("Invalid usage, don't call this directly");
 	}
 	
 	@Override
-	public CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(List<UUID>hostids, hms.dto.GeoQuery query){
-		return CompletableFuture.supplyAsync(()->{
-			hms.dto.ProvidersGeoQueryResponse res = new hms.dto.ProvidersGeoQueryResponse(); 
-			res.addAll(this.internalQueryProviders(hostids, query));
-			return res;
-		}, this.execContext.getExecutor());
+	public List<hms.dto.Provider> queryProviders(List<UUID>hostids, hms.dto.GeoQuery query){
+		return this.internalQueryProviders(hostids, query);
 	}
 }

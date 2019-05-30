@@ -28,7 +28,7 @@ public class KafkaHubProcessing implements Closeable {
 	IHMSExecutorContext ec;
 	
 	KafkaStreamNodeBase<hms.dto.Coordinate, UUID>  getHubByCoordinateProcessor; 
-	KafkaStreamNodeBase<hms.dto.GeoQuery, hms.dto.CoveringHubsResponse>  getCoveringHubsProcessor; 	 
+	KafkaStreamNodeBase<hms.dto.GeoQuery, List<UUID>>  getCoveringHubsProcessor; 	 
 	KafkaStreamSplitNodeBase<hms.dto.GeoQuery, UUID>  getAndSplitCoveringHubsProcessor;
 	
 	private String kafkaserver;
@@ -99,11 +99,11 @@ public class KafkaHubProcessing implements Closeable {
 		this.getHubByCoordinateProcessor = new HubProcessingNode<hms.dto.Coordinate, UUID>() {
 			@Override
 			protected UUID processRequest(HMSMessage<hms.dto.Coordinate> request) {
-				return hubService.getHostingHubId(request.getData().getLatitude(), request.getData().getLongitude()).join();
+				return hubService.getHostingHubId(request.getData().getLatitude(), request.getData().getLongitude());
 			}
 
 			@Override
-			protected Class<Coordinate> getTConsumeManifest() {
+			protected Class<? extends Coordinate> getTConsumeManifest() {
 				return Coordinate.class;
 			}
 
@@ -116,14 +116,14 @@ public class KafkaHubProcessing implements Closeable {
 	
 
 	private void buildGetCoveringHubsProcessor() {
-		this.getCoveringHubsProcessor = new HubProcessingNode<hms.dto.GeoQuery, hms.dto.CoveringHubsResponse>() {
+		this.getCoveringHubsProcessor = new HubProcessingNode<hms.dto.GeoQuery, List<UUID>>() {
 			@Override
-			protected hms.dto.CoveringHubsResponse processRequest(HMSMessage<hms.dto.GeoQuery> request) {
-				return hubService.getConveringHubs(request.getData()).join();
+			protected List<UUID> processRequest(HMSMessage<hms.dto.GeoQuery> request) {
+				return hubService.getConveringHubs(request.getData());
 			}
 
 			@Override
-			protected Class<hms.dto.GeoQuery> getTConsumeManifest() {
+			protected Class<? extends hms.dto.GeoQuery> getTConsumeManifest() {
 				return hms.dto.GeoQuery.class;
 			}
 
@@ -139,11 +139,11 @@ public class KafkaHubProcessing implements Closeable {
 			
 			@Override
 			protected List<UUID> processRequest(HMSMessage<GeoQuery> request) {
-				return hubService.getConveringHubs(request.getData()).join();
+				return hubService.getConveringHubs(request.getData());
 			}
 			
 			@Override
-			protected Class<GeoQuery> getTConsumeManifest() {
+			protected Class<? extends GeoQuery> getTConsumeManifest() {
 				return GeoQuery.class;
 			}
 			

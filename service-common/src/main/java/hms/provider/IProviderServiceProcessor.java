@@ -2,9 +2,8 @@ package hms.provider;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public interface IProviderServiceProcessor{		
-	CompletableFuture<Boolean> tracking(hms.dto.ProviderTracking trackingdto, UUID hubid);
-	CompletableFuture<hms.dto.ProvidersGeoQueryResponse> queryProviders(List<UUID>hostids, hms.dto.GeoQuery query);
+	Boolean tracking(hms.dto.ProviderTracking trackingdto, UUID hubid);
+	List<hms.dto.Provider> queryProviders(List<UUID>hostids, hms.dto.GeoQuery query);
 }

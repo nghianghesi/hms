@@ -86,7 +86,7 @@ public class InMemoryProviderProcessing implements Closeable{
 			}
 			
 			@Override
-			protected Class<ProviderTracking> getTConsumeManifest() {
+			protected Class<? extends ProviderTracking> getTConsumeManifest() {
 				return ProviderTracking.class;
 			}
 			
@@ -115,7 +115,7 @@ public class InMemoryProviderProcessing implements Closeable{
 			}
 			
 			@Override
-			protected Class<hms.dto.GeoQuery> getTConsumeManifest() {
+			protected Class<? extends hms.dto.GeoQuery> getTConsumeManifest() {
 				return hms.dto.GeoQuery.class;
 			}
 			

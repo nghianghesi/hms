@@ -28,7 +28,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
 import hms.common.GenericUtils;
-import hms.common.ServiceWaiter.IServiceChecker;
 
 public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	protected KafkaConsumer<UUID, byte[]> consumer;
@@ -40,7 +39,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	private int pendingHeartbeat = 0;
 
 	protected abstract Logger getLogger();	
-	protected abstract Class<TCon> getTConsumeManifest();
+	protected abstract Class<? extends TCon> getTConsumeManifest();
 	protected abstract String getConsumeTopic();
 	protected abstract String getForwardTopic();
 	
