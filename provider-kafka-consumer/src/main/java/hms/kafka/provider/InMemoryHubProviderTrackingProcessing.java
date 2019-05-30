@@ -248,11 +248,13 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 					List<InMemProviderTracking> nearTrackings = providerTrackingVPTree.getAllWithinDistance(querydto, querydto.getDistance());
 					if(nearTrackings!=null && nearTrackings.size()>0) {
 						List<UUID> providerids= nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
+						this.getLogger().info("Query return with values");
 						return repo.getProvidersByIds(providerids).stream()
 								.map(p -> new Provider(p.getProviderid(), p.getZone(), p.getName()))
 								.collect(Collectors.toList());
 					}
 				}
+				this.getLogger().info("Query return empty");
 				return new ArrayList<hms.dto.Provider>();
 			}
 
