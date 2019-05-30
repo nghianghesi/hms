@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 
 import com.google.gson.reflect.TypeToken;
 
-import hms.HMSRESTClient.ClientStats;
 import hms.dto.Coordinate;
 import hms.dto.Provider;
 import okhttp3.ConnectionPool;
@@ -80,7 +79,7 @@ public class HMSRESTClient{
 	private Logger logger;
 	private String serviceURL;
 	private void buildIntegration() {
-		ConnectionPool pool = new ConnectionPool(1000, 1, TimeUnit.MINUTES);
+		ConnectionPool pool = new ConnectionPool(100, 1, TimeUnit.MINUTES);
 
 		OkHttpClient client = new OkHttpClient.Builder()
 		                              .connectionPool(pool)

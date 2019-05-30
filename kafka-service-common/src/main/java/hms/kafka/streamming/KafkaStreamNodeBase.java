@@ -72,7 +72,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	}
 
 	protected void ensureTopic(String topic) {
-		if(!topic.matches("\\{.*?\\}")) {
+		if(topic.indexOf("{")<0 && topic.indexOf("}")<0) {
 			Properties props = new Properties();
 			props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
 			AdminClient adminClient = AdminClient.create(props);

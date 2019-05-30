@@ -256,10 +256,12 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 						hms.dto.GeoQuery querydto = request.popReponsePoint(hms.dto.GeoQuery.class).data;
 						List<hms.dto.Provider> res = new ArrayList<hms.dto.Provider>();
 						List<InMemProviderTracking> nearTrackings = providerTrackingVPTree.getAllWithinDistance(querydto, querydto.getDistance());
-						List<UUID> providerids= nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
-						List<ProviderModel> providers = repo.getProvidersByIds(providerids);
-						for (ProviderModel p : providers){
-							res.add(new Provider(p.getProviderid(), p.getZone(), p.getName()));
+						if(nearTrackings!=null && nearTrackings.size()>0) {
+							List<UUID> providerids= nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
+							List<ProviderModel> providers = repo.getProvidersByIds(providerids);
+							for (ProviderModel p : providers){
+								res.add(new Provider(p.getProviderid(), p.getZone(), p.getName()));
+							}
 						}
 						return res;
 					} catch (IOException e) {

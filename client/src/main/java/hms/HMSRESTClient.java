@@ -92,7 +92,7 @@ public class HMSRESTClient{
 
 	private com.google.gson.Gson gson = new com.google.gson.Gson();
 	private void buildIntegration() {
-		ConnectionPool pool = new ConnectionPool(1000, 1, TimeUnit.MINUTES);
+		ConnectionPool pool = new ConnectionPool(100, 1, TimeUnit.MINUTES);
 
 		OkHttpClient client = new OkHttpClient.Builder()
 									  .readTimeout(Duration.ofSeconds(20))
