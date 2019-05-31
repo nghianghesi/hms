@@ -1,31 +1,31 @@
 package hms.kafka.streamming;
 
-import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public abstract class AccumulateStreamRoot<TStart, TItemRes> 
-	extends StreamRoot<TStart, List<TItemRes>>{
+	extends MonoStreamRoot<TStart, List<TItemRes>>{
 	
 	
-	private Map<UUID, AccumulateStreamResponse<TItemRes>> _waiters = new Hashtable<>();
-	protected Map<UUID, ? extends StreamResponse<List<TItemRes>>> getWaiters(){
+	private LinkedHashMap<UUID, AccumulateStreamResponse<TItemRes>> _waiters = new LinkedHashMap<>();
+	@Override
+	protected LinkedHashMap<UUID, ? extends StreamResponse<List<TItemRes>>> getWaiters(){
 		return _waiters;
 	}
 	
-	protected StreamResponse<List<TItemRes>> createReponseInstance(UUID id) {
-		AccumulateStreamResponse<TItemRes>  waiter = new AccumulateStreamResponse<>();
+	@Override
+	protected StreamResponse<List<TItemRes>> createReponseInstance(UUID id, int timeout) {
+		AccumulateStreamResponse<TItemRes>  waiter = new AccumulateStreamResponse<>(timeout);
 		this._waiters.put(id, waiter);
-		return waiter;				
+		return waiter;
 	}	
 	
 	
 	public void handleResponse(HMSMessage<? extends List<TItemRes>> response) {
 		if(this._waiters.containsKey(response.getRequestId())) {
 			AccumulateStreamResponse<TItemRes> waiter = this._waiters.get(response.getRequestId()) ;
-			waiter.setData(response.getData());
-			if(waiter.checkStatus(response.getTotalRequests())) {
+			if(waiter.collectData(response.getData(),response.getTotalRequests())) {
 				this._waiters.remove(response.getRequestId());
 			}
 		}else {

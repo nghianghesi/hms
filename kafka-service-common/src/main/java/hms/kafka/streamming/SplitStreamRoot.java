@@ -16,7 +16,7 @@ public abstract class SplitStreamRoot<TItemStart, TItemRes>
 	@Override
 	public CompletableFuture<List<TItemRes>> startStream(List<TItemStart> data, int timeout) {
 		UUID id = this.nextId();
-		StreamResponse<List<TItemRes>> waiter = this.createReponseInstance(id);
+		StreamResponse<List<TItemRes>> waiter = this.createReponseInstance(id, timeout);
 		for(TItemStart di : data) {
 			HMSMessage<TItemStart> request = new HMSMessage<TItemStart>(id, di);
 			request.addReponsePoint(this.getConsumeTopic());			
@@ -30,6 +30,6 @@ public abstract class SplitStreamRoot<TItemStart, TItemRes>
 				this.handleRequestError(id, "Request error:"+e.getMessage());
 			}
 		}
-		return hms.common.ServiceWaiter.getInstance().waitForSignal(waiter,timeout);
+		return waiter.getWaiterTask();
 	}
 }

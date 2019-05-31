@@ -1,37 +1,30 @@
 package hms.kafka.streamming;
 
-import hms.common.ServiceWaiter.IServiceChecker;
+import java.util.concurrent.CompletableFuture;
 
-public class StreamResponse<T> implements IServiceChecker<T>{
-	protected T data;
-	protected enum STATUS{waiting, error, ready};
-	protected STATUS status = STATUS.waiting;	
-	protected String error; 
+
+public class StreamResponse<T>{
+	protected CompletableFuture<T> waiterTask=new CompletableFuture<T>();
+	protected int timeout;
+	protected long start;
+	public StreamResponse(int timeout) {
+		this.timeout = timeout;
+		this.start = System.currentTimeMillis();
+	}
 	
-	
-	public T getResult() {
-		return data;
+	public boolean isTimeout() {
+		return System.currentTimeMillis() - this.start > this.timeout;
+	}
+	public CompletableFuture<T> getWaiterTask(){
+		return this.waiterTask;
 	}
 	
 	public void setData(T data) {
-		this.data = data;
-		this.status = STATUS.ready;		
+		this.waiterTask.complete(data);
 	}
 
-	public boolean isError() {
-		return this.status == STATUS.error;
-	}
-	
-	public boolean isReady() {
-		return this.status == STATUS.ready;
-	}
 	
 	public void setError(String error) {
-		this.error = error;		
-		this.status = STATUS.error;
-	}
-	
-	public Throwable getError() {
-		return new Exception(this.error);
+		this.waiterTask.completeExceptionally(new Exception(error));
 	}	
 }

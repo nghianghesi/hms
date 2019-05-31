@@ -18,7 +18,7 @@ import hms.dto.HubProviderGeoQuery;
 import hms.dto.Provider;
 import hms.hub.IHubService;
 import hms.kafka.streamming.SplitStreamRoot;
-import hms.kafka.streamming.StreamRoot;
+import hms.kafka.streamming.MonoStreamRoot;
 import hms.provider.IAsynProviderService;
 
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 
 	private KafkaProviderSettings topicSettings;
 	private IHubService hubservice;
-	StreamRoot<hms.dto.HubProviderTracking, Boolean>  trackingProviderStream;
+	MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>  trackingProviderStream;
 	SplitStreamRoot<hms.dto.HubProviderGeoQuery, hms.dto.Provider>  queryProvidersStream;
 	String server, rootid;	
 	
@@ -50,7 +50,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 			server = config.getString(KafkaHMSMeta.ServerConfigKey);
 			rootid = config.getString(KafkaHMSMeta.RootIdConfigKey);
 						
-			trackingProviderStream = new StreamRoot<hms.dto.HubProviderTracking, Boolean>(){
+			trackingProviderStream = new MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>(){
 				@Override
 				protected Logger getLogger() {
 					return logger;

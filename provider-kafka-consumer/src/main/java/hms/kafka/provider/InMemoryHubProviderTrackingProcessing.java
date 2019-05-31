@@ -3,6 +3,7 @@ package hms.kafka.provider;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -48,9 +49,8 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 	private final VPTree<LatLongLocation, InMemProviderTracking> providerTrackingVPTree =
 	        new VPTree<LatLongLocation, InMemProviderTracking>(
 	                new ProviderDistanceFunction());
-	private final Map<UUID, InMemProviderTracking> myproviders =
-	        		new HashMap<UUID, InMemProviderTracking>();
-	private final LinkedList<InMemProviderTracking> expiredTrackings = new LinkedList<InMemProviderTracking>();
+	private final LinkedHashMap<UUID, InMemProviderTracking> myproviders =
+	        		new LinkedHashMap<UUID, InMemProviderTracking>();
 	
 	private class InMemProviderTracking implements LatLongLocation {
 		private  double latitude;
@@ -194,7 +194,6 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 					}
 
 					providerTrackingVPTree.add(existingdata);
-					expiredTrackings.add(existingdata);
 					return true;
 				}else {
 					return false;
@@ -207,10 +206,9 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 				
 				InMemProviderTracking candidate;
 				do {
-					candidate = expiredTrackings.isEmpty() ? null : expiredTrackings.getFirst();
+					candidate = myproviders.isEmpty() ? null : myproviders.entrySet().iterator().next().getValue();
 					if(candidate!=null && candidate.getCurrentMostRecentExpiration() < stick) {
 						candidate.expireMostRecent();
-						expiredTrackings.removeFirst();						
 						if(!candidate.isAlive()) {
 							providerTrackingVPTree.remove(candidate);
 							myproviders.remove(candidate.getProviderId());

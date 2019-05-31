@@ -13,7 +13,7 @@ import com.typesafe.config.Config;
 import hms.KafkaHMSMeta;
 import hms.common.IHMSExecutorContext;
 import hms.dto.GeoQuery;
-import hms.kafka.streamming.StreamRoot;
+import hms.kafka.streamming.MonoStreamRoot;
 import hms.provider.IAsynProviderService;
 
 import org.slf4j.Logger;
@@ -24,14 +24,14 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderService.class);
 
 	private KafkaProviderSettings topicSettings;
-	StreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
-	StreamRoot<hms.dto.GeoQuery, List<hms.dto.Provider>>  queryProvidersStream;
+	MonoStreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
+	MonoStreamRoot<hms.dto.GeoQuery, List<hms.dto.Provider>>  queryProvidersStream;
 	String server, rootid;	
 	
 	
 	IHMSExecutorContext ec;
 
-	private abstract class ProviderStreamRoot<TStart,TRes> extends StreamRoot<TStart,TRes>{
+	private abstract class ProviderStreamRoot<TStart,TRes> extends MonoStreamRoot<TStart,TRes>{
 		@Override
 		protected Logger getLogger() {
 			return logger;
