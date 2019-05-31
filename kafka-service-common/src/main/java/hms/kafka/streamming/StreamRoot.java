@@ -14,7 +14,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import hms.KafkaHMSMeta;
 
 public abstract class StreamRoot<TStart, TRes> 
-	extends KafkaStreamNodeBase<TRes, Void>{ // consume & forward to none.
+	extends KafkaStreamNodeBase<TRes, Void>{ // consume TRes & forward to none.
 	protected abstract String getStartTopic();
 
 	protected String getConsumeTopic() {
@@ -45,7 +45,7 @@ public abstract class StreamRoot<TStart, TRes>
 		return UUID.randomUUID();
 	} 
 	
-	public void handleResponse(HMSMessage<TRes> reponse) {
+	public void handleResponse(HMSMessage<? extends TRes> reponse) {
 		if(this.getWaiters().containsKey(reponse.getRequestId())) {
 			StreamResponse<TRes> waiter = this.getWaiters().remove(reponse.getRequestId()) ;
 			waiter.setData(reponse.getData());
@@ -80,7 +80,7 @@ public abstract class StreamRoot<TStart, TRes>
 		try {				
 			String startTopic = this.applyTemplateToRepForTopic(this.getStartTopic(), data); 			
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, startTopic);
-			this.getLogger().info("Start stream {} {}", startTopic, request.getRequestId());
+			//this.getLogger().info("Start stream {} {}", startTopic, request.getRequestId());
 			this.producer.send(record).get(timeout, TimeUnit.MILLISECONDS);
 		} catch (IOException | InterruptedException | ExecutionException | TimeoutException e) {
 			this.handleRequestError(id, "Request error:"+e.getMessage());

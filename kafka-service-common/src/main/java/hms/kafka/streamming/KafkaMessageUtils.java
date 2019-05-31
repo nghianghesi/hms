@@ -61,7 +61,7 @@ public class KafkaMessageUtils {
 
 	public static byte[] intToBytes(int x) {
 		ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-		buffer.putLong(x);
+		buffer.putInt(x);
 		return buffer.array();
 	}
 
@@ -88,7 +88,7 @@ public class KafkaMessageUtils {
 		byte[] body = convertObjecttoByteArray(req.getData());
 		ProducerRecord<UUID, byte[]> record = new ProducerRecord<>(topic, req.getRequestId(), body);
 
-		if(req.getTotalRequests()>1) {
+		if(req.getTotalRequests()>0) {
 			record.headers().add(TotalRequestsHeaderName, intToBytes(req.getTotalRequests()));
 		}
 		

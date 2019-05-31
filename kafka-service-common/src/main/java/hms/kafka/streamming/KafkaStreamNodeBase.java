@@ -124,7 +124,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	
 	private void processSingleRecord(ConsumerRecord<UUID, byte[]> record) {
 		try {
-			this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
+			//this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
 			HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
 			TRep res = this.processRequest(request);
 			if(this.getForwardTopic()!=null) {
@@ -225,7 +225,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		replymsg.setData(value);
 		String replytop = applyTemplateToRepForTopic(request.getCurrentResponsePoint(this.getForwardTopic()), value);
 		try {
-			this.getLogger().info("Replying to {}", replytop);
+			//this.getLogger().info("Replying to {}", replytop);
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
 			this.producer.send(record).get();
 		} catch (IOException | InterruptedException | ExecutionException e) {
@@ -239,7 +239,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		String forwardtopic = applyTemplateToRepForTopic(this.getForwardTopic(), value);
 		try {
 			forwardReq.addReponsePoint(this.getForwardBackTopic(), request.getData());
-			this.getLogger().info("forwarding: {}", forwardtopic);			
+			//this.getLogger().info("forwarding: {}", forwardtopic);			
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, forwardtopic);					
 			this.producer.send(record).get();
 		} catch (IOException | InterruptedException | ExecutionException e) {

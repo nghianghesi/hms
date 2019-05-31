@@ -21,7 +21,7 @@ public abstract class AccumulateStreamRoot<TStart, TItemRes>
 	}	
 	
 	
-	public void handleResponse(HMSMessage<List<TItemRes>> response) {
+	public void handleResponse(HMSMessage<? extends List<TItemRes>> response) {
 		if(this._waiters.containsKey(response.getRequestId())) {
 			AccumulateStreamResponse<TItemRes> waiter = this._waiters.get(response.getRequestId()) ;
 			waiter.setData(response.getData());
@@ -31,5 +31,5 @@ public abstract class AccumulateStreamRoot<TStart, TItemRes>
 		}else {
 			this.getLogger().warn("Stream response without waiter {} {}", this.getStartTopic(), response.getRequestId());
 		}
-	}	
+	}
 }
