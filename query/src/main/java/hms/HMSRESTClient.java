@@ -115,7 +115,7 @@ public class HMSRESTClient{
 	public List<Provider> queryProviders(Coordinate coordinate, ClientStats stats) {
 		try {			      
 			long startTime = System.currentTimeMillis();
-			logger.info("query providers {} {}", coordinate.getLatitude(), coordinate.getLongitude());
+			//logger.info("query providers {} {}", coordinate.getLatitude(), coordinate.getLongitude());
 			Response<ResponseBody> body = this.serviceIntegration.queryProviders(coordinate).execute();
 			if(body!=null && body.body()!=null && body.isSuccessful()) {
 				String str = body.body().string();
