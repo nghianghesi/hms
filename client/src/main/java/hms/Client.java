@@ -55,27 +55,6 @@ public class Client {
 		return START_RANGE_LONGITUDE + ThreadLocalRandom.current().nextDouble(0.0, END_RANGE_LONGITUDE - START_RANGE_LONGITUDE);
 	}
 	
-	private static void randomMove(ProviderTrackingBuilder trackingBuilder) {
-		double latDiff = ThreadLocalRandom.current().nextDouble(0,1) > 0.5 ? LATITUDE_MOVE : -LATITUDE_MOVE;
-		double longDiff = ThreadLocalRandom.current().nextDouble(0,1) > 0.5 ? LONGITUDE_MOVE : -LONGITUDE_MOVE;
-		trackingBuilder.setLatitude(trackingBuilder.getLatitude()+ latDiff);
-		if(trackingBuilder.getLatitude() < MIN_LATITUDE) {
-			trackingBuilder.setLatitude(MIN_LATITUDE);
-		}
-		
-		if(trackingBuilder.getLatitude() > MAX_LATITUDE) {
-			trackingBuilder.setLatitude(MAX_LATITUDE);
-		}
-		
-		trackingBuilder.setLongitude(trackingBuilder.getLongitude()+ longDiff);
-		if(trackingBuilder.getLongitude() < MIN_LONGITUDE) {
-			trackingBuilder.setLongitude( MIN_LONGITUDE);
-		}
-		
-		if(trackingBuilder.getLongitude() > MAX_LONGITUDE) {
-			trackingBuilder.setLongitude(MAX_LONGITUDE);
-		}		
-	}
 	
 	private static void initProvider(HMSRESTClient client, List<ProviderTrackingBuilder> list, ForkJoinPool myPool) {		
 		logger.info("Init Providers:");
@@ -89,7 +68,9 @@ public class Client {
 			final int split = (NUM_OF_PROVIDER + NUM_OF_THREAD - 1)/NUM_OF_THREAD;
 			tasks.add(CompletableFuture.runAsync(() ->{
 				for(int idx = groupid*split; idx<(groupid+1)*split && idx < NUM_OF_PROVIDER; idx++) {	
-					ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder(ZONE);
+					ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder(ZONE,
+							LATITUDE_MOVE, LONGITUDE_MOVE,
+							MIN_LATITUDE, MAX_LATITUDE, MIN_LONGITUDE, MAX_LONGITUDE);
 					trackingBuilder.setProviderid(UUID.randomUUID());	
 					trackingBuilder.setLatitude(getRandomLatitude());
 					trackingBuilder.setLongitude(getRandomLongitude());
@@ -112,7 +93,9 @@ public class Client {
 		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>();
 		List<Provider> providers = client.loadProvidersByZone(ZONE);
 		for(Provider p : providers) {
-			ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder(ZONE);
+			ProviderTrackingBuilder trackingBuilder = new ProviderTrackingBuilder(ZONE,
+					LATITUDE_MOVE, LONGITUDE_MOVE,
+					MIN_LATITUDE, MAX_LATITUDE, MIN_LONGITUDE, MAX_LONGITUDE);
 			trackingBuilder.setProviderid(p.getProviderid());	
 			trackingBuilder.setLatitude(getRandomLatitude());
 			trackingBuilder.setLongitude(getRandomLongitude());
@@ -147,7 +130,7 @@ public class Client {
 					start = System.currentTimeMillis();
 					for(int idx = startidx; idx < endidx && idx < list.size()&& !shutdown; idx++) {					
 						ProviderTrackingBuilder tracking = list.get(idx);
-						randomMove(tracking);	
+						tracking.randomMove();	
 						try {
 							client.trackingProvider(tracking.buildTracking(),clientStats);
 						} catch (Exception e) {
