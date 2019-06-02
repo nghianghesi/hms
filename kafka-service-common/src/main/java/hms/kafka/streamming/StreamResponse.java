@@ -19,7 +19,7 @@ public class StreamResponse<T>{
 		return this.waiterTask;
 	}
 	
-	public void setData(T data) {
+	public <TData extends T> void setData(TData data) {
 		this.waiterTask.complete(data);
 	}
 

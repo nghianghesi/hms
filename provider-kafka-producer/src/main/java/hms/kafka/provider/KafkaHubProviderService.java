@@ -99,7 +99,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 			
 			queryProvidersStream = new SplitStreamRoot<hms.dto.HubProviderGeoQuery, hms.dto.Provider>(){
 				@SuppressWarnings("unchecked")
-				private Class<? extends List<hms.dto.Provider>> template = (Class<? extends List<hms.dto.Provider>>)(new ArrayList<hms.dto.Provider>()).getClass();
+				private Class<? extends ArrayList<hms.dto.Provider>> template = (Class<? extends ArrayList<hms.dto.Provider>>)(new ArrayList<hms.dto.Provider>()).getClass();
 				@Override
 				protected Logger getLogger() {
 					return logger;
@@ -141,7 +141,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				}
 				
 				@Override
-				protected Class<? extends List<Provider>> getTConsumeManifest() {
+				protected Class<? extends ArrayList<Provider>> getTConsumeManifest() {
 					return template;
 				}
 			};
@@ -163,7 +163,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	}
 
 	@Override
-	public CompletableFuture<List<hms.dto.Provider>> asynQueryProviders(GeoQuery query) {
+	public CompletableFuture<? extends List<hms.dto.Provider>> asynQueryProviders(GeoQuery query) {
 		List<UUID> hubids = this.hubservice.getConveringHubs(query);
 		List<HubProviderGeoQuery> querydata = new ArrayList<HubProviderGeoQuery>();
 		for(UUID hid : hubids) {

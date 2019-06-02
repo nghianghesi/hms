@@ -1,36 +1,50 @@
 package hms.kafka.streamming;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.UUID;
 
 public abstract class AccumulateStreamRoot<TStart, TItemRes> 
-	extends MonoStreamRoot<TStart, List<TItemRes>>{
+	extends MonoStreamRoot<TStart, ArrayList<TItemRes>>{	
 	
-	
-	private LinkedHashMap<UUID, AccumulateStreamResponse<TItemRes>> _waiters = new LinkedHashMap<>();
-	@Override
-	protected LinkedHashMap<UUID, ? extends StreamResponse<List<TItemRes>>> getWaiters(){
-		return _waiters;
+	private ArrayList<LinkedHashMap<UUID, AccumulateStreamResponse<TItemRes>>> _waiters 
+			= new ArrayList<LinkedHashMap<UUID,  AccumulateStreamResponse<TItemRes>>>();
+	public AccumulateStreamRoot() {
+		for(int i=0;i<this.KEY_RANGE;i++) {
+			this._waiters.add(new LinkedHashMap<UUID, AccumulateStreamResponse<TItemRes>>());
+		}
 	}
 	
 	@Override
-	protected StreamResponse<List<TItemRes>> createReponseInstance(UUID id, int timeout) {
+	protected ArrayList<? extends LinkedHashMap<UUID, ? extends StreamResponse<? extends ArrayList<TItemRes>>>> getAllWaiters() {
+		return this._waiters;
+	}
+	
+	@Override
+	protected StreamResponse<? extends ArrayList<TItemRes>> removeWaiter(int keyrange, UUID id) {
+		return this._waiters.get(keyrange).remove(id);
+	}
+	
+	@Override
+	protected StreamResponse<ArrayList<TItemRes>> createReponseInstance(UUID id, int timeout) {
 		AccumulateStreamResponse<TItemRes>  waiter = new AccumulateStreamResponse<>(timeout);
-		synchronized (this._waiters) {
-			this._waiters.put(id, waiter);
+		int keyrange = RequestIdToKeyRange(id);
+		synchronized (this.getWaiters(keyrange)) {
+			this._waiters.get(keyrange).put(id, waiter);
 		}
 		return waiter;
 	}	
 	
 	
 	@Override
-	public void handleResponse(HMSMessage<? extends List<TItemRes>> response) {
+	public void handleResponse(HMSMessage<ArrayList<TItemRes>> response) {
 		AccumulateStreamResponse<TItemRes> waiter=null;
-		synchronized (this._waiters) {
-			waiter = this._waiters.getOrDefault(response.getRequestId(),null) ;	
+		int keyrange = RequestIdToKeyRange(response.getRequestId());
+		
+		synchronized (this.getWaiters(keyrange)) {
+			waiter = this._waiters.get(keyrange).getOrDefault(response.getRequestId(),null) ;	
 			if(waiter!=null && waiter.getNumberOfReceivedPackages()+1 >= response.getTotalRequests()) {			
-				this._waiters.remove(response.getRequestId());
+				this._waiters.get(keyrange).remove(response.getRequestId());
 			}
 		}
 		if(waiter!=null) {

@@ -1,7 +1,10 @@
 package hms;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -24,7 +27,6 @@ public class Client {
     public static Logger log = LoggerFactory.getLogger( Client.class );
 
     private static MongoClient        mongodb;
-    private static DB           database;
     private static Morphia      morphia;
     private static Datastore    datastore;
 
@@ -53,7 +55,7 @@ public class Client {
         datastore = morphia.createDatastore( mongodb, DATABASE_NAME );
         
     }
-	public static void main(String[] args) {
+	public static void maindb(String[] args) {
 		initializeMongoAndMorphia();
 
 		double longitude =-118.01358499633821;
@@ -85,6 +87,22 @@ public class Client {
 		
 
 		System.out.println(providerids);
+	}
+	
+	public static void main(String[] args) {
+		Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
+		List<String> keys = new ArrayList<>();
+		for(int i=0;i<1000;i++) {
+			String t=UUID.randomUUID().toString(); 
+			map.put(t, true);
+			keys.add(t);
+		}
+		int idx = 0;
+		for(String t: map.keySet().toArray(new String[] {})) {
+			System.out.println(t+" "+keys.get(idx));
+			idx++;			
+			map.remove(t);
+		}
 	}
 }
 

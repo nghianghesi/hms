@@ -105,7 +105,7 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 	}
 
 	@Override
-	public CompletableFuture<List<hms.dto.Provider>> asynQueryProviders(GeoQuery query) {
+	public CompletableFuture<? extends List<hms.dto.Provider>> asynQueryProviders(GeoQuery query) {
 		return queryProvidersStream.startStream(query);
 	}			
 

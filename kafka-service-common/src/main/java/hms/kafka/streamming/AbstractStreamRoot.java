@@ -1,6 +1,7 @@
 package hms.kafka.streamming;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -17,6 +18,7 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	extends KafkaStreamNodeBase<TRes, Void>{ // consume TRes & forward to none.
 	protected abstract String getStartTopic();
 
+	protected final int KEY_RANGE = 20;
 	protected String getConsumeTopic() {
 		return this.getStartTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 	}
@@ -35,32 +37,31 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 		handleResponse(response);
 		return null;
 	}		
+	
+	
+	protected abstract ArrayList<? extends LinkedHashMap<UUID,? extends StreamResponse<? extends TRes>>> getAllWaiters();
 
-	protected abstract LinkedHashMap<UUID, ? extends StreamResponse<TRes>> getWaiters();
+	protected abstract StreamResponse<? extends TRes> removeWaiter(int keyrange, UUID id);
+	protected final LinkedHashMap<UUID,? extends  StreamResponse<? extends TRes>> getWaiters(int keyrange){
+		return this.getAllWaiters().get(keyrange);
+	}
 	
 	protected UUID nextId() {
 		return UUID.randomUUID();
 	} 
 	
-	public void handleResponse(HMSMessage<? extends TRes> response) {
-		StreamResponse<TRes> waiter = null;
-		synchronized (this.getWaiters()) {
-			if(this.getWaiters().containsKey(response.getRequestId())) {			
-				waiter = this.getWaiters().remove(response.getRequestId()) ;
-			}
-		}
-		if(waiter!=null) {
-			waiter.setData(response.getData());
-		}else {
-			this.getLogger().warn("Stream response without waiter " + this.getStartTopic() + " " + response.getRequestId());
-		}
+	protected int RequestIdToKeyRange(UUID id) {
+		return Math.abs(id.hashCode() % this.KEY_RANGE);
 	}
 	
+	public abstract void handleResponse(HMSMessage<TRes> response); 
+	
 	public void handleRequestError(UUID id, String error) {
-		StreamResponse<TRes> waiter = null;
-		synchronized (this.getWaiters()) {
-			if(this.getWaiters().containsKey(id)) {			
-				waiter = this.getWaiters().remove(id) ;				
+		StreamResponse<? extends TRes> waiter = null;
+		int keyrange = RequestIdToKeyRange(id);
+		synchronized (this.getWaiters(keyrange)) {
+			if(this.getWaiters(keyrange).containsKey(id)) {			
+				waiter = this.removeWaiter(keyrange, id) ;				
 			}
 		}
 		if(waiter!=null) {
@@ -95,22 +96,24 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	protected void intervalCleanup() {
 		super.intervalCleanup();
 		try {
-			synchronized (this.getWaiters()) {
-				do{	
-					Map.Entry<UUID, ? extends StreamResponse<TRes>> w = null;
-					if(!this.getWaiters().isEmpty()) {
-						w = this.getWaiters().entrySet().iterator().next();
-						if(w!=null && w.getValue().isTimeout()) {
-							this.getWaiters().remove(w.getKey());
-							//w.getValue().setData(null);	
-							this.getLogger().error("******************* timeout");
+			for(int keyrange=0;keyrange<this.KEY_RANGE;keyrange++) {
+				synchronized (this.getWaiters(keyrange)) {
+					do{	
+						Map.Entry<UUID, ? extends StreamResponse<? extends TRes>> w = null;
+						if(!this.getWaiters(keyrange).isEmpty()) {
+							w = this.getWaiters(keyrange).entrySet().iterator().next();
+							if(w!=null && w.getValue().isTimeout()) {
+								this.getWaiters(keyrange).remove(w.getKey());
+								//w.getValue().setData(null);	
+								this.getLogger().error("******************* timeout");
+							}else {
+								break;
+							}
 						}else {
 							break;
 						}
-					}else {
-						break;
-					}
-				}while(true);
+					}while(true);
+				}
 			}
 		}catch(Exception ex) {
 			this.getLogger().error("*******************{}", ex.getMessage());

@@ -1,6 +1,7 @@
 package hms.kafka.streamming;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -14,9 +15,9 @@ public abstract class SplitStreamRoot<TItemStart, TItemRes>
 	extends AccumulateStreamRoot<List<TItemStart>, TItemRes>{
 	
 	@Override
-	public CompletableFuture<List<TItemRes>> startStream(List<TItemStart> data, int timeout) {
+	public CompletableFuture<ArrayList<TItemRes>> startStream(List<TItemStart> data, int timeout) {
 		UUID id = this.nextId();
-		StreamResponse<List<TItemRes>> waiter = this.createReponseInstance(id, timeout);
+		StreamResponse<ArrayList<TItemRes>> waiter = this.createReponseInstance(id, timeout);
 		for(TItemStart di : data) {
 			HMSMessage<TItemStart> request = new HMSMessage<TItemStart>(id, di);
 			request.addReponsePoint(this.getConsumeTopic());			

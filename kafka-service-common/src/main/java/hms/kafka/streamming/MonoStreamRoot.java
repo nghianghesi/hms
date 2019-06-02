@@ -1,22 +1,51 @@
 package hms.kafka.streamming;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 
 public abstract class MonoStreamRoot<TStart, TRes> 
 	extends AbstractStreamRoot<TStart, TRes>{ // consume TRes & forward to none.
-	private LinkedHashMap<UUID, StreamResponse<TRes>> _waiters = new LinkedHashMap<UUID, StreamResponse<TRes>>();
+	private ArrayList<LinkedHashMap<UUID, StreamResponse<TRes>>> _waiters = new ArrayList<LinkedHashMap<UUID, StreamResponse<TRes>>>();
+	public MonoStreamRoot() {
+		for(int i=0;i<this.KEY_RANGE;i++) {
+			this._waiters.add(new LinkedHashMap<UUID, StreamResponse<TRes>>());
+		}
+	}
 	
 	@Override
-	protected LinkedHashMap<UUID, ? extends StreamResponse<TRes>> getWaiters(){
-		return _waiters;
+	protected ArrayList<? extends LinkedHashMap<UUID, ? extends StreamResponse<? extends TRes>>> getAllWaiters() {
+		// TODO Auto-generated method stub
+		return this._waiters;
 	}
+	
+	@Override
+	protected StreamResponse<? extends TRes> removeWaiter(int keyrange, UUID id) {
+		return this._waiters.get(keyrange).remove(id);
+	}
+	
+	public void handleResponse(HMSMessage<TRes> response) {
+		StreamResponse<TRes> waiter = null;
+		int keyrange = RequestIdToKeyRange(response.getRequestId());
+		synchronized (this.getWaiters(keyrange)) {
+			if(this.getWaiters(keyrange).containsKey(response.getRequestId())) {			
+				waiter = this._waiters.get(keyrange).get(response.getRequestId()) ;
+			}
+		}
+		if(waiter!=null) {
+			waiter.setData(response.getData());
+		}else {
+			this.getLogger().warn("Stream response without waiter " + this.getStartTopic() + " " + response.getRequestId());
+		}
+	}
+	
 	
 	@Override
 	protected StreamResponse<TRes> createReponseInstance(UUID id, int timeout) {
 		StreamResponse<TRes>  waiter = new StreamResponse<>(timeout);
-		synchronized (this._waiters) {			
-			this._waiters.put(id, waiter);
+		int keyrange = RequestIdToKeyRange(id);
+		synchronized (this.getWaiters(keyrange)) {			
+			this._waiters.get(keyrange).put(id, waiter);
 		}
 		return waiter;
 	}
