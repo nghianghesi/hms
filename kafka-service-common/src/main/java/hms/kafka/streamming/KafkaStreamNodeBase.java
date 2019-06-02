@@ -124,7 +124,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	
 	private void processSingleRecord(ConsumerRecord<UUID, byte[]> record) {
 		try {
-			this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
+			//this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
 			HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
 			TRep res = this.processRequest(request);
 			if(this.getForwardTopic()!=null) {
@@ -214,7 +214,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 					hms.common.ServiceWaiter.getInstance().removeHeartbeatObserver(this.heartbeatObserver);
 				}
 			};
-			hms.common.ServiceWaiter.getInstance(10).addHeartbeatObserver(this.heartbeatObserver);
+			hms.common.ServiceWaiter.getInstance().addHeartbeatObserver(this.heartbeatObserver);
 		}
 		
 		this.getLogger().info("Consumer {} ready", this.getConsumeTopic());						 

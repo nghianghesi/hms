@@ -25,11 +25,6 @@ public class ServiceWaiter {
 		return instance;
 	}
 	
-	public static ServiceWaiter getInstance(int idleDuration) {
-		instance.IdleDuration = idleDuration;
-		return instance;
-	}
-	
 	private IntervalStickObservable serviceWaiterObservable = new IntervalStickObservable();
 	private int IdleDuration = 100;
 	private boolean shuttingdown = false;
