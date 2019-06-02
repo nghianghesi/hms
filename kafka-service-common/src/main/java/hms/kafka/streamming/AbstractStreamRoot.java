@@ -18,7 +18,7 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	extends KafkaStreamNodeBase<TRes, Void>{ // consume TRes & forward to none.
 	protected abstract String getStartTopic();
 
-	protected final int KEY_RANGE = 100;
+	protected final int KEY_RANGE = 1000;
 	protected String getConsumeTopic() {
 		return this.getStartTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 	}
@@ -94,32 +94,28 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	
 	private int intervalIdx=0;
 	@Override
-	protected void intervalCleanup() {
+	protected void intervalCleanup() { // clean up timeout.
 		super.intervalCleanup();
 		intervalIdx+=1;
 		if(intervalIdx>10) {
 			intervalIdx=0;
-			try {
-				for(int keyrange=0;keyrange<this.KEY_RANGE;keyrange++) {
-					synchronized (this.getWaiters(keyrange)) {
-						do{	
-							Map.Entry<UUID, ? extends StreamResponse<? extends TRes>> w = null;
-							if(!this.getWaiters(keyrange).isEmpty()) {
-								w = this.getWaiters(keyrange).entrySet().iterator().next();
-								if(w!=null && w.getValue().isTimeout()) {
-									this.getWaiters(keyrange).remove(w.getKey());		
-									w.getValue().setError("Time out");
-								}else {
-									break;
-								}
+			for(int keyrange=0;keyrange<this.KEY_RANGE;keyrange++) {
+				synchronized (this.getWaiters(keyrange)) {
+					do{	
+						Map.Entry<UUID, ? extends StreamResponse<? extends TRes>> w = null;
+						if(!this.getWaiters(keyrange).isEmpty()) {
+							w = this.getWaiters(keyrange).entrySet().iterator().next();
+							if(w!=null && w.getValue().isTimeout()) {
+								this.getWaiters(keyrange).remove(w.getKey());		
+								w.getValue().setError("Time out");
 							}else {
 								break;
 							}
-						}while(true);
-					}
+						}else {
+							break;
+						}
+					}while(true);
 				}
-			}catch(Exception ex) {
-				this.getLogger().error("*******************{}", ex.getMessage());
 			}
 		}
 	}
