@@ -134,7 +134,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 					this.forward(request, res);
 				}
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			this.getLogger().error("Consumer error {} {}", this.getConsumeTopic(), e.getMessage());
 		}
 	}
