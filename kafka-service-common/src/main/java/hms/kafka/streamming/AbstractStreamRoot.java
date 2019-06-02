@@ -102,7 +102,7 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 						w = this.getWaiters().entrySet().iterator().next();
 						if(w!=null && w.getValue().isTimeout()) {
 							this.getWaiters().remove(w.getKey());
-							w.getValue().setData(null);	
+							//w.getValue().setData(null);	
 							this.getLogger().error("******************* timeout");
 						}else {
 							break;
