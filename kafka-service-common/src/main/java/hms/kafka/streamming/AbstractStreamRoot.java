@@ -19,6 +19,9 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	protected abstract String getStartTopic();
 
 	protected final int KEY_RANGE = 1000;
+	public AbstractStreamRoot() {
+		this.timeout=10000;
+	}
 	protected String getConsumeTopic() {
 		return this.getStartTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 	}
