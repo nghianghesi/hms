@@ -1,7 +1,6 @@
 package hms.kafka.streamming;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -44,27 +43,28 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	} 
 	
 	public void handleResponse(HMSMessage<? extends TRes> response) {
-		StreamResponse<TRes> waiter=null;
+		StreamResponse<TRes> waiter = null;
 		synchronized (this.getWaiters()) {
 			if(this.getWaiters().containsKey(response.getRequestId())) {			
-				waiter = this.getWaiters().remove(response.getRequestId()) ;				
+				waiter = this.getWaiters().remove(response.getRequestId()) ;
 			}
-		}	
-		
+		}
 		if(waiter!=null) {
 			waiter.setData(response.getData());
-		}
-		else {
+		}else {
 			this.getLogger().warn("Stream response without waiter " + this.getStartTopic() + " " + response.getRequestId());
 		}
 	}
 	
 	public void handleRequestError(UUID id, String error) {
+		StreamResponse<TRes> waiter = null;
 		synchronized (this.getWaiters()) {
 			if(this.getWaiters().containsKey(id)) {			
-				StreamResponse<TRes> waiter = this.getWaiters().remove(id) ;
-				waiter.setError(error);
+				waiter = this.getWaiters().remove(id) ;				
 			}
+		}
+		if(waiter!=null) {
+			waiter.setError(error);
 		}
 	}	
 	
@@ -93,21 +93,21 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	
 	@Override
 	protected void intervalCleanup() {
-		do{	
-			Map.Entry<UUID, ? extends StreamResponse<TRes>> w = null;
-			synchronized (this.getWaiters()) {
+		synchronized (this.getWaiters()) {
+			do{	
+				Map.Entry<UUID, ? extends StreamResponse<TRes>> w = null;
 				if(!this.getWaiters().isEmpty()) {
 					w = this.getWaiters().entrySet().iterator().next();
+					if(w!=null && w.getValue().isTimeout()) {
+						w.getValue().setError("Time out");
+						this.getWaiters().remove(w.getKey());	
+					}else {
+						break;
+					}
+				}else {
+					break;
 				}
-			}
-			if(w!=null && w.getValue().isTimeout()) {
-				w.getValue().setError("Time out");
-				synchronized (this.getWaiters()) {
-					this.getWaiters().remove(w.getKey());	
-				}				
-			}else {
-				break;
-			}
-		}while(true);
+			}while(true);
+		}
 	}
 }

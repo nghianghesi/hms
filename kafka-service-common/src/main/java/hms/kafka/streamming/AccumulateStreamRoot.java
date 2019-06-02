@@ -29,14 +29,14 @@ public abstract class AccumulateStreamRoot<TStart, TItemRes>
 		AccumulateStreamResponse<TItemRes> waiter=null;
 		synchronized (this._waiters) {
 			waiter = this._waiters.getOrDefault(response.getRequestId(),null) ;	
-		}
-		if(waiter!=null) {			
-			if(waiter.collectData(response.getData(),response.getTotalRequests())) {
-				synchronized (this._waiters) {
-					this._waiters.remove(response.getRequestId());
-				}
+			if(waiter!=null && waiter.getNumberOfReceivedPackages()+1 >= response.getTotalRequests()) {			
+				this._waiters.remove(response.getRequestId());
 			}
-		}else {
+		}
+		if(waiter!=null) {
+			waiter.collectData(response.getData(), response.getTotalRequests());
+		}
+		else{
 			this.getLogger().warn("Stream response without waiter {} {}", this.getStartTopic(), response.getRequestId());
 		}
 	}
