@@ -54,7 +54,7 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	} 
 	
 	protected int RequestIdToKeyRange(UUID id) {
-		return Math.abs(id.hashCode() % this.KEY_RANGE);
+		return Math.abs(id.hashCode()) % this.KEY_RANGE;
 	}
 	
 	public abstract void handleResponse(HMSMessage<TRes> response); 
