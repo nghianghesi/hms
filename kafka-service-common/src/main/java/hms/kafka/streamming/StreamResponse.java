@@ -25,6 +25,6 @@ public class StreamResponse<T>{
 
 	
 	public void setError(String error) {
-		this.waiterTask.completeExceptionally(new Exception(error));
+		this.waiterTask.completeExceptionally(new Throwable(error));
 	}	
 }

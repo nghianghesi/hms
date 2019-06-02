@@ -101,8 +101,8 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 					if(!this.getWaiters().isEmpty()) {
 						w = this.getWaiters().entrySet().iterator().next();
 						if(w!=null && w.getValue().isTimeout()) {
-							w.getValue().setError("Time out");
-							this.getWaiters().remove(w.getKey());	
+							this.getWaiters().remove(w.getKey());
+							w.getValue().setError("Time out");	
 						}else {
 							break;
 						}
