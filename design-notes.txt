@@ -13,3 +13,6 @@ split/accumulate nodes
 assign consumer to partition scaling
 
 using completefuture to chain --> sync processing
+
+key range of synchronized
+generic hell --> split read/write by abstract, descrete.

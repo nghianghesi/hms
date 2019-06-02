@@ -28,9 +28,7 @@ public abstract class MonoStreamRoot<TStart, TRes>
 		StreamResponse<TRes> waiter = null;
 		int keyrange = RequestIdToKeyRange(response.getRequestId());
 		synchronized (this.getWaiters(keyrange)) {
-			if(this.getWaiters(keyrange).containsKey(response.getRequestId())) {			
-				waiter = this._waiters.get(keyrange).get(response.getRequestId()) ;
-			}
+			waiter = this._waiters.get(keyrange).remove(response.getRequestId());
 		}
 		if(waiter!=null) {
 			waiter.setData(response.getData());
