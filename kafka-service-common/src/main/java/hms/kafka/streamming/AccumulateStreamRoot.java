@@ -22,6 +22,7 @@ public abstract class AccumulateStreamRoot<TStart, TItemRes>
 	}	
 	
 	
+	@Override
 	public void handleResponse(HMSMessage<? extends List<TItemRes>> response) {
 		if(this._waiters.containsKey(response.getRequestId())) {
 			AccumulateStreamResponse<TItemRes> waiter = this._waiters.get(response.getRequestId()) ;

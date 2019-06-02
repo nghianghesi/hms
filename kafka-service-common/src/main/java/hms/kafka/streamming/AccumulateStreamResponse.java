@@ -11,6 +11,10 @@ public class AccumulateStreamResponse<TItem> extends StreamResponse<java.util.Li
 	private int numberOfReceivedPackages = 0;	
 	private List<TItem> accumulatedData = new ArrayList<TItem>();
 	
+	public int getNumberOfReceivedPackages() {
+		return this.numberOfReceivedPackages;
+	}
+	
 	public boolean collectData(java.util.List<TItem> moredata, int expectedTotal) {
 		if(moredata!=null&&moredata.size()>0) {
 			this.accumulatedData.addAll(moredata);

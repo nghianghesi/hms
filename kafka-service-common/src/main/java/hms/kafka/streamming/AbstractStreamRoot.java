@@ -42,12 +42,12 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 		return UUID.randomUUID();
 	} 
 	
-	public void handleResponse(HMSMessage<? extends TRes> reponse) {
-		if(this.getWaiters().containsKey(reponse.getRequestId())) {
-			StreamResponse<TRes> waiter = this.getWaiters().remove(reponse.getRequestId()) ;
-			waiter.setData(reponse.getData());
+	public void handleResponse(HMSMessage<? extends TRes> response) {
+		if(this.getWaiters().containsKey(response.getRequestId())) {
+			StreamResponse<TRes> waiter = this.getWaiters().remove(response.getRequestId()) ;
+			waiter.setData(response.getData());
 		}else {
-			this.getLogger().warn("Stream response without waiter " + this.getStartTopic() + " " + reponse.getRequestId());
+			this.getLogger().warn("Stream response without waiter " + this.getStartTopic() + " " + response.getRequestId());
 		}
 	}
 	
