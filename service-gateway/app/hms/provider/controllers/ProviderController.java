@@ -1,6 +1,7 @@
 package hms.provider.controllers;
 
 
+import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Injector;
 
+import hms.hub.IHubService;
 import hms.provider.IAsynProviderService;
 import hms.provider.IProviderService;
 import play.libs.Json;
@@ -36,7 +38,16 @@ public class ProviderController  extends Controller {
     
     public Result index() {
         return ok("Provider services");
-    }        
+    }           
+    
+    public Result splitHubs(UUID hubid, Double subrange) {    	
+    	if(hubid!=null && subrange!=null) {
+	        this.injector.getInstance(hms.hub.IHubService.class).split(hubid, subrange);
+	        return ok("Hub splitted");
+    	}else {
+    		return ok("Invalid params");
+    	}
+    }      
     
     public CompletionStage<Result> initprovider(Http.Request request) {
     	JsonNode json = request.body().asJson();

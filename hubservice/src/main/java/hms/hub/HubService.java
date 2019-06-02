@@ -20,11 +20,13 @@ public class HubService implements IHubService, IHubServiceProcessor {
 
 	private HubNodeModel rootNode;
 	private IHMSExecutorContext execContext;
+	private IHubNodeRepository repo;
 	@Inject
 	public HubService(IHMSExecutorContext ec, IHubNodeRepository repo) {
 		this.rootNode = repo.getRootNode();
 		logger.info(this.rootNode.getDebugInfo());
 		this.execContext = ec;
+		this.repo = repo;
 	}
 
 	public CompletableFuture<UUID> asynGetHostingHubId(double latitude, double longitude)
@@ -50,5 +52,10 @@ public class HubService implements IHubService, IHubServiceProcessor {
 	public List<UUID> getConveringHubs(GeoQuery query) {
 		return this.rootNode.getConveringHubIds(query.getLatitude(), query.getLongitude(), query.getDistance()).stream()
 		.map(h->h.getHubid()).collect(Collectors.toList());
+	}
+	
+	public void split(UUID id, double subrange) {
+		this.rootNode.split(id, subrange);
+		this.repo.saveRootNode(this.rootNode);
 	}
 }

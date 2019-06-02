@@ -1,7 +1,6 @@
 package hms;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +54,7 @@ public class Client {
         datastore = morphia.createDatastore( mongodb, DATABASE_NAME );
         
     }
-	public static void maindb(String[] args) {
+	public static void main(String[] args) {
 		initializeMongoAndMorphia();
 
 		double longitude =-118.01358499633821;
@@ -89,7 +88,7 @@ public class Client {
 		System.out.println(providerids);
 	}
 	
-	public static void main(String[] args) {
+	public static void mainhash(String[] args) {
 		Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
 		List<String> keys = new ArrayList<>();
 		for(int i=0;i<1000;i++) {

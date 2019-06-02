@@ -170,15 +170,11 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 			private final List<PollChainning> querychain = new LinkedList<PollChainning>();
 			{
 				this.querychain.add(buildQueryProvidersHubProcessor());
-			}			
-			@Override
-			protected List<? extends PollChainning> getSubChains() {
-				return querychain;
 			}
 			
 			@Override
-			protected void configConsummer(Properties consumerProps) {
-				consumerProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
+			protected List<? extends PollChainning> getSubChains() {
+				return querychain;
 			}
 			
 			@Override

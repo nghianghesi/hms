@@ -11,4 +11,6 @@ public interface IHubService {
 	public UUID getHostingHubId(double latitude, double longitude);
 	public List<UUID> getConveringHubs(hms.dto.GeoQuery query);	
 	
+
+	void split(UUID id, double subrange) ;	
 }

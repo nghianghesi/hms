@@ -65,7 +65,7 @@ public class HubNodeModel {
 		return this.entity.getName();
 	}
 
-	public void setHubid(String name) {
+	public void setName(String name) {
 		this.entity.setName(name);
 	}	
 	
@@ -192,6 +192,39 @@ public class HubNodeModel {
 			res.add(this);
 		}
 		return res;
+	}
+	
+	public void split(UUID id, double subrange) {
+		if(this.getHubid().equals(id)) {
+			if(this.subHubs==null || this.subHubs.size() == 0) {
+				this.entity.getSubHubs().clear();
+				this.subHubs = new ArrayList<HubNodeModel>();
+				double[] latDiff = new double[] {this.getLatitudeRange()/2, -this.getLatitudeRange()/2};
+				double[] longDiff = new double[] {this.getLongitudeRange()/2, -this.getLongitudeRange()/2};
+				for(int i=0;i<2;i++) {
+					for(int j=0;j<2;j++) {
+						HubSubEntity sub = new HubSubEntity();
+						sub.setHubid(UUID.randomUUID());
+						sub.setName(this.getName()+i+j);
+						sub.setLocation(GeoJson.point(
+								this.getLocation().getLatitude()+latDiff[i],
+								this.getLocation().getLongitude()+longDiff[j]
+						));
+						sub.setLatitudeRange(subrange);
+						sub.setLongitudeRange(subrange);
+						sub.setMargin(this.getMargin());
+						this.entity.getSubHubs().add(sub);
+						this.subHubs.add(new HubNodeModel(sub));
+					}
+				}
+			}
+		}else {
+			if(this.subHubs!=null) {
+				for(HubNodeModel sub : this.subHubs) {
+					sub.split(id, subrange);
+				}
+			}
+		}
 	}
 	
 	public String getDebugInfo() {

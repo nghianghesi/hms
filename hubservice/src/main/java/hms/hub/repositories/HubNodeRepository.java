@@ -22,4 +22,8 @@ public class HubNodeRepository implements IHubNodeRepository {
 			return new HubNodeModel(entity);
 		}
 	}
+	
+	public void saveRootNode(HubNodeModel node) {
+		datastore.save(node.persistance());   
+	}
 }

@@ -180,7 +180,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	
 	private Runnable pollRequestFromConsummer = () -> {		
 		if (!shutdownNode) {
-			ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(1));
+			ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(10));
 			for (ConsumerRecord<UUID, byte[]> record : records) {
 				this.processSingleRecord(record);
 			}

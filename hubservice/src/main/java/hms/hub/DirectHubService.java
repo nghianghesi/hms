@@ -31,14 +31,18 @@ public class DirectHubService implements IHubService{
 
 	@Override
 	public UUID getHostingHubId(double latitude, double longitude) {
-		// TODO Auto-generated method stub
 		return onlyhubid;
 	}
 
 	@Override
 	public List<UUID> getConveringHubs(GeoQuery query) {
-		// TODO Auto-generated method stub
 		return onlyConverHub;
+	}
+
+	@Override
+	public void split(UUID id, double subrange) {
+		return;
+		
 	}
 
 }
