@@ -15,16 +15,13 @@ public class AccumulateStreamResponse<TItem> extends StreamResponse<java.util.Li
 		return this.numberOfReceivedPackages;
 	}
 	
-	public boolean collectData(java.util.List<TItem> moredata, int expectedTotal) {
+	public void collectData(java.util.List<TItem> moredata, int expectedTotal) {
 		if(moredata!=null&&moredata.size()>0) {
 			this.accumulatedData.addAll(moredata);
 		}
 		this.numberOfReceivedPackages += 1;
 		if(this.numberOfReceivedPackages >= expectedTotal) {
 			this.setData(this.accumulatedData);
-			return true;
-		}else {
-			return false;
 		}
 	}
 }
