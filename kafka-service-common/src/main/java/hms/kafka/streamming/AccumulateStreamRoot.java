@@ -17,17 +17,24 @@ public abstract class AccumulateStreamRoot<TStart, TItemRes>
 	@Override
 	protected StreamResponse<List<TItemRes>> createReponseInstance(UUID id, int timeout) {
 		AccumulateStreamResponse<TItemRes>  waiter = new AccumulateStreamResponse<>(timeout);
-		this._waiters.put(id, waiter);
+		synchronized (this._waiters) {
+			this._waiters.put(id, waiter);
+		}
 		return waiter;
 	}	
 	
 	
 	@Override
 	public void handleResponse(HMSMessage<? extends List<TItemRes>> response) {
-		if(this._waiters.containsKey(response.getRequestId())) {
-			AccumulateStreamResponse<TItemRes> waiter = this._waiters.get(response.getRequestId()) ;
+		AccumulateStreamResponse<TItemRes> waiter=null;
+		synchronized (this._waiters) {
+			waiter = this._waiters.getOrDefault(response.getRequestId(),null) ;	
+		}
+		if(waiter!=null) {			
 			if(waiter.collectData(response.getData(),response.getTotalRequests())) {
-				this._waiters.remove(response.getRequestId());
+				synchronized (this._waiters) {
+					this._waiters.remove(response.getRequestId());
+				}
 			}
 		}else {
 			this.getLogger().warn("Stream response without waiter {} {}", this.getStartTopic(), response.getRequestId());

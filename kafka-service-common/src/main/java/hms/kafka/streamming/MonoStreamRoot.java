@@ -15,7 +15,9 @@ public abstract class MonoStreamRoot<TStart, TRes>
 	@Override
 	protected StreamResponse<TRes> createReponseInstance(UUID id, int timeout) {
 		StreamResponse<TRes>  waiter = new StreamResponse<>(timeout);
-		this._waiters.put(id, waiter);
+		synchronized (this._waiters) {			
+			this._waiters.put(id, waiter);
+		}
 		return waiter;
 	}
 }

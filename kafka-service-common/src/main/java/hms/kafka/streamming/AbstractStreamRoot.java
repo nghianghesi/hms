@@ -1,6 +1,7 @@
 package hms.kafka.streamming;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -43,18 +44,27 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	} 
 	
 	public void handleResponse(HMSMessage<? extends TRes> response) {
-		if(this.getWaiters().containsKey(response.getRequestId())) {
-			StreamResponse<TRes> waiter = this.getWaiters().remove(response.getRequestId()) ;
+		StreamResponse<TRes> waiter=null;
+		synchronized (this.getWaiters()) {
+			if(this.getWaiters().containsKey(response.getRequestId())) {			
+				waiter = this.getWaiters().remove(response.getRequestId()) ;				
+			}
+		}	
+		
+		if(waiter!=null) {
 			waiter.setData(response.getData());
-		}else {
+		}
+		else {
 			this.getLogger().warn("Stream response without waiter " + this.getStartTopic() + " " + response.getRequestId());
 		}
 	}
 	
 	public void handleRequestError(UUID id, String error) {
-		if(this.getWaiters().containsKey(id)) {			
-			StreamResponse<TRes> waiter = this.getWaiters().remove(id) ;
-			waiter.setError(error);
+		synchronized (this.getWaiters()) {
+			if(this.getWaiters().containsKey(id)) {			
+				StreamResponse<TRes> waiter = this.getWaiters().remove(id) ;
+				waiter.setError(error);
+			}
 		}
 	}	
 	
@@ -82,16 +92,23 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	}	
 	
 	@Override
-	protected void intervalCleanup() {		
-		LinkedHashMap<UUID, ? extends StreamResponse<TRes>> waiters = this.getWaiters();
-		do {
-			Map.Entry<UUID, ? extends StreamResponse<TRes>> w = waiters.isEmpty() ? null : waiters.entrySet().iterator().next();		
-			if(w!=null && w.getValue().isTimeout()) {
-				w.getValue().setError("Time out");
-				this.getWaiters().remove(w.getKey());
-			}else {
-				break;
+	protected void intervalCleanup() {
+		Iterator<? extends Map.Entry<UUID, ? extends StreamResponse<TRes>>> waiters  = null; 
+		synchronized (this.getWaiters()) {
+			waiters = this.getWaiters().entrySet().iterator();
+		}
+		if(waiters != null) {
+			while(waiters.hasNext()) {			
+				Map.Entry<UUID, ? extends StreamResponse<TRes>> w = waiters.next();		
+				if(w!=null && w.getValue().isTimeout()) {
+					w.getValue().setError("Time out");
+					synchronized (this.getWaiters()) {
+						this.getWaiters().remove(w.getKey());	
+					}				
+				}else {
+					break;
+				}
 			}
-		}while (true);
+		}
 	}
 }
