@@ -5,12 +5,12 @@ import java.util.LinkedHashMap;
 import java.util.UUID;
 
 public abstract class AccumulateStreamRoot<TStart, TItemRes> 
-	extends MonoStreamRoot<TStart, ArrayList<TItemRes>>{	
+	extends AbstractStreamRoot<TStart, ArrayList<TItemRes>>{	
 	
 	private ArrayList<LinkedHashMap<UUID, AccumulateStreamResponse<TItemRes>>> _waiters 
-			= new ArrayList<LinkedHashMap<UUID,  AccumulateStreamResponse<TItemRes>>>();
+			= new ArrayList<LinkedHashMap<UUID,  AccumulateStreamResponse<TItemRes>>>(KEY_RANGE);
 	public AccumulateStreamRoot() {
-		for(int i=0;i<this.KEY_RANGE;i++) {
+		for(int i=0;i<KEY_RANGE;i++) {
 			this._waiters.add(new LinkedHashMap<UUID, AccumulateStreamResponse<TItemRes>>());
 		}
 	}

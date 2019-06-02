@@ -6,9 +6,9 @@ import java.util.UUID;
 
 public abstract class MonoStreamRoot<TStart, TRes> 
 	extends AbstractStreamRoot<TStart, TRes>{ // consume TRes & forward to none.
-	private ArrayList<LinkedHashMap<UUID, StreamResponse<TRes>>> _waiters = new ArrayList<LinkedHashMap<UUID, StreamResponse<TRes>>>();
+	private ArrayList<LinkedHashMap<UUID, StreamResponse<TRes>>> _waiters = new ArrayList<LinkedHashMap<UUID, StreamResponse<TRes>>>(KEY_RANGE);
 	public MonoStreamRoot() {
-		for(int i=0;i<this.KEY_RANGE;i++) {
+		for(int i=0;i<KEY_RANGE;i++) {
 			this._waiters.add(new LinkedHashMap<UUID, StreamResponse<TRes>>());
 		}
 	}

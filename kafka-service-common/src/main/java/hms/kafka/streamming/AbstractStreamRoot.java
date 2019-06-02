@@ -18,7 +18,7 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	extends KafkaStreamNodeBase<TRes, Void>{ // consume TRes & forward to none.
 	protected abstract String getStartTopic();
 
-	protected final int KEY_RANGE = 1000;
+	protected static final int KEY_RANGE = 1000;
 	public AbstractStreamRoot() {
 		this.timeout=10000;
 	}
@@ -54,7 +54,7 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	} 
 	
 	protected int RequestIdToKeyRange(UUID id) {
-		return Math.abs(id.hashCode()) % this.KEY_RANGE;
+		return Math.abs(id.hashCode()) % KEY_RANGE;
 	}
 	
 	public abstract void handleResponse(HMSMessage<TRes> response); 
