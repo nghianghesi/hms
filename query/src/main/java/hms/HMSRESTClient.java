@@ -78,8 +78,8 @@ public class HMSRESTClient{
 	private HMSServiceIntegration serviceIntegration;
 	private Logger logger;
 	private String serviceURL;
-	private void buildIntegration() {
-		ConnectionPool pool = new ConnectionPool(100, 1, TimeUnit.MINUTES);
+	private void buildIntegration(int poolsize) {
+		ConnectionPool pool = new ConnectionPool(poolsize, 1, TimeUnit.MINUTES);
 
 		OkHttpClient client = new OkHttpClient.Builder()
 		                              .connectionPool(pool)
@@ -98,10 +98,10 @@ public class HMSRESTClient{
 	Type providerListType = new TypeToken<ArrayList<Provider>>(){}.getType();
 
 
-	public HMSRESTClient(String Url, Logger logger) {
+	public HMSRESTClient(String Url, Logger logger, int poolsize) {
 		this.serviceURL = Url;
 		this.logger = logger;
-		buildIntegration();
+		buildIntegration(poolsize);
 	}
 	
 	public void initRequest() {

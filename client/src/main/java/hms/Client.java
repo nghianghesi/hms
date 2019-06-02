@@ -22,6 +22,7 @@ public class Client {
 	private static String ZONE="";
 	private static final int UPDATE_INTERVAL = 30000;//30s;
 	private static int NUM_OF_PROVIDER = 15000;
+	private static int POOL_SIZE = 500;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
@@ -177,7 +178,11 @@ public class Client {
 		}			
 		if(conf.hasPath("init-providers")) {
 			INIT_PROVIDERS=conf.getBoolean("init-providers");
-		}			
+		}				
+		
+		if(conf.hasPath("pool-size")) {
+			POOL_SIZE=conf.getInt("pool-size");
+		}		
 	}
 	
 	public static void main(String[] args) {
@@ -188,7 +193,7 @@ public class Client {
 		// TODO Auto-generated method stub
 		List<ProviderTrackingBuilder> list = new ArrayList<ProviderTrackingBuilder>(NUM_OF_PROVIDER);
 				
-		HMSRESTClient client = new HMSRESTClient(SERVICE_URL, logger);
+		HMSRESTClient client = new HMSRESTClient(SERVICE_URL, logger, POOL_SIZE);
 		client.initRequest();
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();

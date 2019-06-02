@@ -17,7 +17,8 @@ import java.util.concurrent.ForkJoinPool;
 
 public class Client {
 	private static int NUM_OF_CUSTOMERS = 20000;
-	
+
+	private static int POOL_SIZE = 500;
 	private static final int QUERY_INTERVAL = 30000;//30s;
 	
 	private static final double MAX_LATITUDE = 90;		
@@ -145,6 +146,10 @@ public class Client {
 		
 		if(conf.hasPath("service-url")) {
 			SERVICE_URL=conf.getString("service-url");
+		}		
+		
+		if(conf.hasPath("pool-size")) {
+			POOL_SIZE=conf.getInt("pool-size");
 		}			
 		
 		logger.info("Query: {}, threads {}", NUM_OF_CUSTOMERS, NUM_OF_THREAD);
@@ -152,7 +157,7 @@ public class Client {
 		waitingforEnter();
 		// TODO Auto-generated method stub
 		List<ProviderQueryBuilder> list = new ArrayList<ProviderQueryBuilder>(NUM_OF_CUSTOMERS);
-		HMSRESTClient client = new HMSRESTClient(SERVICE_URL, logger);
+		HMSRESTClient client = new HMSRESTClient(SERVICE_URL, logger, POOL_SIZE);
 		client.initRequest();
 		ForkJoinPool myPool = new ForkJoinPool(NUM_OF_THREAD);
 		List<CompletableFuture<Void>> groupRunners = new ArrayList<CompletableFuture<Void>>();
