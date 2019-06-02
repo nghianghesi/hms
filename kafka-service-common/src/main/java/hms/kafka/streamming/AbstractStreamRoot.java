@@ -93,22 +93,21 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	
 	@Override
 	protected void intervalCleanup() {
-		Iterator<? extends Map.Entry<UUID, ? extends StreamResponse<TRes>>> waiters  = null; 
-		synchronized (this.getWaiters()) {
-			waiters = this.getWaiters().entrySet().iterator();
-		}
-		if(waiters != null) {
-			while(waiters.hasNext()) {			
-				Map.Entry<UUID, ? extends StreamResponse<TRes>> w = waiters.next();		
-				if(w!=null && w.getValue().isTimeout()) {
-					w.getValue().setError("Time out");
-					synchronized (this.getWaiters()) {
-						this.getWaiters().remove(w.getKey());	
-					}				
-				}else {
-					break;
+		do{	
+			Map.Entry<UUID, ? extends StreamResponse<TRes>> w = null;
+			synchronized (this.getWaiters()) {
+				if(!this.getWaiters().isEmpty()) {
+					w = this.getWaiters().entrySet().iterator().next();
 				}
 			}
-		}
+			if(w!=null && w.getValue().isTimeout()) {
+				w.getValue().setError("Time out");
+				synchronized (this.getWaiters()) {
+					this.getWaiters().remove(w.getKey());	
+				}				
+			}else {
+				break;
+			}
+		}while(true);
 	}
 }
