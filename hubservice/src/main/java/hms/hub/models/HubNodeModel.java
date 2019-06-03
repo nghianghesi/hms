@@ -194,24 +194,30 @@ public class HubNodeModel {
 		return res;
 	}
 	
-	public void split(UUID id, double subrange) {
+	public void split(UUID id, int parts) {
 		if(this.getHubid().equals(id)) {
 			if(this.subHubs==null || this.subHubs.size() == 0) {
 				this.entity.getSubHubs().clear();
 				this.subHubs = new ArrayList<HubNodeModel>();
-				double[] latDiff = new double[] {this.getLatitudeRange()/2, -this.getLatitudeRange()/2};
-				double[] longDiff = new double[] {this.getLongitudeRange()/2, -this.getLongitudeRange()/2};
-				for(int i=0;i<2;i++) {
-					for(int j=0;j<2;j++) {
+				double latDiff = this.getLatitudeRange()/parts;
+				double longDiff = this.getLongitudeRange()/parts;
+				
+				double subLat=this.getLatitude()-this.getLatitudeRange();
+				double subLong=this.getLongitude()-this.getLongitudeRange();
+				
+				double subLatrange = this.getLatitudeRange() / parts;
+				double subLongrange = this.getLongitudeRange() / parts;
+				for(int i=0;i<parts;i++) {
+					subLat += latDiff * 2;
+					subLong=this.getLongitude()-this.getLongitudeRange();
+					for(int j=0;j<parts;j++) {
+						subLong+=longDiff*2;
 						HubSubEntity sub = new HubSubEntity();
 						sub.setHubid(UUID.randomUUID());
 						sub.setName(this.getName()+i+j);
-						sub.setLocation(GeoJson.point(
-								this.getLocation().getLatitude()+latDiff[i],
-								this.getLocation().getLongitude()+longDiff[j]
-						));
-						sub.setLatitudeRange(subrange);
-						sub.setLongitudeRange(subrange);
+						sub.setLocation(GeoJson.point(subLat,subLong));
+						sub.setLatitudeRange(subLatrange);
+						sub.setLongitudeRange(subLongrange);
 						sub.setMargin(this.getMargin());
 						this.entity.getSubHubs().add(sub);
 						this.subHubs.add(new HubNodeModel(sub));
@@ -221,7 +227,7 @@ public class HubNodeModel {
 		}else {
 			if(this.subHubs!=null) {
 				for(HubNodeModel sub : this.subHubs) {
-					sub.split(id, subrange);
+					sub.split(id, parts);
 				}
 			}
 		}

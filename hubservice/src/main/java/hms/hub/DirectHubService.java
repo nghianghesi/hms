@@ -40,7 +40,7 @@ public class DirectHubService implements IHubService{
 	}
 
 	@Override
-	public void split(UUID id, double subrange) {
+	public void split(UUID id, int parts) {
 		return;
 		
 	}

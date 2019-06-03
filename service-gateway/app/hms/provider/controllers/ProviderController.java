@@ -40,9 +40,9 @@ public class ProviderController  extends Controller {
         return ok("Provider services");
     }           
     
-    public Result splitHubs(UUID hubid, Double subrange) {    	
-    	if(hubid!=null && subrange!=null) {
-	        this.injector.getInstance(hms.hub.IHubService.class).split(hubid, subrange);
+    public Result splitHubs(UUID hubid, Integer parts) {    	
+    	if(hubid!=null && parts!=null) {
+	        this.injector.getInstance(hms.hub.IHubService.class).split(hubid, parts);
 	        return ok("Hub splitted");
     	}else {
     		return ok("Invalid params");

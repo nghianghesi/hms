@@ -54,8 +54,8 @@ public class HubService implements IHubService, IHubServiceProcessor {
 		.map(h->h.getHubid()).collect(Collectors.toList());
 	}
 	
-	public void split(UUID id, double subrange) {
-		this.rootNode.split(id, subrange);
+	public void split(UUID id, int parts) {
+		this.rootNode.split(id, parts);
 		this.repo.saveRootNode(this.rootNode);
 	}
 }

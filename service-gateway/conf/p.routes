@@ -5,4 +5,4 @@ POST		/init		hms.provider.controllers.ProviderController.initprovider(request:Re
 POST		/tracking	hms.provider.controllers.ProviderController.tracking(request:Request)
 POST		/geoquery	hms.provider.controllers.ProviderController.geoquery(request:Request)
 POST		/get-by-zone	hms.provider.controllers.ProviderController.getByZone(request:Request)
-GET		/split-hub/:hubid/:subrange	hms.provider.controllers.ProviderController.splitHubs(hubid:java.util.UUID, subrange:java.lang.Double)
+GET		/split-hub/:hubid/:parts	hms.provider.controllers.ProviderController.splitHubs(hubid:java.util.UUID, parts:java.lang.Integer)
