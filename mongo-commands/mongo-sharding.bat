@@ -1,0 +1,1 @@
+mongod --shardsvr -dbpath D:/mongodbs/sharding

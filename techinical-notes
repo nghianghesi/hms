@@ -1,0 +1,35 @@
+Sub route file name should not same to namespace name
+For ex: provider.routes --> provider namespace cause prefix without definition error
+
+
+Define multiple project sbt build https://pbassiner.github.io/blog/defining_multi-project_builds_with_sbt.html
+	- Need clean up project, build.sbt in sub project folders.
+Sbt scala version vs lib version on maven
+https://docs.mongodb.com/manual/tutorial/deploy-shard-cluster/
+
+
+CompletableFuture allow single thenRun... only (not accepted as chain)
+
+Need executor context for CompletableStage action
+Need separate there for consumer (to avoid locking http executor context)
+
+Start play app without http server by Scala
+DslJson required default constructor & public getter/setter
+
+Simulate non-blocking while waiting for response from microservice.
+
+becare full with $in List<UUID> of mongodb driver (need parse because value of UUID could be String)
+
+
+run sbt with config file sbt "service-gateway/run -Dconfig.file=service-gateway/conf/application1.conf"
+sbt "processing-host/runMain hms.AppStart -Dconfig.file=processing-host/conf/application1.conf"
+
+
+ java.net.ConnectException: Connection refused: connect
+ Connection pool for REST request
+ 
+
+https://docs.mongodb.com/manual/tutorial/deploy-shard-cluster/
+can't use localhost as a shard since all shards need to communicate. either use all shards and configdbs in localhost or all in actual IPs host
+
+switch to use NettyServer to handler more concurrent requests (update build.sbt as https://www.playframework.com/documentation/2.7.x/NettyServer)

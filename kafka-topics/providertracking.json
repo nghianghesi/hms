@@ -1,0 +1,8 @@
+{"version":1,
+  "partitions":[
+     {"topic":"hms.provider.tracking","partition":0,"replicas":[0,1,2]},
+     {"topic":"hms.provider.tracking","partition":1,"replicas":[0,1,2]},
+     {"topic":"hms.provider.tracking","partition":2,"replicas":[0,1,2]},
+     {"topic":"hms.provider.tracking","partition":3,"replicas":[0,1,2]},
+     {"topic":"hms.provider.tracking","partition":4,"replicas":[0,1,2]}
+]}
