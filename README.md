@@ -7,13 +7,13 @@ An experimental of Micro-service to overcome challanges of tracking-query proble
 3. Enviroment for testing:
  * Test data: tracking location of 60K objects (updated every 30s)
  * Geo based sharding & in-Memory tracking
-     * 1 machine for Netty Server + Playframework
+     * 1 machine for Netty Server + REST api server
      * 1 machine for Kafka 
      * 2 machines for processing tracking & query
      * 2 machines to simulate clients
      * 1 machine for MongoDb
  * Geo based Mongo Sharding
-     * 1 machine for Netty Server + Playframework
+     * 1 machine for Netty Server + REST api server
      * 1 machine for master
      * 2 machines for sharding nodes
      * 2 machines to simulate clients
