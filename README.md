@@ -6,7 +6,7 @@ An experimental of Micro-service to overcome challanges of tracking-query proble
   * Geo based sharding & memory tracking
 3. Enviroment for testing:
  * Test data: tracking location of 60K objects (updated every 30s)
- * Geo based sharding & Memory tracking
+ * Geo based sharding & in-Memory tracking
      * 1 machine for Netty Server + Playframework
      * 1 machine for Kafka 
      * 2 machines for processing tracking & query
