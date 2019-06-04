@@ -22,4 +22,4 @@ An experimental of Micro-service to overcome challanges of tracking-query proble
   * Able to handle more than 2K concurrent of tracking requests + more than 2K concurrent of query requests. 
    (simulated by ~4K threads, 2K on each of 2 client machines)
   * max time for processing one request ~ 8s
-  * avg ~2.5K+ requests/s (tracking+query) 
+  * avg 2K+ requests/s (tracking+query) 
