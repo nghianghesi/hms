@@ -6,11 +6,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 
 import hms.KafkaHMSMeta;
 
@@ -88,9 +86,14 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 			String startTopic = this.applyTemplateToRepForTopic(this.getStartTopic(), data); 			
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, startTopic);
 			//this.getLogger().info("Start stream {} {}", startTopic, request.getRequestId());
-			this.producer.send(record).get(timeout, TimeUnit.MILLISECONDS);
-		} catch (IOException | InterruptedException | ExecutionException | TimeoutException e) {
-			this.handleRequestError(id, "Request error:"+e.getMessage());
+			this.producer.send(record,  (RecordMetadata metadata, Exception exception) -> {
+				if(exception!=null) {
+					this.getLogger().error(exception.getMessage());
+					this.handleRequestError(id, "Request error");
+				}
+			});
+		} catch (IOException e) {
+			this.handleRequestError(id, "Request error");
 		}
 		return waiter.getWaiterTask();
 	}	
@@ -102,7 +105,7 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 		intervalIdx+=1;
 		if(intervalIdx>10) {
 			intervalIdx=0;
-			for(int keyrange=0;keyrange<this.KEY_RANGE;keyrange++) {
+			for(int keyrange=0;keyrange<KEY_RANGE;keyrange++) {
 				synchronized (this.getWaiters(keyrange)) {
 					do{	
 						Map.Entry<UUID, ? extends StreamResponse<? extends TRes>> w = null;

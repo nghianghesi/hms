@@ -109,7 +109,9 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.UUIDSerializer");
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-				"org.apache.kafka.common.serialization.ByteArraySerializer");
+				"org.apache.kafka.common.serialization.ByteArraySerializer");		
+		props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+		
 		this.configProducer(props);
 		this.producer = new KafkaProducer<>(props);
 	}
@@ -227,9 +229,13 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		try {
 			//this.getLogger().info("Replying to {}", replytop);
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
-			this.producer.send(record).get();
-		} catch (IOException | InterruptedException | ExecutionException e) {
-			this.getLogger().error("Reply message error {} {}", replytop, e.getMessage());
+			this.producer.send(record, (meta, ex)->{
+				if(ex != null) {
+					this.getLogger().error("Reply error: {}", ex.getMessage());
+				}
+			});
+		} catch (IOException e) {
+			this.getLogger().error("Reply error {} {}", replytop, e.getMessage());
 		}
 	}
 	
@@ -241,8 +247,12 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 			forwardReq.addReponsePoint(this.getForwardBackTopic(), request.getData());
 			//this.getLogger().info("forwarding: {}", forwardtopic);			
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, forwardtopic);					
-			this.producer.send(record).get();
-		} catch (IOException | InterruptedException | ExecutionException e) {
+			this.producer.send(record, (meta, ex)->{
+				if(ex != null) {
+					this.getLogger().error("forward error: {}", ex.getMessage());
+				}
+			});
+		} catch (IOException e) {
 			this.getLogger().error("Forward request error {} {}", forwardtopic, e.getMessage());
 		}
 	}
