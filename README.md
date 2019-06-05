@@ -1,6 +1,6 @@
 # hms
 An experiment of Micro-service to overcome challenges of tracking-query problem.
-1. Goals: Able to handle requests at massive volumn
+1. Goals: Able to handle requests at massive volume
 2. Techniques: Java, Playframework, MongoDb, Kafka, asynchronous, parrallel programing, Akka, KSQL, DlsJson
 3. Solutions: 
   * Geo based sharding by Mongodb
