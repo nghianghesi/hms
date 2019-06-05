@@ -1,5 +1,5 @@
 # hms
-An experimental of Micro-service to overcome challanges of tracking-query problem.
+An experiment of Micro-service to overcome challanges of tracking-query problem.
 1. Techniques: Java, Playframework, MongoDb, Kafka, asynchronous, parrallel programing, Akka, KSQL, DlsJson
 2. Solutions: 
   * Geo based sharding by Mongodb
