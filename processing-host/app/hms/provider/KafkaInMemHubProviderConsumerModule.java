@@ -23,7 +23,6 @@ public class KafkaInMemHubProviderConsumerModule extends AbstractModule{
 		protected InMemoryHubProviderTrackingProcessing internalGet() {
 			return new InMemoryHubProviderTrackingProcessing(
 					this.injector.getInstance(Config.class),
-					this.injector.getInstance(hms.common.IHMSExecutorContext.class),
 					this.injector.getInstance(IProviderRepository.class));
 		}
 	}	

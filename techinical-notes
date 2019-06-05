@@ -33,3 +33,5 @@ https://docs.mongodb.com/manual/tutorial/deploy-shard-cluster/
 can't use localhost as a shard since all shards need to communicate. either use all shards and configdbs in localhost or all in actual IPs host
 
 switch to use NettyServer to handler more concurrent requests (update build.sbt as https://www.playframework.com/documentation/2.7.x/NettyServer)
+
+optimize Kafka throughtput by asyn sending/receiving messages & LINGER_MS_CONFIG

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -28,13 +30,11 @@ import hms.dto.LatLongLocation;
 import hms.dto.Provider;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
-import hms.kafka.streamming.PollChainning;
 import hms.provider.KafkaProviderMeta;
 import hms.provider.repositories.IProviderRepository;
 
 public class InMemoryHubProviderTrackingProcessing implements Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(InMemoryHubProviderTrackingProcessing.class);
-	IHMSExecutorContext ec;
 	IProviderRepository repo;
 	
 	List<KafkaStreamNodeBase<hms.dto.HubProviderTracking, Boolean>>  trackingProviderHubProcessors
@@ -51,6 +51,8 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 	        new HashMap<UUID,VPTree<LatLongLocation, InMemProviderTracking>>();
 	private final Map<UUID,LinkedHashMap<UUID, InMemProviderTracking>> myHubProviders =
 	        		new HashMap<UUID,LinkedHashMap<UUID, InMemProviderTracking>>();
+	
+	private ExecutorService ex = Executors.newFixedThreadPool(1); 
 	
 	private class InMemProviderTracking implements LatLongLocation {
 		private  double latitude;
@@ -127,13 +129,12 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 
 		@Override
 		protected Executor getExecutorService() {
-			return ec.getExecutor();
+			return ex;
 		}
 	}
 	
 	@Inject
-	public InMemoryHubProviderTrackingProcessing(Config config, IHMSExecutorContext ec, IProviderRepository repo) {
-		this.ec = ec;
+	public InMemoryHubProviderTrackingProcessing(Config config, IProviderRepository repo) {
 		this.repo = repo;
 
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
@@ -166,6 +167,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			this.providerTrackingVPTrees.put(hubid, 
 					new VPTree<LatLongLocation, InMemoryHubProviderTrackingProcessing.InMemProviderTracking>(distanceFunction));
 			this.buildTrackingProviderHubProcessor(hubid);
+			this.buildQueryProvidersHubProcessor(hubid);
 		}
 		logger.info("Provider processing is ready");
 
@@ -177,19 +179,9 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 	
 	private void buildTrackingProviderHubProcessor(final UUID trackingHubid) {
 		ProviderProcessingNode<hms.dto.HubProviderTracking, Boolean>t = new ProviderProcessingNode<hms.dto.HubProviderTracking, Boolean>() {			
-			private final List<PollChainning> querychain = new LinkedList<PollChainning>();
 			private final VPTree<LatLongLocation, InMemProviderTracking> providerTrackingVPTree = providerTrackingVPTrees.get(trackingHubid);
 			private final LinkedHashMap<UUID, InMemProviderTracking> myproviders = myHubProviders.get(trackingHubid);
 
-			
-			{
-				this.querychain.add(buildQueryProvidersHubProcessor(trackingHubid));
-			}			
-			@Override
-			protected List<? extends PollChainning> getSubChains() {
-				return querychain;
-			}
-			
 			
 			@Override
 			protected Boolean processRequest(HMSMessage<hms.dto.HubProviderTracking> request) {
@@ -249,9 +241,8 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 		this.trackingProviderHubProcessors.add(t);
 	}	
 	
-	private KafkaStreamNodeBase<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>> buildQueryProvidersHubProcessor(final UUID trackingHubid){
+	private void buildQueryProvidersHubProcessor(final UUID trackingHubid){
 		ProviderProcessingNode<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>> q=new ProviderProcessingNode<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>>() {
-
 			private final VPTree<LatLongLocation, InMemProviderTracking> providerTrackingVPTree = providerTrackingVPTrees.get(trackingHubid);
 			
 			@Override
@@ -261,7 +252,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 					hms.dto.HubProviderGeoQuery querydto = request.getData();
 					List<InMemProviderTracking> nearTrackings = providerTrackingVPTree.getAllWithinDistance(querydto, querydto.getDistance());
 					if(nearTrackings!=null && nearTrackings.size()>0) {
-						List<UUID> providerids= nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
+						List<UUID> providerids = nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
 						return repo.getProvidersByIds(providerids).stream()
 								.map(p -> new Provider(p.getProviderid(), p.getZone(), p.getName()))
 								.collect(Collectors.toList());
@@ -284,15 +275,9 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			protected String getForwardTopic() {				
 				return KafkaProviderMeta.InMemQueryProvidersMessage + KafkaHMSMeta.ReturnTopicSuffix;
 			}	
-			
-			@Override
-			protected boolean isChained() {
-				return true;
-			}
 		};	
 		
 		this.queryProvidersHubProcessors.add(q);
-		return q;
 	}
 
 	@Override

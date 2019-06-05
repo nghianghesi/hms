@@ -98,30 +98,25 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 		return waiter.getWaiterTask();
 	}	
 	
-	private int intervalIdx=0;
 	@Override
 	protected void intervalCleanup() { // clean up timeout.
 		super.intervalCleanup();
-		intervalIdx+=1;
-		if(intervalIdx>10) {
-			intervalIdx=0;
-			for(int keyrange=0;keyrange<KEY_RANGE;keyrange++) {
-				synchronized (this.getWaiters(keyrange)) {
-					do{	
-						Map.Entry<UUID, ? extends StreamResponse<? extends TRes>> w = null;
-						if(!this.getWaiters(keyrange).isEmpty()) {
-							w = this.getWaiters(keyrange).entrySet().iterator().next();
-							if(w!=null && w.getValue().isTimeout()) {
-								this.getWaiters(keyrange).remove(w.getKey());		
-								w.getValue().setError("Time out");
-							}else {
-								break;
-							}
+		for(int keyrange=0;keyrange<KEY_RANGE;keyrange++) {
+			synchronized (this.getWaiters(keyrange)) {
+				do{	
+					Map.Entry<UUID, ? extends StreamResponse<? extends TRes>> w = null;
+					if(!this.getWaiters(keyrange).isEmpty()) {
+						w = this.getWaiters(keyrange).entrySet().iterator().next();
+						if(w!=null && w.getValue().isTimeout()) {
+							this.getWaiters(keyrange).remove(w.getKey());		
+							w.getValue().setError("Time out");
 						}else {
 							break;
 						}
-					}while(true);
-				}
+					}else {
+						break;
+					}
+				}while(true);
 			}
 		}
 	}
