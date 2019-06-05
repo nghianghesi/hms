@@ -24,7 +24,6 @@ import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
 import hms.common.DistanceUtils;
-import hms.common.IHMSExecutorContext;
 import hms.dto.HubProviderTracking;
 import hms.dto.LatLongLocation;
 import hms.dto.Provider;

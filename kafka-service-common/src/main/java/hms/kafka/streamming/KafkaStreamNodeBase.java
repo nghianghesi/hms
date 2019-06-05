@@ -10,6 +10,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -24,6 +26,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.record.Records;
 import org.slf4j.Logger;
 
 public abstract class KafkaStreamNodeBase<TCon, TRep>{
@@ -50,6 +53,8 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	protected abstract String getGroupid();
 	protected abstract String getServer();	
 	protected abstract Executor getExecutorService();
+	
+	private ExecutorService consumerEx = Executors.newFixedThreadPool(1);
 	
 	protected KafkaStreamNodeBase() {
 		this.ensureTopics();
@@ -116,7 +121,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	
 	private void processSingleRecord(ConsumerRecord<UUID, byte[]> record) {
 		try {
-			//this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
+			this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
 			HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
 			TRep res = this.processRequest(request);
 			if(this.getForwardTopic()!=null) {
@@ -131,25 +136,58 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 		}
 	}
 	
+	private void queueAction(Runnable action) {
+		previousTasks= previousTasks.thenRunAsync(action, this.getExecutorService());
+	}
+
+	private void queueConsummerAction(Runnable action) {
+		CompletableFuture.runAsync(action, this.consumerEx);
+	}
 	
 	private CompletableFuture<Void> previousTasks = CompletableFuture.runAsync(()->{}); // init an done task
-	private void pollRequestsFromConsummer (){	
-		final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(10));
-		previousTasks = previousTasks
-		.thenRunAsync(()->{this.pendingPolls+=1;}, this.getExecutorService())
-		.thenRunAsync(()->{
-            for (TopicPartition partition : records.partitions()) {
-                List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
-                if(partitionRecords.size()>0) {
-					for (ConsumerRecord<UUID, byte[]> record : partitionRecords) {
-						this.processSingleRecord(record);
-					}
-	                long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
-	                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)));
-                }
-            }
-		}, this.getExecutorService())
-		.thenRunAsync(()->{this.pendingPolls-=1;}, this.getExecutorService());
+	private Runnable pollRequestsFromConsummer = ()->{
+		if(!shutdownNode) {
+			if(this.pendingPolls<500) {
+				ConsumerRecords<UUID, byte[]> records;
+				records = this.consumer.poll(Duration.ofMillis(5));
+				if(records.count()>0) {
+					this.pendingPolls+=records.count();
+					queueAction(()->{
+			            for (TopicPartition partition : records.partitions()) {
+			                List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
+			                if(partitionRecords.size()>0) {
+								for (ConsumerRecord<UUID, byte[]> record : partitionRecords) {
+									this.processSingleRecord(record);
+								}
+				                long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+				                
+				                queueConsummerAction(()->{
+					                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)));
+									this.pendingPolls-=partitionRecords.size();
+				                });
+			                }
+			            }
+					});
+				}
+				
+				if(System.currentTimeMillis() - this.previousClean > 1000) {
+					queueAction(()->{
+						if(System.currentTimeMillis() - this.previousClean > 1000) {
+							this.intervalCleanup();
+							this.previousClean = System.currentTimeMillis();
+						}
+					});										
+				}	
+			}else {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					this.getLogger().info("Consumer thread interupted");
+				}
+			}
+			
+			queueConsummerAction(this.pollRequestsFromConsummer);
+		}
 	};	
 	
 	
@@ -159,37 +197,19 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 		consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
 		consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, this.getGroupid());
 		consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+		consumerProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
 		consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.UUIDDeserializer");		
 		consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.ByteArrayDeserializer");
+
 		consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);		
 		this.configConsummer(consumerProps);
 		this.consumer = new KafkaConsumer<>(consumerProps);
 		this.consumer.subscribe(Collections.singletonList(this.getConsumeTopic()));	
 		
 		this.previousClean = System.currentTimeMillis();
-		new Thread(()->{
-				while(!shutdownNode) {
-					if(this.pendingPolls<5) {
-						this.pollRequestsFromConsummer();
-					}
-					if(System.currentTimeMillis() - this.previousClean > 1000) {
-						CompletableFuture.runAsync(()->{
-							this.intervalCleanup();
-							this.previousClean = System.currentTimeMillis();
-						});
-					}else {
-						if(this.pendingPolls>5) {
-							try {
-								Thread.sleep(20);
-							} catch (InterruptedException e) {
-								this.getLogger().info("Consumer thread interupted");
-							}
-						}
-					}
-				}
-		}).run();
+		queueConsummerAction(this.pollRequestsFromConsummer);
 		
 		this.getLogger().info("Consumer {} ready", this.getConsumeTopic());						 
 	}
@@ -241,12 +261,18 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	public void shutDown() {
 		this.getLogger().info("Shutting down");
 		this.shutdownNode = true;
+		
+		long waitStart = System.currentTimeMillis();
 		while(pendingPolls > 0) {
-			try {
-				Thread.sleep(50);
-				this.getLogger().info("waiting for shutdown");
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			if(System.currentTimeMillis() - waitStart< 10000) {
+				try {
+					Thread.sleep(50);
+					this.getLogger().info("waiting for shutdown");
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}else {
+				this.getLogger().info("Shutdown timeout");				
 			}
 		}
 		this.producer.close();

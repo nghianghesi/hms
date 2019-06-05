@@ -1,14 +1,10 @@
 package controllers;
 
 
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import hms.common.ServiceWaiter;
-import hms.common.ServiceWaiter.IServiceChecker;
 import play.mvc.*;
 
 /**
@@ -25,9 +21,6 @@ public class HomeController extends Controller {
      * <code>GET</code> request with a path of <code>/</code>.
      */
 	
-	private class pack{
-		int count = 1;
-	}
     public Result index() {    	
     	/*pack p = new pack();
     	IServiceChecker<Result> waiter = new IServiceChecker<Result>() {
@@ -60,7 +53,7 @@ public class HomeController extends Controller {
 		    		logger.info("Got signal");
 		    		return r;
 		    	});*/
-    	return ok("hms.provider.inmem-tracking-with-hub{hubid}".replaceAll("\\{hubid\\}", "replaced"));
+    	return ok("Home");
     }
 
 }
