@@ -196,7 +196,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 		Properties consumerProps = new Properties();
 		consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
 		consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, this.getGroupid());
-		consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "largest");
+		consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 		consumerProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
 		consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.UUIDDeserializer");		
