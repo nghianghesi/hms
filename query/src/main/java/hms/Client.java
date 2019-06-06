@@ -116,7 +116,12 @@ public class Client {
 						logger.info("******************* longer than interval *********");
 						countLongerThanInterval+=1;
 					}else {
-						Thread.sleep(delay);
+						try {
+							Thread.sleep(delay);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}
 		};	
