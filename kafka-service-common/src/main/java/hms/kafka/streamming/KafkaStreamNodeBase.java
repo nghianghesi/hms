@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -276,6 +277,17 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 			}
 		}
 		this.producer.close();
-		this.consumer.close();	
+		
+		
+		queueConsummerAction(()->{;
+			this.consumer.close();	
+		});		
+		this.consumerEx.shutdown();
+		try {
+			this.consumerEx.awaitTermination(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
