@@ -133,7 +133,7 @@ public class Client {
 		}	
 		
 		if(conf.hasPath("num-of-thread")) {
-			NUM_OF_THREAD = conf.getInt("num-of-thread");
+			POOL_SIZE = NUM_OF_THREAD = conf.getInt("num-of-thread");
 		}
 		
 		if(conf.hasPath("area")) {
