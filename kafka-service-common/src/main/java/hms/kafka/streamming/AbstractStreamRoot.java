@@ -67,6 +67,7 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 		}
 		if(waiter!=null) {
 			waiter.setError(error);
+			this.getLogger().info("************ request error ***********");
 		}
 	}	
 	
@@ -88,7 +89,7 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 			//this.getLogger().info("Start stream {} {}", startTopic, request.getRequestId());
 			this.producer.send(record,  (RecordMetadata metadata, Exception exception) -> {
 				if(exception!=null) {
-					this.getLogger().error(exception.getMessage());
+					this.getLogger().info("**** Request error..."+exception.getMessage());
 					this.handleRequestError(id, "Request error");
 				}
 			});
@@ -108,7 +109,8 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 					if(!this.getWaiters(keyrange).isEmpty()) {
 						w = this.getWaiters(keyrange).entrySet().iterator().next();
 						if(w!=null && w.getValue().isTimeout()) {
-							this.getWaiters(keyrange).remove(w.getKey());		
+							this.getWaiters(keyrange).remove(w.getKey());	
+							this.getLogger().info("************ time out ***********");
 							w.getValue().setError("Time out");
 						}else {
 							break;
