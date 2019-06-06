@@ -110,12 +110,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 		protected Logger getLogger() {
 			return logger;
 		}
-		
-		@Override
-		protected String getGroupid() {
-			return providerGroup;
-		}
-		
+				
 		@Override
 		protected String getServer() {
 			return kafkaserver;
@@ -221,6 +216,12 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 					}
 				}while(candidate != null);
 			}
+			
+
+			@Override
+			protected String getGroupid() {
+				return providerGroup + trackingHubid;
+			}
 
 			@Override
 			protected Class<? extends HubProviderTracking> getTConsumeManifest() {
@@ -274,6 +275,11 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			protected String getForwardTopic() {				
 				return KafkaProviderMeta.InMemQueryProvidersMessage + KafkaHMSMeta.ReturnTopicSuffix;
 			}	
+			
+			@Override
+			protected String getGroupid() {
+				return providerGroup + trackingHubid;
+			}			
 		};	
 		
 		this.queryProvidersHubProcessors.add(q);
