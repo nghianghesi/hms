@@ -106,13 +106,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 	};
 	
 	private abstract class ProviderProcessingNode<TCon,TRep> extends KafkaStreamNodeBase<TCon,TRep>{
-		
-		protected UUID trackingHubid;
-		private ProviderProcessingNode(UUID hubid) {
-			this.trackingHubid = hubid;
-			this.myex = executors.get(hubid);
-		}
-		
+			
 		@Override
 		protected Logger getLogger() {
 			return logger;
@@ -128,18 +122,6 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			return this.getConsumeTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 		}
 		
-
-		@Override
-		protected String getGroupid() {
-			return providerGroup + trackingHubid;
-		}
-
-
-		private Executor myex;
-		@Override
-		protected Executor getExecutorService() {
-			return myex;
-		}
 	}
 	
 	@Inject
@@ -187,8 +169,8 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 	}
 	
 	
-	private void buildTrackingProviderHubProcessor(final UUID hubid) {
-		ProviderProcessingNode<hms.dto.HubProviderTracking, Boolean>t = new ProviderProcessingNode<hms.dto.HubProviderTracking, Boolean>(hubid) {			
+	private void buildTrackingProviderHubProcessor(final UUID trackingHubid) {
+		ProviderProcessingNode<hms.dto.HubProviderTracking, Boolean>t = new ProviderProcessingNode<hms.dto.HubProviderTracking, Boolean>() {			
 			private final VPTree<LatLongLocation, InMemProviderTracking> providerTrackingVPTree = providerTrackingVPTrees.get(trackingHubid);
 			private final LinkedHashMap<UUID, InMemProviderTracking> myproviders = myHubProviders.get(trackingHubid);
 
@@ -240,19 +222,30 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaProviderMeta.InMemTrackingMessage + hubid.toString();
+				return KafkaProviderMeta.InMemTrackingMessage + trackingHubid.toString();
 			}		
+			
+			@Override
+			protected String getGroupid() {
+				return providerGroup + trackingHubid.toString();
+			}
 			
 			@Override
 			protected String getForwardTopic() {				
 				return KafkaProviderMeta.InMemTrackingMessage + KafkaHMSMeta.ReturnTopicSuffix;
 			}	
+			
+			private Executor myex = executors.get(trackingHubid);
+			@Override
+			protected Executor getExecutorService() {
+				return myex;
+			}			
 		};
 		this.trackingProviderHubProcessors.add(t);
 	}	
 	
-	private void buildQueryProvidersHubProcessor(final UUID hubid){
-		ProviderProcessingNode<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>> q=new ProviderProcessingNode<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>>(hubid) {
+	private void buildQueryProvidersHubProcessor(final UUID trackingHubid){
+		ProviderProcessingNode<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>> q = new ProviderProcessingNode<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>>() {
 			private final VPTree<LatLongLocation, InMemProviderTracking> providerTrackingVPTree = providerTrackingVPTrees.get(trackingHubid);
 			
 			@Override
@@ -278,18 +271,24 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaProviderMeta.InMemQueryProvidersMessage+hubid.toString();
+				return KafkaProviderMeta.InMemQueryProvidersMessage+trackingHubid.toString();
 			}		
 			
 			@Override
 			protected String getForwardTopic() {				
 				return KafkaProviderMeta.InMemQueryProvidersMessage + KafkaHMSMeta.ReturnTopicSuffix;
 			}	
-			
+						
 			@Override
 			protected String getGroupid() {
-				return providerGroup + trackingHubid;
-			}			
+				return providerGroup + trackingHubid.toString();
+			}
+			
+			private Executor myex = executors.get(trackingHubid);
+			@Override
+			protected Executor getExecutorService() {
+				return myex;
+			}
 		};	
 		
 		this.queryProvidersHubProcessors.add(q);
