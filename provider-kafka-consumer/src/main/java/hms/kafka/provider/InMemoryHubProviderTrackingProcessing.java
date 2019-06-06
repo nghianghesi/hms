@@ -240,7 +240,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaProviderMeta.InMemTrackingMessage + trackingHubid.toString();
+				return KafkaProviderMeta.InMemTrackingMessage + hubid.toString();
 			}		
 			
 			@Override
@@ -278,7 +278,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaProviderMeta.InMemQueryProvidersMessage+trackingHubid.toString();
+				return KafkaProviderMeta.InMemQueryProvidersMessage+hubid.toString();
 			}		
 			
 			@Override
