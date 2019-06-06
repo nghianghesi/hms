@@ -115,6 +115,8 @@ public class Client {
 					if(delay<0) {
 						logger.info("******************* longer than interval *********");
 						countLongerThanInterval+=1;
+					}else {
+						Thread.sleep(delay);
 					}
 				}
 		};	
