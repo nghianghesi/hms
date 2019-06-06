@@ -121,7 +121,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	
 	private void processSingleRecord(ConsumerRecord<UUID, byte[]> record) {
 		try {
-			this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
+			//this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
 			HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
 			TRep res = this.processRequest(request);
 			if(this.getForwardTopic()!=null) {
