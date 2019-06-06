@@ -153,7 +153,8 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 				if(records.count()>0) {
 					this.pendingPolls+=records.count();
 					queueAction(()->{
-			            for (TopicPartition partition : records.partitions()) {
+			            for (TopicPartition part : records.partitions()) {
+			            	final TopicPartition partition = part;
 			                List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
 			                if(partitionRecords.size()>0) {
 								for (ConsumerRecord<UUID, byte[]> record : partitionRecords) {
@@ -171,12 +172,10 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 				}
 				
 				if(System.currentTimeMillis() - this.previousClean > 1000) {
+					this.previousClean = System.currentTimeMillis();
 					queueAction(()->{
-						if(System.currentTimeMillis() - this.previousClean > 1000) {
-							this.intervalCleanup();
-							this.previousClean = System.currentTimeMillis();
-						}
-					});										
+						this.intervalCleanup();
+					});
 				}	
 			}else {
 				try {

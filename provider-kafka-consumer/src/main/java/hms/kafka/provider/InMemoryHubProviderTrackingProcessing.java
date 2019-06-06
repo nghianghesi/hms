@@ -196,23 +196,26 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 				}
 			}
 			
+			private long prevCleanup = System.currentTimeMillis();
 			@Override
 			protected void intervalCleanup() {
-				long stick = java.lang.System.currentTimeMillis();
-				
-				InMemProviderTracking candidate;
-				do {
-					candidate = myproviders.isEmpty() ? null : myproviders.entrySet().iterator().next().getValue();
-					if(candidate!=null && candidate.getCurrentMostRecentExpiration() < stick) {
-						candidate.expireMostRecent();
-						if(!candidate.isAlive()) {
-							providerTrackingVPTree.remove(candidate);
-							myproviders.remove(candidate.getProviderId());
+				if(System.currentTimeMillis() - prevCleanup > 2000) {
+					prevCleanup = java.lang.System.currentTimeMillis();
+					
+					InMemProviderTracking candidate;
+					do {
+						candidate = myproviders.isEmpty() ? null : myproviders.entrySet().iterator().next().getValue();
+						if(candidate!=null && candidate.getCurrentMostRecentExpiration() < prevCleanup) {
+							candidate.expireMostRecent();
+							if(!candidate.isAlive()) {
+								providerTrackingVPTree.remove(candidate);
+								myproviders.remove(candidate.getProviderId());
+							}
+						}else {
+							break;
 						}
-					}else {
-						break;
-					}
-				}while(candidate != null);
+					}while(candidate != null);
+				}
 			}
 			
 			@Override
