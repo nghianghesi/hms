@@ -15,7 +15,6 @@ public abstract class MonoStreamRoot<TStart, TRes>
 	
 	@Override
 	protected ArrayList<? extends LinkedHashMap<UUID, ? extends StreamResponse<? extends TRes>>> getAllWaiters() {
-		// TODO Auto-generated method stub
 		return this._waiters;
 	}
 	

@@ -25,11 +25,13 @@ public abstract class SplitStreamRoot<TItemStart, TItemRes>
 				//this.getLogger().info("Start stream {} {}", startTopic, request.getRequestId());
 				this.producer.send(record, (meta, ex) -> {
 					if(ex!=null) {
-						this.getLogger().error("Request error {}", ex.getMessage());
+						this.getLogger().error("********** Request error {}", ex.getMessage());
 						this.handleRequestError(id, "Request error:");
 					}
 				});
 			} catch (IOException e) {
+
+				this.getLogger().error("********** Request error {}", e.getMessage());				
 				this.handleRequestError(id, "Request error");
 			}
 		}

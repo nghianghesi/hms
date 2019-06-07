@@ -177,6 +177,8 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 			                });							
 						}
 					});
+				}else {
+					this.getLogger().info("Long pending {}",this.pendingPolls);
 				}
 				
 				if(System.currentTimeMillis() - this.previousClean > 1000) {
