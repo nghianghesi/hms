@@ -26,6 +26,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.internals.Topic;
 import org.slf4j.Logger;
 
 public abstract class KafkaStreamNodeBase<TCon, TRep>{
@@ -133,32 +134,34 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 			this.getLogger().error("Consumer error {} {}", this.getConsumeTopic(), e.getMessage());
 		}
 	}
-	
+
+	private CompletableFuture<Void> previousTasks = CompletableFuture.runAsync(()->{}); // init an done task
 	private void queueAction(Runnable action) {
 		previousTasks= previousTasks.thenRunAsync(action, this.getExecutorService());
 	}
 
+	private CompletableFuture<Void> previousPolling = CompletableFuture.runAsync(()->{}); // init an done task
 	private void queueConsummerAction(Runnable action) {
-		CompletableFuture.runAsync(action, this.getPollingService());
+		previousPolling=previousPolling.thenRunAsync(action, this.getPollingService());
 	}
 	
-	private CompletableFuture<Void> previousTasks = CompletableFuture.runAsync(()->{}); // init an done task
-	private Map<TopicPartition, Long> peekOffsets = new HashMap<>();
+	private Map<Integer, Long> peekOffsets = new HashMap<>();
 	private Runnable pollRequestsFromConsummer = ()->{
 		if(!shutdownNode) {
 			if(this.pendingPolls<200) {
-				
-				for(Map.Entry<TopicPartition, Long> peek:peekOffsets.entrySet()) {
-					this.consumer.seek(peek.getKey(), peek.getValue());
-				}
-				
+				for(Map.Entry<Integer, Long> peek:peekOffsets.entrySet()) {
+					TopicPartition part = new TopicPartition(this.getConsumeTopic(), peek.getKey());
+					this.consumer.seek(part, peek.getValue());
+				}				
 				final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(5));
+				
+				
 				if(records.count()>0) {
 					this.pendingPolls += records.count();
 					for (TopicPartition part : records.partitions()) {
 						List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(part);
 						long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset() + 1;
-						peekOffsets.put(part,lastOffset);
+						peekOffsets.put(part.partition(),lastOffset);
 					}
 					queueAction(()->{
 						if(!this.shutdownNode) {
