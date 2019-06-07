@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -147,9 +149,17 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	private CompletableFuture<Void> previousTasks = CompletableFuture.runAsync(()->{}); // init an done task
 	private Runnable pollRequestsFromConsummer = ()->{
 		if(!shutdownNode) {
-			if(this.pendingPolls<500) {
+			if(this.pendingPolls<1000) {
 				final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(5));
 				if(records.count()>0) {
+					Map<UUID,Boolean> verify = new HashMap<UUID,Boolean>();
+					for(ConsumerRecord<UUID, byte[]> vr:records) {
+						if(verify.containsKey(vr.key())) {
+							KafkaStreamNodeBase.this.getLogger().info("******** duplicate message");
+						}else {
+							verify.put(vr.key(), true);
+						}
+					}
 					this.pendingPolls += records.count();
 					queueAction(()->{
 			            for (TopicPartition part : records.partitions()) {
