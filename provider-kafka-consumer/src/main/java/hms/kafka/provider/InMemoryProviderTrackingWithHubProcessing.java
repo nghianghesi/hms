@@ -130,6 +130,11 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 		@Override
 		protected Executor getExecutorService() {
 			return ex;
+		}		
+		
+		@Override
+		protected Executor getPollingService() {
+			return ex;
 		}
 	}
 	

@@ -62,6 +62,11 @@ public class KafkaProviderProcessing implements Closeable {
 		@Override
 		protected Executor getExecutorService() {
 			return ec.getExecutor();
+		}		
+		
+		@Override
+		protected Executor getPollingService() {
+			return ec.getExecutor();
 		}
 	}
 	

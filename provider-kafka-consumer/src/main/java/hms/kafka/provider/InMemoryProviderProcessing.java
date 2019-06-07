@@ -52,6 +52,11 @@ public class InMemoryProviderProcessing implements Closeable{
 		protected Executor getExecutorService() {
 			return ec.getExecutor();
 		}
+		
+		@Override
+		protected Executor getPollingService() {
+			return ec.getExecutor();
+		}
 	}	
 	
 	KafkaStreamNodeBase<hms.dto.ProviderTracking, Coordinate>  trackingProviderProcessor;	
