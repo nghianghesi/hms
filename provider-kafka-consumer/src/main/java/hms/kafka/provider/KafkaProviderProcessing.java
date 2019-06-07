@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 
@@ -36,6 +37,7 @@ public class KafkaProviderProcessing implements Closeable {
 
 	private String kafkaserver;
 	private String providerGroup;
+	private Executor pollingEx = Executors.newFixedThreadPool(1);
 	
 	private abstract class ProviderProcessingNode<TCon,TRep> extends KafkaStreamNodeBase<TCon,TRep>{
 		
@@ -66,7 +68,7 @@ public class KafkaProviderProcessing implements Closeable {
 		
 		@Override
 		protected Executor getPollingService() {
-			return ec.getExecutor();
+			return pollingEx;
 		}
 	}
 	

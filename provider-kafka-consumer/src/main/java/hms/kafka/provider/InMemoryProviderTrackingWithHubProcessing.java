@@ -53,7 +53,7 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	
 	
 	private ExecutorService ex = Executors.newFixedThreadPool(1);
-	
+	private Executor pollingEx = Executors.newFixedThreadPool(1);
 	private class InMemProviderTracking implements LatLongLocation {
 		private  double latitude;
 		private  double longitude;
@@ -134,7 +134,7 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 		
 		@Override
 		protected Executor getPollingService() {
-			return ex;
+			return pollingEx;
 		}
 	}
 	
