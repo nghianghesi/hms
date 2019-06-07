@@ -152,12 +152,12 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 			if(this.pendingPolls<1000) {
 				final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(5));
 				if(records.count()>0) {
-					Map<UUID,Boolean> verify = new HashMap<UUID,Boolean>();
+					Map<String,Boolean> verify = new HashMap<String,Boolean>();
 					for(ConsumerRecord<UUID, byte[]> vr:records) {
-						if(verify.containsKey(vr.key())) {
+						if(verify.containsKey(vr.key().toString())) {
 							KafkaStreamNodeBase.this.getLogger().info("******** duplicate message");
 						}else {
-							verify.put(vr.key(), true);
+							verify.put(vr.key().toString(), true);
 						}
 					}
 					this.pendingPolls += records.count();
