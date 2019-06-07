@@ -157,7 +157,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 					this.pendingPolls += records.count();
 					for (TopicPartition part : records.partitions()) {
 						List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(part);
-						long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+						long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset() + 1;
 						peekOffsets.put(part,lastOffset);
 					}
 					queueAction(()->{
