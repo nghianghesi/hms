@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -141,12 +143,23 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	}
 	
 	private CompletableFuture<Void> previousTasks = CompletableFuture.runAsync(()->{}); // init an done task
+	private Map<TopicPartition, Long> peekOffsets = new HashMap<>();
 	private Runnable pollRequestsFromConsummer = ()->{
 		if(!shutdownNode) {
 			if(this.pendingPolls<200) {
+				
+				for(Map.Entry<TopicPartition, Long> peek:peekOffsets.entrySet()) {
+					this.consumer.seek(peek.getKey(), peek.getValue());
+				}
+				
 				final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(5));
 				if(records.count()>0) {
 					this.pendingPolls += records.count();
+					for (TopicPartition part : records.partitions()) {
+						List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(part);
+						long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+						peekOffsets.put(part,lastOffset);
+					}
 					queueAction(()->{
 						if(!this.shutdownNode) {
 				            for (TopicPartition part : records.partitions()) {
