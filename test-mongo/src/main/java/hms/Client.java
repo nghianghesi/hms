@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DB;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
@@ -54,7 +53,7 @@ public class Client {
         datastore = morphia.createDatastore( mongodb, DATABASE_NAME );
         
     }
-	public static void main(String[] args) {
+	public static void mainmongo(String[] args) {
 		initializeMongoAndMorphia();
 
 		double longitude =-118.01358499633821;
@@ -102,6 +101,19 @@ public class Client {
 			idx++;			
 			map.remove(t);
 		}
+	}
+	
+	public static void main(String[] args) {
+		Object lock = new Object();
+		long count=0;
+		long start = System.currentTimeMillis();
+		for(int i=0;i<1000000;i++) {
+			synchronized(lock) {
+				count+=1;
+			}
+		}
+		
+		System.out.println(System.currentTimeMillis() - start);
 	}
 }
 
