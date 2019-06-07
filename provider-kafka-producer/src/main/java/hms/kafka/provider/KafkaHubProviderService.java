@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
@@ -37,6 +38,8 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	
 
 	IHMSExecutorContext ec;
+	private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
+	
 	private static String applyHubIdTemplateToRepForTopic(String topic, Object value) {
 		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
 	}
@@ -79,7 +82,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				
 				@Override
 				protected Executor getPollingService() {
-					return ec.getExecutor();
+					return pollingEx;
 				}	
 
 				@Override
@@ -133,7 +136,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				
 				@Override
 				protected Executor getPollingService() {
-					return ec.getExecutor();
+					return pollingEx;
 				}	
 				
 				@Override
