@@ -29,6 +29,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.record.Records;
 import org.slf4j.Logger;
 
 public abstract class KafkaStreamNodeBase<TCon, TRep>{
@@ -152,31 +153,29 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 			if(this.pendingPolls<1000) {
 				final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(5));
 				if(records.count()>0) {
-					Map<String,Boolean> verify = new HashMap<String,Boolean>();
-					for(ConsumerRecord<UUID, byte[]> vr:records) {
-						if(verify.containsKey(vr.key().toString())) {
-							KafkaStreamNodeBase.this.getLogger().info("******** duplicate message");
-						}else {
-							verify.put(vr.key().toString(), true);
-						}
-					}
 					this.pendingPolls += records.count();
 					queueAction(()->{
-			            for (TopicPartition part : records.partitions()) {
-			            	final TopicPartition partition = part;
-			                List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
-			                if(partitionRecords.size()>0) {
-								for (ConsumerRecord<UUID, byte[]> record : partitionRecords) {
-									this.processSingleRecord(record);
-								}
-								final long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
-				                
-				                queueConsummerAction(()->{
-					                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)));
-									this.pendingPolls-=partitionRecords.size();
-				                });
-			                }
-			            }
+						if(!this.shutdownNode) {
+				            for (TopicPartition part : records.partitions()) {
+				            	final TopicPartition partition = part;
+				                List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
+				                if(partitionRecords.size()>0) {
+									for (ConsumerRecord<UUID, byte[]> record : partitionRecords) {
+										this.processSingleRecord(record);
+									}
+									final long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+					                
+					                queueConsummerAction(()->{
+						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)));
+										this.pendingPolls-=partitionRecords.size();
+					                });
+				                }
+				            }
+						}else {
+			                queueConsummerAction(()->{
+								this.pendingPolls-= records.count();
+			                });							
+						}
 					});
 				}
 				
@@ -287,13 +286,6 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 		
 		queueConsummerAction(()->{;
 			this.consumer.close();	
-		});		
-		this.consumerEx.shutdown();
-		try {
-			this.consumerEx.awaitTermination(10, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		});	
 	}
 }
