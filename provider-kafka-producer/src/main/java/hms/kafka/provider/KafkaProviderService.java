@@ -31,7 +31,6 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 	
 	
 	IHMSExecutorContext ec;
-	private Executor pollingEx = Executors.newFixedThreadPool(1);
 	private abstract class ProviderStreamRoot<TStart,TRes> extends MonoStreamRoot<TStart,TRes>{
 		@Override
 		protected Logger getLogger() {
@@ -60,7 +59,7 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 		
 		@Override
 		protected Executor getPollingService() {
-			return pollingEx;
+			return ec.getExecutor();
 		}			
 	}
 	
