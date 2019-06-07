@@ -53,6 +53,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 	        		new HashMap<UUID,LinkedHashMap<UUID, InMemProviderTracking>>();
 	
 	private Map<UUID,ExecutorService> executors = new HashMap<>(); 
+	private Executor pollingEx = Executors.newFixedThreadPool(1);
 	
 	private class InMemProviderTracking implements LatLongLocation {
 		private  double latitude;
@@ -243,6 +244,11 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			protected Executor getExecutorService() {
 				return myex;
 			}			
+			
+			@Override
+			protected Executor getPollingService() {
+				return pollingEx;
+			}
 		};
 		this.trackingProviderHubProcessors.add(t);
 	}	
@@ -292,6 +298,11 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			protected Executor getExecutorService() {
 				return myex;
 			}
+			
+			@Override
+			protected Executor getPollingService() {
+				return pollingEx;
+			}			
 		};	
 		
 		this.queryProvidersHubProcessors.add(q);

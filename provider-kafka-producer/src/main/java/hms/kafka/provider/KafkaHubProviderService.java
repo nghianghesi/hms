@@ -74,7 +74,12 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				@Override
 				protected Executor getExecutorService() {
 					return ec.getExecutor();
-				}		
+				}						
+				
+				@Override
+				protected Executor getPollingService() {
+					return ec.getExecutor();
+				}	
 
 				@Override
 				protected String applyTemplateToRepForTopic(String topic, Object value) {
@@ -124,7 +129,12 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				protected Executor getExecutorService() {
 					return ec.getExecutor();
 				}		
-
+				
+				@Override
+				protected Executor getPollingService() {
+					return ec.getExecutor();
+				}	
+				
 				@Override
 				protected String applyTemplateToRepForTopic(String topic, Object value) {
 					return applyHubIdTemplateToRepForTopic(topic, ((hms.dto.HubProviderGeoQuery)value).getHubid());

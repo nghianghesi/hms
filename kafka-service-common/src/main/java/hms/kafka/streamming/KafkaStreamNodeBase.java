@@ -4,17 +4,12 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -29,7 +24,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.record.Records;
 import org.slf4j.Logger;
 
 public abstract class KafkaStreamNodeBase<TCon, TRep>{
@@ -56,9 +50,8 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	protected abstract String getGroupid();
 	protected abstract String getServer();	
 	protected abstract Executor getExecutorService();
-	
-	private ExecutorService consumerEx = Executors.newFixedThreadPool(1);
-	
+	protected abstract Executor getPollingService();
+		
 	protected KafkaStreamNodeBase() {
 		this.ensureTopics();
 		this.createProducer();
@@ -144,7 +137,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	}
 
 	private void queueConsummerAction(Runnable action) {
-		CompletableFuture.runAsync(action, this.consumerEx);
+		CompletableFuture.runAsync(action, this.getPollingService());
 	}
 	
 	private CompletableFuture<Void> previousTasks = CompletableFuture.runAsync(()->{}); // init an done task
