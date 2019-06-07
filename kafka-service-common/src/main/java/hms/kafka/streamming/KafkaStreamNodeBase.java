@@ -143,7 +143,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	private CompletableFuture<Void> previousTasks = CompletableFuture.runAsync(()->{}); // init an done task
 	private Runnable pollRequestsFromConsummer = ()->{
 		if(!shutdownNode) {
-			if(this.pendingPolls<1000) {
+			if(this.pendingPolls<200) {
 				final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(5));
 				if(records.count()>0) {
 					this.pendingPolls += records.count();
@@ -170,8 +170,6 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 			                });							
 						}
 					});
-				}else {
-					this.getLogger().info("Long pending {}",this.pendingPolls);
 				}
 				
 				if(System.currentTimeMillis() - this.previousClean > 1000) {
@@ -181,11 +179,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 					});
 				}	
 			}else {
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					this.getLogger().info("Consumer thread interupted");
-				}
+				this.getLogger().info("Long pending {}",this.pendingPolls);
 			}
 			
 			queueConsummerAction(this.pollRequestsFromConsummer);
