@@ -252,6 +252,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			}
 		};
 		this.trackingProviderHubProcessors.add(t);
+		t.run();
 	}	
 	
 	private void buildQueryProvidersHubProcessor(final UUID trackingHubid){
@@ -310,6 +311,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 		};	
 		
 		this.queryProvidersHubProcessors.add(q);
+		q.run();
 	}
 
 	@Override

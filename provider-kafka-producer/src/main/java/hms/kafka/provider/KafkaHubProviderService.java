@@ -160,6 +160,8 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				}
 			};
 			
+			trackingProviderStream.run();
+			queryProvidersStream.run();
 		}else {
 			logger.error("Missing {} {} configuration", KafkaHMSMeta.ServerConfigKey, KafkaHMSMeta.RootIdConfigKey);
 			throw new Error(String.format("Missing {} {} configuration", 

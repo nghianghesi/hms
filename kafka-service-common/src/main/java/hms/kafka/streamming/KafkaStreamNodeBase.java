@@ -26,7 +26,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.internals.Topic;
 import org.slf4j.Logger;
 
 public abstract class KafkaStreamNodeBase<TCon, TRep>{
@@ -135,12 +134,12 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 		}
 	}
 
-	private CompletableFuture<Void> previousTasks = CompletableFuture.runAsync(()->{}); // init an done task
+	private CompletableFuture<Void> previousTasks; // init an done task
 	private void queueAction(Runnable action) {
 		previousTasks= previousTasks.thenRunAsync(action, this.getExecutorService());
 	}
 
-	private CompletableFuture<Void> previousPolling = CompletableFuture.runAsync(()->{}); // init an done task
+	private CompletableFuture<Void> previousPolling; // init an done task
 	private void queueConsummerAction(Runnable action) {
 		previousPolling=previousPolling.thenRunAsync(action, this.getPollingService());
 	}
@@ -218,11 +217,15 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 		this.configConsummer(consumerProps);
 		this.consumer = new KafkaConsumer<>(consumerProps);
 		this.consumer.subscribe(Collections.singletonList(this.getConsumeTopic()));	
-		
+			
+		this.getLogger().info("Consumer {} ready", this.getConsumeTopic());						 
+	}
+	
+	public void run() {
+		previousTasks = CompletableFuture.runAsync(()->{}, this.getExecutorService());
+		previousPolling = CompletableFuture.runAsync(()->{}, this.getPollingService());		
 		this.previousClean = System.currentTimeMillis();
 		queueConsummerAction(this.pollRequestsFromConsummer);
-		
-		this.getLogger().info("Consumer {} ready", this.getConsumeTopic());						 
 	}
 
 	protected void reply(HMSMessage<TCon> request, TRep value) {

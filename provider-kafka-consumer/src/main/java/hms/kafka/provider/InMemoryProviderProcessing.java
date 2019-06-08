@@ -80,6 +80,9 @@ public class InMemoryProviderProcessing implements Closeable{
 				
 		this.buildTrackingProviderProcessor();
 		this.buildQueryProvidersProcessor();
+		
+		this.trackingProviderProcessor.run();
+		this.queryProvidersProcessor.run();
 	}
 	
 

@@ -165,6 +165,9 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 		
 		this.buildTrackingProviderHubProcessor();
 		this.buildQueryProvidersHubProcessor();
+		this.trackingProviderHubProcessor.run();
+		this.queryProvidersHubProcessor.run();
+		
 		logger.info("Provider processing is ready");
 	}
 	
