@@ -15,4 +15,5 @@ public class KafkaProviderMeta {
 	
 	public static final String ProviderGroupConfigKey = "kafka.provider.group";
 	public static final String ProviderInmemHubIdConfigKey = "kafka.provider.inmem-hubid";
+	public static final String NumOfPollingThreads = "kafka.num-of-polling-threads";
 }

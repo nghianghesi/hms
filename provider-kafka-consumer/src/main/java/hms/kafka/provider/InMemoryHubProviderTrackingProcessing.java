@@ -53,7 +53,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 	        		new HashMap<UUID,LinkedHashMap<UUID, InMemProviderTracking>>();
 	
 	private Map<UUID,ExecutorService> executors = new HashMap<>(); 
-	private Executor pollingEx = Executors.newFixedThreadPool(1);
+	private Executor pollingEx = null;//Executors.newFixedThreadPool(1);
 	
 	private class InMemProviderTracking implements LatLongLocation {
 		private  double latitude;
@@ -151,7 +151,12 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			logger.error("Missing {} configuration", KafkaProviderMeta.ProviderInmemHubIdConfigKey);
 			throw new Error(String.format("Missing {} configuration", KafkaProviderMeta.ProviderInmemHubIdConfigKey));
 		}
-
+		
+		if(config.hasPath(KafkaProviderMeta.NumOfPollingThreads)) {
+			this.pollingEx = Executors.newFixedThreadPool(1);
+		}else {
+			this.pollingEx = Executors.newFixedThreadPool(config.getInt(KafkaProviderMeta.NumOfPollingThreads));
+		}
 
 		for(UUID hubid: this.hubids) {
 			this.myHubProviders.put(hubid, 
