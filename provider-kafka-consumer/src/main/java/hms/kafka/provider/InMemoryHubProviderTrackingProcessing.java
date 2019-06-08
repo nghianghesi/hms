@@ -53,7 +53,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 	        		new HashMap<UUID,LinkedHashMap<UUID, InMemProviderTracking>>();
 	
 	private Map<UUID,ExecutorService> executors = new HashMap<>(); 
-	private Executor pollingEx = null;//Executors.newFixedThreadPool(1);
+	private Map<UUID,ExecutorService> pollingExs = new HashMap<>();//Executors.newFixedThreadPool(1);
 	
 	private class InMemProviderTracking implements LatLongLocation {
 		private  double latitude;
@@ -152,18 +152,13 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			throw new Error(String.format("Missing {} configuration", KafkaProviderMeta.ProviderInmemHubIdConfigKey));
 		}
 		
-		if(!config.hasPath(KafkaProviderMeta.NumOfPollingThreads)) {
-			this.pollingEx = Executors.newFixedThreadPool(1);
-		}else {
-			this.pollingEx = Executors.newFixedThreadPool(config.getInt(KafkaProviderMeta.NumOfPollingThreads));
-		}
-
 		for(UUID hubid: this.hubids) {
 			this.myHubProviders.put(hubid, 
 					new LinkedHashMap<UUID, InMemoryHubProviderTrackingProcessing.InMemProviderTracking>());
 			this.providerTrackingVPTrees.put(hubid, 
 					new VPTree<LatLongLocation, InMemoryHubProviderTrackingProcessing.InMemProviderTracking>(distanceFunction));
 			this.executors.put(hubid, Executors.newFixedThreadPool(1));
+			this.pollingExs.put(hubid, Executors.newFixedThreadPool(1));
 			this.buildTrackingProviderHubProcessor(hubid);
 			this.buildQueryProvidersHubProcessor(hubid);
 		}
@@ -245,6 +240,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			}	
 			
 			private Executor myex = executors.get(trackingHubid);
+			private Executor myPollEx = pollingExs.get(trackingHubid);
 			@Override
 			protected Executor getExecutorService() {
 				return myex;
@@ -252,7 +248,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			
 			@Override
 			protected Executor getPollingService() {
-				return pollingEx;
+				return myPollEx;
 			}
 		};
 		this.trackingProviderHubProcessors.add(t);
@@ -298,16 +294,19 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 				return providerGroup + trackingHubid.toString();
 			}
 			
+
+			
 			private Executor myex = executors.get(trackingHubid);
+			private Executor myPollEx = pollingExs.get(trackingHubid);
 			@Override
 			protected Executor getExecutorService() {
 				return myex;
-			}
+			}			
 			
 			@Override
 			protected Executor getPollingService() {
-				return pollingEx;
-			}			
+				return myPollEx;
+			}		
 		};	
 		
 		this.queryProvidersHubProcessors.add(q);
