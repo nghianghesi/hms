@@ -152,7 +152,7 @@ public class InMemoryHubProviderTrackingProcessing implements Closeable{
 			throw new Error(String.format("Missing {} configuration", KafkaProviderMeta.ProviderInmemHubIdConfigKey));
 		}
 		
-		if(config.hasPath(KafkaProviderMeta.NumOfPollingThreads)) {
+		if(!config.hasPath(KafkaProviderMeta.NumOfPollingThreads)) {
 			this.pollingEx = Executors.newFixedThreadPool(1);
 		}else {
 			this.pollingEx = Executors.newFixedThreadPool(config.getInt(KafkaProviderMeta.NumOfPollingThreads));
