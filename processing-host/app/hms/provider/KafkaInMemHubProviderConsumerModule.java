@@ -5,14 +5,14 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.typesafe.config.Config;
 
-import hms.kafka.provider.InMemoryHubProviderTrackingProcessing;
+import hms.kafka.provider.InMemoryProviderProcessing;
 import hms.provider.repositories.IProviderRepository;
 import hms.provider.repositories.ProviderRepository;
 import play.inject.ApplicationLifecycle;
 
 public class KafkaInMemHubProviderConsumerModule extends AbstractModule{
 	public static class InMemoryProviderTrackingWithHubProcessingProvider 
-		extends hms.commons.KafkaProcessingProvider<InMemoryHubProviderTrackingProcessing> {
+		extends hms.commons.KafkaProcessingProvider<InMemoryProviderProcessing> {
 
 		@Inject
 		public InMemoryProviderTrackingWithHubProcessingProvider(ApplicationLifecycle app, Injector injector) {
@@ -20,8 +20,8 @@ public class KafkaInMemHubProviderConsumerModule extends AbstractModule{
 		}
 
 		@Override
-		protected InMemoryHubProviderTrackingProcessing internalGet() {
-			return new InMemoryHubProviderTrackingProcessing(
+		protected InMemoryProviderProcessing internalGet() {
+			return new InMemoryProviderProcessing(
 					this.injector.getInstance(Config.class),
 					this.injector.getInstance(IProviderRepository.class));
 		}
@@ -30,7 +30,7 @@ public class KafkaInMemHubProviderConsumerModule extends AbstractModule{
 	@Override
 	protected void configure() {		
 		bind(IProviderRepository.class).to(ProviderRepository.class);
-        bind(InMemoryHubProviderTrackingProcessing.class)
+        bind(InMemoryProviderProcessing.class)
         	.toProvider(InMemoryProviderTrackingWithHubProcessingProvider.class)
         	.asEagerSingleton();        
 	}
