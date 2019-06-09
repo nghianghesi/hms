@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaHubProviderService.class);
 
-	private KafkaProviderSettings topicSettings;
+	private KafkaProviderTopics topicSettings;
 	private IHubService hubservice;
 	MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>  trackingProviderStream;
 	SplitStreamRoot<hms.dto.HubProviderGeoQuery, hms.dto.Provider>  queryProvidersStream;
@@ -45,7 +45,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	}
 	
 	@Inject
-	public KafkaHubProviderService(Config config,IHMSExecutorContext ec, KafkaProviderSettings settings, IHubService hubservice) {	
+	public KafkaHubProviderService(Config config,IHMSExecutorContext ec, KafkaProviderTopics settings, IHubService hubservice) {	
 		this.topicSettings = settings;
 		this.ec = ec;
 		this.hubservice = hubservice;

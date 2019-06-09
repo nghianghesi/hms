@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 import com.typesafe.config.Config;
@@ -23,13 +25,14 @@ import org.slf4j.LoggerFactory;
 public class KafkaProviderService implements IAsynProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderService.class);
 
-	private KafkaProviderSettings topicSettings;
+	private KafkaProviderTopics topicSettings;
 	MonoStreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
 	MonoStreamRoot<hms.dto.GeoQuery, List<hms.dto.Provider>>  queryProvidersStream;
 	String server, rootid;	
 	
 	
 	IHMSExecutorContext ec;
+	private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
 	private abstract class ProviderStreamRoot<TStart,TRes> extends MonoStreamRoot<TStart,TRes>{
 		@Override
 		protected Logger getLogger() {
@@ -58,12 +61,12 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 		
 		@Override
 		protected Executor getPollingService() {
-			return ec.getExecutor();
+			return pollingEx;
 		}			
 	}
 	
 	@Inject
-	public KafkaProviderService(Config config,IHMSExecutorContext ec, KafkaProviderSettings settings) {	
+	public KafkaProviderService(Config config,IHMSExecutorContext ec, KafkaProviderTopics settings) {	
 		this.topicSettings = settings;
 		this.ec = ec;
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)

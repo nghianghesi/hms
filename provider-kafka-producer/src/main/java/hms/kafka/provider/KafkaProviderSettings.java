@@ -1,15 +1,18 @@
 package hms.kafka.provider;
 
-import com.google.inject.Inject;
 
 import hms.provider.KafkaProviderMeta;
 
-public class KafkaProviderSettings {	
-	@Inject()
-	public KafkaProviderSettings() {}
+public class KafkaProviderSettings implements KafkaProviderTopics {	
+
+	@Override
 	public String getTrackingTopic() {
 		return KafkaProviderMeta.TrackingMessage;
 	}
+	/* (non-Javadoc)
+	 * @see hms.kafka.provider.KafkaProviderTopics#getQueryTopic()
+	 */
+	@Override
 	public String getQueryTopic() {
 		return KafkaProviderMeta.QueryProvidersMessage;
 	}
