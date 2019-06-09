@@ -195,6 +195,10 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 				}	
 			}else {
 				this.getLogger().info("Long pending {}",this.pendingPolls);
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {					
+				}
 			}
 			
 			queueConsummerAction(this.pollRequestsFromConsummer);
