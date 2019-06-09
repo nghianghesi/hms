@@ -99,26 +99,30 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 		return waiter.getWaiterTask();
 	}	
 	
+	private long previousClean = System.currentTimeMillis();
 	@Override
 	protected void intervalCleanup() { // clean up timeout.
 		super.intervalCleanup();
-		for(int keyrange=0;keyrange<KEY_RANGE;keyrange++) {
-			synchronized (this.getWaiters(keyrange)) {
-				do{	
-					Map.Entry<UUID, ? extends StreamResponse<? extends TRes>> w = null;
-					if(!this.getWaiters(keyrange).isEmpty()) {
-						w = this.getWaiters(keyrange).entrySet().iterator().next();
-						if(w!=null && w.getValue().isTimeout()) {
-							this.getWaiters(keyrange).remove(w.getKey());	
-							this.getLogger().info("************ time out ***********");
-							w.getValue().setError("Time out");
+		if(System.currentTimeMillis()-previousClean > 50000) {
+			previousClean = System.currentTimeMillis();
+			for(int keyrange=0;keyrange<KEY_RANGE;keyrange++) {
+				synchronized (this.getWaiters(keyrange)) {
+					do{	
+						Map.Entry<UUID, ? extends StreamResponse<? extends TRes>> w = null;
+						if(!this.getWaiters(keyrange).isEmpty()) {
+							w = this.getWaiters(keyrange).entrySet().iterator().next();
+							if(w!=null && w.getValue().isTimeout()) {
+								this.getWaiters(keyrange).remove(w.getKey());	
+								this.getLogger().info("************ time out ***********");
+								w.getValue().setError("Time out");
+							}else {
+								break;
+							}
 						}else {
 							break;
 						}
-					}else {
-						break;
-					}
-				}while(true);
+					}while(true);
+				}
 			}
 		}
 	}
