@@ -79,6 +79,11 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 				protected String getStartTopic() {
 					return topicSettings.getTrackingTopic();
 				}
+				
+				@Override
+				protected String getConsumeTopic() {
+					return rootid+super.getConsumeTopic();
+				}	
 
 				@Override
 				protected Class<Boolean> getTConsumeManifest() {
@@ -93,6 +98,11 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 				protected String getStartTopic() {
 					return topicSettings.getQueryTopic();
 				}
+				
+				@Override
+				protected String getConsumeTopic() {
+					return rootid+super.getConsumeTopic();
+				}					
 
 				@Override
 				protected Class<? extends List<hms.dto.Provider>> getTConsumeManifest() {

@@ -117,18 +117,22 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 		return topic;
 	}	
 	
+	protected void processForwardReply(HMSMessage<TCon> request, TRep res) {
+		if(this.getForwardTopic()!=null) {
+			if(this.getForwardBackTopic() == null) {
+				this.reply(request, res);
+			}else {
+				this.forward(request, res);
+			}
+		}		
+	}
+	
 	private void processSingleRecord(ConsumerRecord<UUID, byte[]> record) {
 		try {
 			//this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
 			HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
 			TRep res = this.processRequest(request);
-			if(this.getForwardTopic()!=null) {
-				if(this.getForwardBackTopic() == null) {
-					this.reply(request, res);
-				}else {
-					this.forward(request, res);
-				}
-			}
+			this.processForwardReply(request, res);
 		} catch (Exception e) {
 			this.getLogger().error("Consumer error {} {}", this.getConsumeTopic(), e.getMessage());
 		}
