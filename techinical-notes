@@ -36,3 +36,5 @@ switch to use NettyServer to handler more concurrent requests (update build.sbt 
 
 optimize Kafka throughtput by asyn sending/receiving messages & LINGER_MS_CONFIG
 separate thread for polling
+
+nginx/gobetween as load balancer proxy
