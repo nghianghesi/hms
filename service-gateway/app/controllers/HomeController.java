@@ -1,9 +1,12 @@
 package controllers;
 
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.typesafe.config.Config;
 
 import play.mvc.*;
 
@@ -20,6 +23,12 @@ public class HomeController extends Controller {
      * this method will be called when the application receives a
      * <code>GET</code> request with a path of <code>/</code>.
      */
+	
+	private Config conf;
+	@Inject
+	public HomeController(Config conf) {
+		this.conf = conf;
+	}
 	
     public Result index() {    	
     	/*pack p = new pack();
@@ -53,7 +62,7 @@ public class HomeController extends Controller {
 		    		logger.info("Got signal");
 		    		return r;
 		    	});*/
-    	return ok("Home");
+    	return ok("Home"+this.conf.getString("kafka.stream.rootid"));
     }
 
 }
