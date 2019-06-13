@@ -6,9 +6,10 @@ An experiment of Micro-service to overcome challenges of tracking-query problem.
   * Geo based sharding by Mongodb
   * Geo based sharding & memory tracking
 4. Enviroment for testing:
- * Test data: tracking location of 60K objects (updated every 30s)
+ * Test data: tracking location of 240K objects (updated every 30s)
  * Geo based sharding & in-Memory tracking
-     * 1 machine for Netty Server + REST api server
+     * 1 machine for gobetween load balancer + Netty Server for REST api server
+     * 1 machine for Netty Server + REST api server (weight 2)
      * 1 machine for Kafka 
      * 2 machines for processing tracking & query
      * 2 machines to simulate clients
@@ -19,8 +20,8 @@ An experiment of Micro-service to overcome challenges of tracking-query problem.
      * 2 machines for sharding nodes
      * 2 machines to simulate clients
 5. Results: 
-  * Able to scale processing to multiple machines, 
-  * Able to handle more than 2K concurrent of tracking requests + more than 2K concurrent of query requests. 
-   (simulated by ~4K threads, 2K on each of 2 client machines)
-  * max time for processing one request ~ 8s
-  * avg 2K+ requests/s (tracking+query) 
+  * Able to scale out processing, rest api to multiple machines, 
+  * 3K concurrent of tracking requests + 3K concurrent of query requests. 
+   (simulated by ~6K threads, 3K on each of 2 client machines)
+  * max time for processing one request ~ 10s
+  * avg 4.5K+ requests/s (tracking+query) 
