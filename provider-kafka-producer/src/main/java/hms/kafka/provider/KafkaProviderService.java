@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 import com.typesafe.config.Config;
@@ -23,14 +25,14 @@ import org.slf4j.LoggerFactory;
 public class KafkaProviderService implements IAsynProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderService.class);
 
-	private KafkaProviderSettings topicSettings;
+	private KafkaProviderTopics topicSettings;
 	MonoStreamRoot<hms.dto.ProviderTracking, Boolean>  trackingProviderStream;
 	MonoStreamRoot<hms.dto.GeoQuery, List<hms.dto.Provider>>  queryProvidersStream;
 	String server, rootid;	
 	
 	
 	IHMSExecutorContext ec;
-
+	private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
 	private abstract class ProviderStreamRoot<TStart,TRes> extends MonoStreamRoot<TStart,TRes>{
 		@Override
 		protected Logger getLogger() {
@@ -56,10 +58,15 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 		protected Executor getExecutorService() {
 			return ec.getExecutor();
 		}
+		
+		@Override
+		protected Executor getPollingService() {
+			return pollingEx;
+		}			
 	}
 	
 	@Inject
-	public KafkaProviderService(Config config,IHMSExecutorContext ec, KafkaProviderSettings settings) {	
+	public KafkaProviderService(Config config,IHMSExecutorContext ec, KafkaProviderTopics settings) {	
 		this.topicSettings = settings;
 		this.ec = ec;
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)
@@ -72,6 +79,11 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 				protected String getStartTopic() {
 					return topicSettings.getTrackingTopic();
 				}
+				
+				@Override
+				protected String getConsumeTopic() {
+					return rootid+super.getConsumeTopic();
+				}	
 
 				@Override
 				protected Class<Boolean> getTConsumeManifest() {
@@ -86,13 +98,19 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 				protected String getStartTopic() {
 					return topicSettings.getQueryTopic();
 				}
+				
+				@Override
+				protected String getConsumeTopic() {
+					return rootid+super.getConsumeTopic();
+				}					
 
 				@Override
 				protected Class<? extends List<hms.dto.Provider>> getTConsumeManifest() {
 					return template;
 				}
 			};				
-			
+			trackingProviderStream.run();
+			queryProvidersStream.run();
 		}else {
 			logger.error("Missing {} {} configuration", KafkaHMSMeta.ServerConfigKey, KafkaHMSMeta.RootIdConfigKey);
 			throw new Error(String.format("Missing {} {} configuration",KafkaHMSMeta.ServerConfigKey,KafkaHMSMeta.RootIdConfigKey));

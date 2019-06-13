@@ -7,7 +7,7 @@ import hms.hub.IHubService;
 import hms.hub.repositories.HubNodeRepository;
 import hms.hub.repositories.IHubNodeRepository;
 import hms.kafka.provider.InMemKafkaProviderSettings;
-import hms.kafka.provider.KafkaProviderSettings;
+import hms.kafka.provider.KafkaProviderTopics;
 
 public class InMemProviderModule  extends AbstractModule {
 	
@@ -15,8 +15,8 @@ public class InMemProviderModule  extends AbstractModule {
 	protected void configure() {
 		bind(IHubNodeRepository.class).to(HubNodeRepository.class);
 		bind(IHubService.class).to(HubService.class);
-		bind(KafkaProviderSettings.class).to(InMemKafkaProviderSettings.class);		
+		bind(KafkaProviderTopics.class).to(InMemKafkaProviderSettings.class);		
         bind(hms.provider.IAsynProviderService.class)
-        	.toProvider(KafkaProducerServiceProvider.class).asEagerSingleton();;        
+        	.toProvider(InMemProviderServiceFactory.class).asEagerSingleton();;        
 	}
 }

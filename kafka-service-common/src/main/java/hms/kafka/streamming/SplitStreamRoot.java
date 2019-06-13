@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 
@@ -26,9 +23,16 @@ public abstract class SplitStreamRoot<TItemStart, TItemRes>
 				String startTopic = this.applyTemplateToRepForTopic(this.getStartTopic(), di); 
 				ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, startTopic);
 				//this.getLogger().info("Start stream {} {}", startTopic, request.getRequestId());
-				this.producer.send(record).get(timeout, TimeUnit.MILLISECONDS);
-			} catch (IOException | InterruptedException | ExecutionException | TimeoutException e) {
-				this.handleRequestError(id, "Request error:"+e.getMessage());
+				this.producer.send(record, (meta, ex) -> {
+					if(ex!=null) {
+						this.getLogger().error("********** Request error {}", ex.getMessage());
+						this.handleRequestError(id, "Request error:");
+					}
+				});
+			} catch (IOException e) {
+
+				this.getLogger().error("********** Request error {}", e.getMessage());				
+				this.handleRequestError(id, "Request error");
 			}
 		}
 		return waiter.getWaiterTask();

@@ -51,7 +51,7 @@ public abstract class AccumulateStreamRoot<TStart, TItemRes>
 			waiter.collectData(response.getData(), response.getTotalRequests());
 		}
 		else{
-			this.getLogger().warn("Stream response without waiter {} {}", this.getStartTopic(), response.getRequestId());
+			this.getLogger().warn("Stream response without waiter {} {} {}", this.getStartTopic(), response.getRequestId(), this._waiters.get(keyrange).size());
 		}
 	}
 }

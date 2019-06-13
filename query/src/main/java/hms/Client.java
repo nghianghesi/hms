@@ -115,6 +115,13 @@ public class Client {
 					if(delay<0) {
 						logger.info("******************* longer than interval *********");
 						countLongerThanInterval+=1;
+					}else {
+						try {
+							Thread.sleep(delay);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}
 		};	
@@ -133,7 +140,7 @@ public class Client {
 		}	
 		
 		if(conf.hasPath("num-of-thread")) {
-			NUM_OF_THREAD = conf.getInt("num-of-thread");
+			POOL_SIZE = NUM_OF_THREAD = conf.getInt("num-of-thread");
 		}
 		
 		if(conf.hasPath("area")) {

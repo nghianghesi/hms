@@ -1,0 +1,1 @@
+sbt "processing-host/runMain hms.AppStart"

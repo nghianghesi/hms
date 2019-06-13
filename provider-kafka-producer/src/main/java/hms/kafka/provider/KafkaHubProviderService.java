@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 import com.typesafe.config.Config;
@@ -28,20 +30,22 @@ import org.slf4j.LoggerFactory;
 public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaHubProviderService.class);
 
-	private KafkaProviderSettings topicSettings;
+	private KafkaProviderTopics topicSettings;
 	private IHubService hubservice;
 	MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>  trackingProviderStream;
 	SplitStreamRoot<hms.dto.HubProviderGeoQuery, hms.dto.Provider>  queryProvidersStream;
 	String server, rootid;	
 	
-	
+
 	IHMSExecutorContext ec;
+	private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
+	
 	private static String applyHubIdTemplateToRepForTopic(String topic, Object value) {
 		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
 	}
 	
 	@Inject
-	public KafkaHubProviderService(Config config,IHMSExecutorContext ec, KafkaProviderSettings settings, IHubService hubservice) {	
+	public KafkaHubProviderService(Config config,IHMSExecutorContext ec, KafkaProviderTopics settings, IHubService hubservice) {	
 		this.topicSettings = settings;
 		this.ec = ec;
 		this.hubservice = hubservice;
@@ -74,7 +78,12 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				@Override
 				protected Executor getExecutorService() {
 					return ec.getExecutor();
-				}		
+				}						
+				
+				@Override
+				protected Executor getPollingService() {
+					return pollingEx;
+				}	
 
 				@Override
 				protected String applyTemplateToRepForTopic(String topic, Object value) {
@@ -93,7 +102,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				
 				@Override
 				protected String getConsumeTopic() {
-					return topicSettings.getTrackingTopic()+KafkaHMSMeta.ReturnTopicSuffix;
+					return rootid+topicSettings.getTrackingTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 				}				
 			};
 			
@@ -124,7 +133,12 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				protected Executor getExecutorService() {
 					return ec.getExecutor();
 				}		
-
+				
+				@Override
+				protected Executor getPollingService() {
+					return pollingEx;
+				}	
+				
 				@Override
 				protected String applyTemplateToRepForTopic(String topic, Object value) {
 					return applyHubIdTemplateToRepForTopic(topic, ((hms.dto.HubProviderGeoQuery)value).getHubid());
@@ -137,7 +151,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				
 				@Override
 				protected String getConsumeTopic() {
-					return topicSettings.getQueryTopic()+KafkaHMSMeta.ReturnTopicSuffix;
+					return rootid+topicSettings.getQueryTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 				}
 				
 				@Override
@@ -146,6 +160,8 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				}
 			};
 			
+			trackingProviderStream.run();
+			queryProvidersStream.run();
 		}else {
 			logger.error("Missing {} {} configuration", KafkaHMSMeta.ServerConfigKey, KafkaHMSMeta.RootIdConfigKey);
 			throw new Error(String.format("Missing {} {} configuration", 

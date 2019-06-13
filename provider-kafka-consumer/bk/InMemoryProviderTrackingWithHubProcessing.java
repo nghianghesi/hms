@@ -7,14 +7,14 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,20 +24,17 @@ import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
 import hms.common.DistanceUtils;
-import hms.common.IHMSExecutorContext;
 import hms.dto.LatLongLocation;
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
-import hms.kafka.streamming.PollChainning;
 import hms.provider.KafkaProviderMeta;
 import hms.provider.models.ProviderModel;
 import hms.provider.repositories.IProviderRepository;
 
 public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(InMemoryProviderTrackingWithHubProcessing.class);
-	IHMSExecutorContext ec;
 	IProviderRepository repo;
 	
 	KafkaStreamNodeBase<UUID, Boolean>  trackingProviderHubProcessor;
@@ -54,6 +51,9 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 	        		new HashMap<UUID, InMemProviderTracking>();
 	private final LinkedList<InMemProviderTracking> expiredTrackings = new LinkedList<InMemProviderTracking>();
 	
+	
+	private ExecutorService ex = Executors.newFixedThreadPool(1);
+	private Executor pollingEx = Executors.newFixedThreadPool(1);
 	private class InMemProviderTracking implements LatLongLocation {
 		private  double latitude;
 		private  double longitude;
@@ -129,13 +129,17 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 
 		@Override
 		protected Executor getExecutorService() {
-			return ec.getExecutor();
+			return ex;
+		}		
+		
+		@Override
+		protected Executor getPollingService() {
+			return pollingEx;
 		}
 	}
 	
 	@Inject
-	public InMemoryProviderTrackingWithHubProcessing(Config config, IHMSExecutorContext ec, IProviderRepository repo) {
-		this.ec = ec;
+	public InMemoryProviderTrackingWithHubProcessing(Config config, IProviderRepository repo) {
 		this.repo = repo;
 
 		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
@@ -160,23 +164,17 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 
 		
 		this.buildTrackingProviderHubProcessor();
+		this.buildQueryProvidersHubProcessor();
+		this.trackingProviderHubProcessor.run();
+		this.queryProvidersHubProcessor.run();
+		
 		logger.info("Provider processing is ready");
 	}
 	
 	
 	private void buildTrackingProviderHubProcessor() {
 		this.trackingProviderHubProcessor = new ProviderProcessingNode<UUID, Boolean>() {
-			
-			private final List<PollChainning> querychain = new LinkedList<PollChainning>();
-			{
-				this.querychain.add(buildQueryProvidersHubProcessor());
-			}
-			
-			@Override
-			protected List<? extends PollChainning> getSubChains() {
-				return querychain;
-			}
-			
+						
 			@Override
 			protected Boolean processRequest(HMSMessage<UUID> request) {
 				UUID hubid = request.getData();
@@ -283,11 +281,6 @@ public class InMemoryProviderTrackingWithHubProcessing implements Closeable{
 			protected String getForwardTopic() {				
 				return KafkaProviderMeta.InMemQueryProvidersMessage + KafkaHMSMeta.ReturnTopicSuffix;
 			}	
-			
-			@Override
-			protected boolean isChained() {
-				return true;
-			}
 		};	
 	}
 

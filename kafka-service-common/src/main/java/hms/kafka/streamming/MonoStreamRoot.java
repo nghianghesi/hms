@@ -15,7 +15,6 @@ public abstract class MonoStreamRoot<TStart, TRes>
 	
 	@Override
 	protected ArrayList<? extends LinkedHashMap<UUID, ? extends StreamResponse<? extends TRes>>> getAllWaiters() {
-		// TODO Auto-generated method stub
 		return this._waiters;
 	}
 	
@@ -33,7 +32,7 @@ public abstract class MonoStreamRoot<TStart, TRes>
 		if(waiter!=null) {
 			waiter.setData(response.getData());
 		}else {
-			this.getLogger().warn("Stream response without waiter " + this.getStartTopic() + " " + response.getRequestId());
+			this.getLogger().warn("Stream response without waiter {}, {}, {}", this.getStartTopic(), response.getRequestId(), this._waiters.get(keyrange).size());
 		}
 	}
 	

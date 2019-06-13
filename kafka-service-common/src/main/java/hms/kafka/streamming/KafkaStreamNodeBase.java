@@ -2,12 +2,11 @@ package hms.kafka.streamming;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -22,21 +21,21 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 
-import hms.common.GenericUtils;
-
-public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
+public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	protected KafkaConsumer<UUID, byte[]> consumer;
 	protected KafkaProducer<UUID, byte[]> producer;
 
 
 	protected int timeout = 5000;
 	private boolean shutdownNode = false; 
-	private int pendingHeartbeat = 0;
+	private int pendingPolls = 0;
 
 	protected abstract Logger getLogger();	
 	protected abstract Class<? extends TCon> getTConsumeManifest();
@@ -53,14 +52,8 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	protected abstract String getGroupid();
 	protected abstract String getServer();	
 	protected abstract Executor getExecutorService();
-	protected boolean isChained() {
-		return false;
-	}
-	
-	protected List<? extends PollChainning> getSubChains() {
-		return null;
-	}
-	
+	protected abstract Executor getPollingService();
+		
 	protected KafkaStreamNodeBase() {
 		this.ensureTopics();
 		this.createProducer();
@@ -109,7 +102,9 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.UUIDSerializer");
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-				"org.apache.kafka.common.serialization.ByteArraySerializer");
+				"org.apache.kafka.common.serialization.ByteArraySerializer");		
+		props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+		
 		this.configProducer(props);
 		this.producer = new KafkaProducer<>(props);
 	}
@@ -122,77 +117,100 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		return topic;
 	}	
 	
+	protected void processForwardReply(HMSMessage<TCon> request, TRep res) {
+		if(this.getForwardTopic()!=null) {
+			if(this.getForwardBackTopic() == null) {
+				this.reply(request, res);
+			}else {
+				this.forward(request, res);
+			}
+		}		
+	}
+	
 	private void processSingleRecord(ConsumerRecord<UUID, byte[]> record) {
 		try {
 			//this.getLogger().info("Consuming {} {}", this.getConsumeTopic(), record.key());					
 			HMSMessage<TCon> request = KafkaMessageUtils.getHMSMessage(this.getTConsumeManifest(), record);											
 			TRep res = this.processRequest(request);
-			if(this.getForwardTopic()!=null) {
-				if(this.getForwardBackTopic() == null) {
-					this.reply(request, res);
-				}else {
-					this.forward(request, res);
-				}
-			}
+			this.processForwardReply(request, res);
 		} catch (Exception e) {
 			this.getLogger().error("Consumer error {} {}", this.getConsumeTopic(), e.getMessage());
 		}
 	}
+
+	private CompletableFuture<Void> previousTasks; // init an done task
+	private void queueAction(Runnable action) {
+		previousTasks= previousTasks.thenRunAsync(action, this.getExecutorService());
+	}
+
+	private CompletableFuture<Void> previousPolling; // init an done task
+	private void queueConsummerAction(Runnable action) {
+		previousPolling=previousPolling.thenRunAsync(action, this.getPollingService());
+	}
 	
-	private CompletableFuture<Void> hookSubChains(CompletableFuture<Void> mychain) {
-		if (this.getSubChains() != null && this.getSubChains().size() > 0)
-			if (this.getSubChains().size() > 1) {
-				List<CompletableFuture<Void>> all = new ArrayList<CompletableFuture<Void>>();
-				for (PollChainning sub : this.getSubChains()) {
-					all.add(sub.hookPolling(mychain));
+	private Map<Integer, Long> peekOffsets = new HashMap<>();
+	private Runnable pollRequestsFromConsummer = ()->{
+		if(!shutdownNode) {
+			if(this.pendingPolls<200) {
+				for(Map.Entry<Integer, Long> peek:peekOffsets.entrySet()) {
+					TopicPartition part = new TopicPartition(this.getConsumeTopic(), peek.getKey());
+					this.consumer.seek(part, peek.getValue());
+				}				
+				final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(5));
+				
+				
+				if(records.count()>0) {
+					this.pendingPolls += records.count();
+					for (TopicPartition part : records.partitions()) {
+						List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(part);
+						long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset() + 1;
+						peekOffsets.put(part.partition(),lastOffset);
+					}
+					queueAction(()->{
+						if(!this.shutdownNode) {
+				            for (TopicPartition part : records.partitions()) {
+				            	final TopicPartition partition = part;
+				                List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
+				                if(partitionRecords.size()>0) {
+									for (ConsumerRecord<UUID, byte[]> record : partitionRecords) {
+										this.processSingleRecord(record);
+									}
+									final long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+					                
+					                queueConsummerAction(()->{
+						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)));
+										this.pendingPolls-=partitionRecords.size();
+					                });
+				                }
+				            }
+						}else {
+			                queueConsummerAction(()->{
+								this.pendingPolls-= records.count();
+			                });							
+						}
+					});
 				}
-				return CompletableFuture.allOf(GenericUtils.toArray(all));
-			} else {
-				return this.getSubChains().get(0).hookPolling(mychain);
+				
+				if(System.currentTimeMillis() - this.previousClean > 1000) {
+					this.previousClean = System.currentTimeMillis();
+					queueAction(()->{
+						this.intervalCleanup();
+					});
+				}	
+			}else {
+				this.getLogger().info("Long pending {}",this.pendingPolls);
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {					
+				}
 			}
-		else {
-			return mychain;
-		}
-	}
-	
-	public CompletableFuture<Void> hookPolling(CompletableFuture<Void> aheadtasks) {		
-			CompletableFuture<Void> mytask = 
-						aheadtasks.thenRunAsync(this.pollRequestFromConsummer, this.getExecutorService())
-								.thenRunAsync(this.intervalCleanupRunnable, this.getExecutorService());
-			return hookSubChains(mytask);
-	}	
-	
-	
-	CompletableFuture<Void> rootHook = null;
-	private void hookPollingAsRoot() {
-		if(!isChained() && this.pendingHeartbeat <= 1) {
-			this.pendingHeartbeat += 1;
-			CompletableFuture<Void> mytask = (rootHook != null ? this.hookPolling(rootHook) :
-					CompletableFuture.runAsync(this.pollRequestFromConsummer, this.getExecutorService())
-							.thenRunAsync(this.intervalCleanupRunnable, this.getExecutorService()));
-			this.rootHook = mytask.thenRunAsync(this.decreasePendingHeartbeat, this.getExecutorService());
-		}
-	}
-	
-	private Runnable decreasePendingHeartbeat = ()->{
-		this.pendingHeartbeat--;
-	};
-	
-	private Runnable pollRequestFromConsummer = () -> {		
-		if (!shutdownNode) {
-			ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(10));
-			for (ConsumerRecord<UUID, byte[]> record : records) {
-				this.processSingleRecord(record);
-			}
+			
+			queueConsummerAction(this.pollRequestsFromConsummer);
 		}
 	};	
 	
-	private Runnable intervalCleanupRunnable = ()->{
-		this.intervalCleanup();
-	};
 	
-	private Observer heartbeatObserver;
-	
+	private long previousClean = System.currentTimeMillis();
 	protected void createConsummer() {
 		Properties consumerProps = new Properties();
 		consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.getServer());
@@ -202,22 +220,20 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 				"org.apache.kafka.common.serialization.UUIDDeserializer");		
 		consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.ByteArrayDeserializer");
+
+		consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);		
 		this.configConsummer(consumerProps);
 		this.consumer = new KafkaConsumer<>(consumerProps);
 		this.consumer.subscribe(Collections.singletonList(this.getConsumeTopic()));	
-		
-		if(!this.isChained()) {			
-			this.heartbeatObserver = (Observable arg0, Object arg1) -> {
-				if(!shutdownNode) {
-					hookPollingAsRoot();
-				}else{
-					hms.common.ServiceWaiter.getInstance().removeHeartbeatObserver(this.heartbeatObserver);
-				}
-			};
-			hms.common.ServiceWaiter.getInstance().addHeartbeatObserver(this.heartbeatObserver);
-		}
-		
+			
 		this.getLogger().info("Consumer {} ready", this.getConsumeTopic());						 
+	}
+	
+	public void run() {
+		previousTasks = CompletableFuture.runAsync(()->{}, this.getExecutorService());
+		previousPolling = CompletableFuture.runAsync(()->{}, this.getPollingService());		
+		this.previousClean = System.currentTimeMillis();
+		queueConsummerAction(this.pollRequestsFromConsummer);
 	}
 
 	protected void reply(HMSMessage<TCon> request, TRep value) {
@@ -227,9 +243,13 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 		try {
 			//this.getLogger().info("Replying to {}", replytop);
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
-			this.producer.send(record).get();
-		} catch (IOException | InterruptedException | ExecutionException e) {
-			this.getLogger().error("Reply message error {} {}", replytop, e.getMessage());
+			this.producer.send(record, (meta, ex)->{
+				if(ex != null) {
+					this.getLogger().error("Reply error: {}", ex.getMessage());
+				}
+			});
+		} catch (IOException e) {
+			this.getLogger().error("Reply error {} {}", replytop, e.getMessage());
 		}
 	}
 	
@@ -241,8 +261,12 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 			forwardReq.addReponsePoint(this.getForwardBackTopic(), request.getData());
 			//this.getLogger().info("forwarding: {}", forwardtopic);			
 			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, forwardtopic);					
-			this.producer.send(record).get();
-		} catch (IOException | InterruptedException | ExecutionException e) {
+			this.producer.send(record, (meta, ex)->{
+				if(ex != null) {
+					this.getLogger().error("forward error: {}", ex.getMessage());
+				}
+			});
+		} catch (IOException e) {
 			this.getLogger().error("Forward request error {} {}", forwardtopic, e.getMessage());
 		}
 	}
@@ -259,15 +283,25 @@ public abstract class KafkaStreamNodeBase<TCon, TRep> implements PollChainning{
 	public void shutDown() {
 		this.getLogger().info("Shutting down");
 		this.shutdownNode = true;
-		while(pendingHeartbeat != 0) {
-			try {
-				Thread.sleep(50);
-				this.getLogger().info("waiting for shutdown");
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		
+		long waitStart = System.currentTimeMillis();
+		while(pendingPolls > 0) {
+			if(System.currentTimeMillis() - waitStart< 10000) {
+				try {
+					Thread.sleep(50);
+					this.getLogger().info("waiting for shutdown");
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}else {
+				this.getLogger().info("Shutdown timeout");				
 			}
 		}
 		this.producer.close();
-		this.consumer.close();	
+		
+		
+		queueConsummerAction(()->{;
+			this.consumer.close();	
+		});	
 	}
 }

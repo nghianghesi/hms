@@ -2,9 +2,9 @@ package hms.kafka.streamming;
 
 import java.io.IOException;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 
 public abstract class KafkaStreamSplitNodeBase <TCon, TRepItem> 
 	extends KafkaStreamNodeBase<TCon, java.util.List<TRepItem>> {
@@ -16,13 +16,18 @@ public abstract class KafkaStreamSplitNodeBase <TCon, TRepItem>
 			HMSMessage<TRepItem> replymsg = request.forwardRequest();
 			replymsg.setData(value);
 			String replytop = applyTemplateToRepForTopic(request.getCurrentResponsePoint(this.getForwardTopic()), value);
-			try {
 				//this.getLogger().info("Replying to {}", replytop);
-				ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
-				this.producer.send(record).get();
-			} catch (IOException | InterruptedException | ExecutionException e) {
-				this.getLogger().error("Reply message error {} {}", replytop, e.getMessage());
-			}
+				ProducerRecord<UUID, byte[]> record;
+				try {
+					record = KafkaMessageUtils.getProcedureRecord(replymsg, replytop);
+					this.producer.send(record,  (RecordMetadata metadata, Exception exception) -> {
+						if(exception!=null) {
+							this.getLogger().error("Reply request error {}", exception.getMessage());
+						}
+					});					
+				} catch (IOException e) {
+					this.getLogger().error("Reply request error {}", e.getMessage());
+				}			
 		}
 	}
 	
@@ -36,7 +41,11 @@ public abstract class KafkaStreamSplitNodeBase <TCon, TRepItem>
 				//this.getLogger().info("forwarding:" + forwardReq.DebugInfo());			
 				String forwardtopic = applyTemplateToRepForTopic(this.getForwardTopic(), value);
 				ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(forwardReq, forwardtopic);					
-				this.producer.send(record);
+				this.producer.send(record,  (RecordMetadata metadata, Exception exception) -> {
+					if(exception!=null) {
+						this.getLogger().error("Reply request error {}", exception.getMessage());
+					}
+				});
 			} catch (IOException e) {
 				this.getLogger().error("Forward request error {}", e.getMessage());
 			}

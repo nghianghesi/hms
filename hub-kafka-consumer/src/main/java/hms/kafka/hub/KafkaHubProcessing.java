@@ -66,6 +66,11 @@ public class KafkaHubProcessing implements Closeable {
 			return ec.getExecutor();
 		}	
 		
+		@Override
+		protected Executor getPollingService() {
+			return ec.getExecutor();
+		}			
+		
 	
 		@Override
 		protected String applyTemplateToRepForTopic(String topic, Object value) {
@@ -171,6 +176,11 @@ public class KafkaHubProcessing implements Closeable {
 			protected Executor getExecutorService() {
 				return ec.getExecutor();
 			}
+			
+			@Override
+			protected Executor getPollingService() {
+				return ec.getExecutor();
+			}				
 			
 			@Override
 			protected String getConsumeTopic() {
