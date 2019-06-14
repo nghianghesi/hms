@@ -20,9 +20,16 @@ An experiment of Micro-service to overcome challenges of tracking-query problem.
      * 1 machine for master
      * 2 machines for sharding nodes
      * 2 machines to simulate clients
-5. Results (Geo based sharding & in-Memory tracking)
-  * Able to scale out processing, rest api to multiple machines, 
-  * 3K concurrent of tracking requests + 3K concurrent of query requests. 
-   (simulated by ~6K threads, 3K on each of 2 client machines)
-  * max time for processing one request ~ 10s
-  * avg 4.5K+ requests/s (tracking+query) 
+5. Results 
+ * Geo based sharding by Mongodb
+     * Able to scale rest api out to multiple machines, 
+     * Able to handle 3K concurrent of tracking requests + 3K concurrent of query requests. 
+      (simulated by ~6K threads, 3K on each of 2 client machines)
+     * max time for processing one request ~15s
+     * avg 2K+ requests/s (tracking+query) 
+ * Geo based sharding & in-Memory tracking
+     * Able to scale processing, rest api out to multiple machines, no more bottle neck
+     * Able to handle 3K concurrent of tracking requests + 3K concurrent of query requests. 
+      (simulated by ~6K threads, 3K on each of 2 client machines)
+     * max time for processing one request ~ 10s
+     * avg 4.5K+ requests/s (tracking+query) 
