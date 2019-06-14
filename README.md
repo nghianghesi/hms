@@ -5,7 +5,7 @@ An experiment of Micro-service to overcome challenges of tracking-query problem.
 3. Solutions: 
   * Geo based sharding by Mongodb
   * Geo based sharding & memory tracking
-4. Enviroment for testing:
+4. Enviroment for testing (all machines using Core I5, 12G ram, Windows 10 64bit):
  * Test data: tracking location of 240K objects (updated every 30s)
  * Geo based sharding & in-Memory tracking
      * 1 machine for gobetween load balancer + Netty Server for REST api server
