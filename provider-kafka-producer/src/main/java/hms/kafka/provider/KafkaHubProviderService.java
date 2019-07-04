@@ -39,6 +39,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 
 	IHMSExecutorContext ec;
 	private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
+	private ExecutorService myex = Executors.newFixedThreadPool(2);
 	
 	private static String applyHubIdTemplateToRepForTopic(String topic, Object value) {
 		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
@@ -77,7 +78,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 
 				@Override
 				protected Executor getExecutorService() {
-					return ec.getExecutor();
+					return myex;
 				}						
 				
 				@Override
@@ -131,7 +132,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 
 				@Override
 				protected Executor getExecutorService() {
-					return ec.getExecutor();
+					return myex;
 				}		
 				
 				@Override
