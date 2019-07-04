@@ -183,7 +183,11 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 				                List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
 				                if(partitionRecords.size()>0) {
 									for (ConsumerRecord<UUID, byte[]> record : partitionRecords) {
-										this.processSingleRecord(record);
+										try{
+											this.processSingleRecord(record);
+										}catch(Exception ex) {
+											this.getLogger().error("Consummer error",ex);
+										}
 									}
 									final long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
 					                
