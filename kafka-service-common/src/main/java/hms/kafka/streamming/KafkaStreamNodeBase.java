@@ -146,7 +146,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	private void queueAction(Runnable action) {
 		previousTasks= previousTasks.whenCompleteAsync((v,ex)->{
 			if(ex!=null) {
-				this.getLogger().error("Consummer error:{}",ex.getMessage());
+				this.getLogger().error("Consummer error", ex);
 			}
 			action.run();
 		}, this.getExecutorService());
@@ -156,7 +156,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	private void queueConsummerAction(Runnable action) {
 		previousPolling=previousPolling.whenCompleteAsync((v,ex) -> {
 			if(ex!=null) {
-				this.getLogger().error("Consummer error:{}",ex.getMessage());
+				this.getLogger().error("Consummer error",ex);
 			}
 			action.run();
 		}, this.getPollingService());
