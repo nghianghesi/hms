@@ -145,7 +145,9 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	private CompletableFuture<Void> previousTasks; // init an done task
 	private void queueAction(Runnable action) {
 		previousTasks= previousTasks.whenCompleteAsync((v,ex)->{
-			this.getLogger().error("Consummer error:{}",ex.getMessage());
+			if(ex!=null) {
+				this.getLogger().error("Consummer error:{}",ex.getMessage());
+			}
 			action.run();
 		}, this.getExecutorService());
 	}
@@ -153,7 +155,9 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	private CompletableFuture<Void> previousPolling; // init an done task
 	private void queueConsummerAction(Runnable action) {
 		previousPolling=previousPolling.whenCompleteAsync((v,ex) -> {
-			this.getLogger().error("Consummer error:{}",ex.getMessage());
+			if(ex!=null) {
+				this.getLogger().error("Consummer error:{}",ex.getMessage());
+			}
 			action.run();
 		}, this.getPollingService());
 	}
