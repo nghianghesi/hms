@@ -103,7 +103,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 				"org.apache.kafka.common.serialization.UUIDSerializer");
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.ByteArraySerializer");		
-		props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+		props.put(ProducerConfig.LINGER_MS_CONFIG, 10);
 		
 		this.configProducer(props);
 		this.producer = new KafkaProducer<>(props);
