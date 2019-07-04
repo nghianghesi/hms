@@ -144,12 +144,18 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 
 	private CompletableFuture<Void> previousTasks; // init an done task
 	private void queueAction(Runnable action) {
-		previousTasks= previousTasks.thenRunAsync(action, this.getExecutorService());
+		previousTasks= previousTasks.whenCompleteAsync((v,ex)->{
+			this.getLogger().error("Consummer error:{}",ex.getMessage());
+			action.run();
+		}, this.getExecutorService());
 	}
 
 	private CompletableFuture<Void> previousPolling; // init an done task
 	private void queueConsummerAction(Runnable action) {
-		previousPolling=previousPolling.thenRunAsync(action, this.getPollingService());
+		previousPolling=previousPolling.whenCompleteAsync((v,ex) -> {
+			this.getLogger().error("Consummer error:{}",ex.getMessage());
+			action.run();
+		}, this.getPollingService());
 	}
 	
 	private Map<Integer, Long> peekOffsets = new HashMap<>();
