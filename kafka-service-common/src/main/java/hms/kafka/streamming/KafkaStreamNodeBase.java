@@ -178,9 +178,9 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 					}
 					queueAction(()->{
 						if(!this.shutdownNode) {
-				            for (TopicPartition part : records.partitions()) {
-				            	final TopicPartition partition = part;
-				                List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
+				            for (TopicPartition partLoop : records.partitions()) {
+				            	final TopicPartition partition = partLoop;
+				                final List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
 				                if(partitionRecords.size()>0) {
 									for (ConsumerRecord<UUID, byte[]> record : partitionRecords) {
 										try{
@@ -192,8 +192,8 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 									final long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
 					                
 					                queueConsummerAction(()->{
-						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset)));
 										this.pendingPolls-=partitionRecords.size();
+						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset)));										
 										if(peekOffsets.containsKey(partition.partition())) {
 											this.consumer.seek(partition, peekOffsets.get(partition.partition()));											
 										}
