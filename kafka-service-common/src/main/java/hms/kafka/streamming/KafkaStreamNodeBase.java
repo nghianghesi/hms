@@ -192,7 +192,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 									final long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
 					                
 					                queueConsummerAction(()->{
-						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)));
+						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset)));
 										this.pendingPolls-=partitionRecords.size();
 										if(peekOffsets.containsKey(partition.partition())) {
 											this.consumer.seek(partition, peekOffsets.get(partition.partition()));											
