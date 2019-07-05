@@ -124,7 +124,6 @@ public abstract class AbstractStreamRoot<TStart, TRes>{
 		this.rootNodes.forEach((key,value) -> {value.shutDown();});
 	}
 	
-	protected abstract <TData> String getZone(TData data); 
 	protected abstract ArrayList<? extends LinkedHashMap<UUID,? extends StreamResponse<? extends TRes>>> getAllWaiters();
 	protected abstract StreamResponse<? extends TRes> removeWaiter(int keyrange, UUID id);
 	protected final LinkedHashMap<UUID,? extends  StreamResponse<? extends TRes>> getWaiters(int keyrange){

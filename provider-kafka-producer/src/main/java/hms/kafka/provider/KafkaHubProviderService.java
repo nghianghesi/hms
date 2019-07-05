@@ -101,8 +101,8 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				}
 
 				@Override
-				protected <TData> String getZone(TData data) {
-					return getZoneByHubid((UUID)data);
+				protected String getZone(hms.dto.HubProviderTracking data) {
+					return getZoneByHubid(data.getHubid());
 				}				
 			};
 			
@@ -150,8 +150,8 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				}
 
 				@Override
-				protected <TData> String getZone(TData data) {
-					return getZoneByHubid((UUID)data);
+				protected String getZone(hms.dto.HubProviderGeoQuery data) {
+					return getZoneByHubid(data.getHubid());
 				}
 			};
 			

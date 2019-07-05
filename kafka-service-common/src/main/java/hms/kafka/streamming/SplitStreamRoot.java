@@ -11,7 +11,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 public abstract class SplitStreamRoot<TItemStart, TItemRes> 
 	extends AccumulateStreamRoot<List<TItemStart>, TItemRes>{
-	
+
+	protected abstract String getZone(TItemStart data); 
 	@Override
 	public CompletableFuture<ArrayList<TItemRes>> startStream(List<TItemStart> data, int timeout) {
 		UUID id = this.nextId();

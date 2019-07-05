@@ -52,7 +52,8 @@ public abstract class MonoStreamRoot<TStart, TRes>
 		}
 		return waiter;
 	}
-	
+
+	protected abstract String getZone(TStart data); 
 	@Override
 	public CompletableFuture<TRes> startStream(TStart data, int timeout) {
 		UUID id = this.nextId();

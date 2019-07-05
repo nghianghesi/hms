@@ -81,7 +81,7 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 				}
 
 				@Override
-				protected <TData> String getZone(TData data) {
+				protected String getZone(hms.dto.ProviderTracking data) {
 					return "none";
 				}				
 			};
@@ -106,7 +106,7 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 				}
 
 				@Override
-				protected <TData> String getZone(TData data) {
+				protected  String getZone(hms.dto.GeoQuery data) {
 					return "none";
 				}
 			};			
