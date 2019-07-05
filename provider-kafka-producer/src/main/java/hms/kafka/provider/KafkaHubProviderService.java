@@ -38,8 +38,8 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	
 
 	IHMSExecutorContext ec;
-	private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
-	private ExecutorService myex = Executors.newFixedThreadPool(2);
+	private ExecutorService pollingEx ;
+	private ExecutorService myex ;
 	
 	private String applyHubIdTemplateToRepForTopic(String topic, Object value) {
 		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
@@ -58,7 +58,12 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				&& config.hasPath(KafkaHMSMeta.RootIdConfigKey)) {
 			server = config.getString(KafkaHMSMeta.ServerConfigKey);
 			rootid = config.getString(KafkaHMSMeta.RootIdConfigKey);
-						
+			int zonesCount = config.getConfigList(KafkaHMSMeta.ZoneServerConfigKey).size();
+			if(zonesCount>0) {
+				pollingEx = Executors.newFixedThreadPool(zonesCount);
+				myex = Executors.newFixedThreadPool(zonesCount);
+			}
+			
 			trackingProviderStream = new MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>(){
 				@Override
 				protected Logger getLogger() {
