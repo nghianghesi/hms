@@ -35,11 +35,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>  trackingProviderStream;
 	SplitStreamRoot<hms.dto.HubProviderGeoQuery, hms.dto.Provider>  queryProvidersStream;
 	String server, rootid;	
-	
-
 	IHMSExecutorContext ec;
-	private ExecutorService pollingEx ;
-	private ExecutorService myex ;
 	
 	private String applyHubIdTemplateToRepForTopic(String topic, Object value) {
 		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
@@ -58,12 +54,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				&& config.hasPath(KafkaHMSMeta.RootIdConfigKey)) {
 			server = config.getString(KafkaHMSMeta.ServerConfigKey);
 			rootid = config.getString(KafkaHMSMeta.RootIdConfigKey);
-			int zonesCount = config.getConfigList(KafkaHMSMeta.ZoneServerConfigKey).size();
-			if(zonesCount>0) {
-				pollingEx = Executors.newFixedThreadPool(zonesCount);
-				myex = Executors.newFixedThreadPool(zonesCount);
-			}
-			
+			int zonesCount = config.getConfigList(KafkaHMSMeta.ZoneServerConfigKey).size();			
 			trackingProviderStream = new MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>(){
 				@Override
 				protected Logger getLogger() {
@@ -74,16 +65,6 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				protected String getGroupid() {
 					return rootid;
 				}
-
-				@Override
-				protected Executor getExecutorService() {
-					return myex;
-				}						
-				
-				@Override
-				protected Executor getPollingService() {
-					return pollingEx;
-				}	
 
 				@Override
 				protected String applyTemplateToRepForTopic(String topic, Object value) {
@@ -123,16 +104,6 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				protected String getGroupid() {
 					return rootid;
 				}
-				
-				@Override
-				protected Executor getExecutorService() {
-					return myex;
-				}		
-				
-				@Override
-				protected Executor getPollingService() {
-					return pollingEx;
-				}	
 				
 				@Override
 				protected String applyTemplateToRepForTopic(String topic, Object value) {

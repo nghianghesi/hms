@@ -231,7 +231,7 @@ public class InMemoryProviderProcessing implements Closeable{
 			
 			@Override
 			protected String getGroupid() {
-				return providerGroup + trackingHubid.toString();
+				return providerGroup;
 			}
 			
 			@Override
@@ -292,7 +292,7 @@ public class InMemoryProviderProcessing implements Closeable{
 						
 			@Override
 			protected String getGroupid() {
-				return providerGroup + trackingHubid.toString();
+				return providerGroup;
 			}
 			
 

@@ -5,10 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import javax.inject.Inject;
 import com.typesafe.config.Config;
 
@@ -32,7 +28,6 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 	
 	
 	IHMSExecutorContext ec;
-	private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
 	private abstract class ProviderStreamRoot<TStart,TRes> extends MonoStreamRoot<TStart,TRes>{
 		@Override
 		protected Logger getLogger() {
@@ -44,15 +39,6 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 			return rootid;
 		}
 
-		@Override
-		protected Executor getExecutorService() {
-			return ec.getExecutor();
-		}
-		
-		@Override
-		protected Executor getPollingService() {
-			return pollingEx;
-		}			
 	}
 	
 	@Inject
