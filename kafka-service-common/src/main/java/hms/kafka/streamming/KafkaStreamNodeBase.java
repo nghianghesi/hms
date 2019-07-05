@@ -166,6 +166,11 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 	private Runnable pollRequestsFromConsummer = ()->{
 		if(!shutdownNode) {
 			if(this.pendingPolls<200) {
+				
+				for(Map.Entry<Integer, Long> seek:peekOffsets.entrySet()) {
+					TopicPartition part = new TopicPartition(this.getConsumeTopic(), seek.getKey());					
+					this.consumer.seek(part, seek.getValue());
+				}
 				final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(5));
 				
 				
@@ -175,7 +180,6 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 						List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(part);
 						long seekOffset = partitionRecords.get(partitionRecords.size() - 1).offset()+1;
 						peekOffsets.put(part.partition(), seekOffset);
-						this.consumer.seek(part, seekOffset);
 					}
 					queueAction(()->{
 						if(!this.shutdownNode) {
@@ -195,9 +199,6 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 					                queueConsummerAction(()->{
 										this.pendingPolls-=partitionRecords.size();
 						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(commitOffset)));										
-										if(peekOffsets.containsKey(partition.partition())) {
-											this.consumer.seek(partition, peekOffsets.get(partition.partition()));											
-										}
 					                });
 				                }
 				            }
