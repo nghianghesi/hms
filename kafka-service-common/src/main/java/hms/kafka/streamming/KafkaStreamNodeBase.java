@@ -173,8 +173,9 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 					this.pendingPolls += records.count();
 					for (TopicPartition part : records.partitions()) {
 						List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(part);
-						long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset() + 1;
-						peekOffsets.put(part.partition(),lastOffset);
+						long seekOffset = partitionRecords.get(partitionRecords.size() - 1).offset()+1;
+						peekOffsets.put(part.partition(), seekOffset);
+						this.consumer.seek(part, seekOffset);						
 					}
 					queueAction(()->{
 						if(!this.shutdownNode) {
@@ -189,11 +190,11 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 											this.getLogger().error("Consummer error",ex);
 										}
 									}
-									final long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+									final long commitOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
 					                
 					                queueConsummerAction(()->{
 										this.pendingPolls-=partitionRecords.size();
-						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset+1)));										
+						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(commitOffset)));										
 										if(peekOffsets.containsKey(partition.partition())) {
 											this.consumer.seek(partition, peekOffsets.get(partition.partition()));											
 										}
@@ -202,6 +203,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 				            }
 						}else {
 			                queueConsummerAction(()->{
+			                	// by pass processing on shutdown.
 								this.pendingPolls-= records.count();
 			                });							
 						}

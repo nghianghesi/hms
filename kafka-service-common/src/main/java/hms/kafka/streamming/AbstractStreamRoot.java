@@ -79,10 +79,10 @@ public abstract class AbstractStreamRoot<TStart, TRes>{
 		}		
 		
 		@Override
-			protected void intervalCleanup() {
-				super.intervalCleanup();
-				AbstractStreamRoot.this.intervalCleanup();
-			}
+		protected void intervalCleanup() {
+			super.intervalCleanup();
+			AbstractStreamRoot.this.intervalCleanup();
+		}
 		
 		@Override
 		protected String applyTemplateToRepForTopic(String topic, Object value) {
