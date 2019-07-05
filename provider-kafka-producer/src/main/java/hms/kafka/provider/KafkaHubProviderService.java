@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 import com.typesafe.config.Config;
@@ -38,7 +35,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	IHMSExecutorContext ec;
 	
 	private String applyHubIdTemplateToRepForTopic(String topic, Object value) {
-		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
+		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString().replace('.', '_').replace('-', '_') : "");
 	}
 	
 	private String getZoneByHubid(UUID hubid) {
@@ -54,7 +51,6 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				&& config.hasPath(KafkaHMSMeta.RootIdConfigKey)) {
 			server = config.getString(KafkaHMSMeta.ServerConfigKey);
 			rootid = config.getString(KafkaHMSMeta.RootIdConfigKey);
-			int zonesCount = config.getConfigList(KafkaHMSMeta.ZoneServerConfigKey).size();			
 			trackingProviderStream = new MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>(){
 				@Override
 				protected Logger getLogger() {
