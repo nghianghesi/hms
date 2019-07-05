@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 
@@ -20,11 +22,11 @@ public abstract class AbstractStreamRoot<TStart, TRes>{
 	protected abstract String getReturnTopic();
 	protected abstract Class<? extends TRes> getTConsumeManifest();
 	protected abstract String getGroupid();
-	protected abstract Executor getPollingService();
-	protected abstract Executor getExecutorService();
 	
 	protected Map<String, KafkaStreamRootNode> rootNodes = new HashMap<String, KafkaStreamRootNode>();
-	public abstract class KafkaStreamRootNode extends KafkaStreamNodeBase<TRes, Void>{ // consume TRes & forward to none.
+	public abstract class KafkaStreamRootNode extends KafkaStreamNodeBase<TRes, Void>{ // consume TRes & forward to none.		
+		private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
+		private ExecutorService myex = Executors.newFixedThreadPool(1);
 		
 		protected String getStartTopic() {
 			return AbstractStreamRoot.this.getStartTopic();
@@ -70,12 +72,12 @@ public abstract class AbstractStreamRoot<TStart, TRes>{
 
 		@Override
 		protected Executor getExecutorService() {
-			return AbstractStreamRoot.this.getExecutorService();
+			return myex;
 		}
 
 		@Override
 		protected Executor getPollingService() {
-			return AbstractStreamRoot.this.getPollingService();
+			return pollingEx;
 		}		
 		
 		@Override

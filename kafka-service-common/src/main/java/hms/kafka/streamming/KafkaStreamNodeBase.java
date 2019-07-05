@@ -175,7 +175,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 						List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(part);
 						long seekOffset = partitionRecords.get(partitionRecords.size() - 1).offset()+1;
 						peekOffsets.put(part.partition(), seekOffset);
-						this.consumer.seek(part, seekOffset);						
+						this.consumer.seek(part, seekOffset);
 					}
 					queueAction(()->{
 						if(!this.shutdownNode) {
