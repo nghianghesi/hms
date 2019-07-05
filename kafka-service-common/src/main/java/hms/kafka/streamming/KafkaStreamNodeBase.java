@@ -103,12 +103,12 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 				"org.apache.kafka.common.serialization.UUIDSerializer");
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.ByteArraySerializer");		
-		props.put(ProducerConfig.LINGER_MS_CONFIG, 100);
+		props.put(ProducerConfig.LINGER_MS_CONFIG, 0);
         //Batch up to 64K buffer sizes.
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG,  16_384 * 4);
+        //props.put(ProducerConfig.BATCH_SIZE_CONFIG,  16_384 * 4);
 
         //Use Snappy compression for batch compression.
-        props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+        //props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
 		this.configProducer(props);
 		this.producer = new KafkaProducer<>(props);
 	}
