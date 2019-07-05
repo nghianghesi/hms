@@ -74,7 +74,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 
 				@Override
 				protected String getReturnTopic() {
-					return topicSettings.getTrackingTopic()+KafkaHMSMeta.ReturnTopicSuffix;
+					return rootid + topicSettings.getTrackingTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 				}
 
 				@Override
@@ -113,7 +113,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				
 				@Override
 				protected String getReturnTopic() {
-					return topicSettings.getQueryTopic()+KafkaHMSMeta.ReturnTopicSuffix;
+					return rootid + topicSettings.getQueryTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 				}
 				
 				@Override
