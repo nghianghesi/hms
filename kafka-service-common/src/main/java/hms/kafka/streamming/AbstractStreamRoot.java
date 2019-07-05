@@ -1,47 +1,131 @@
 package hms.kafka.streamming;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.slf4j.Logger;
 
-import hms.KafkaHMSMeta;
-
-public abstract class AbstractStreamRoot<TStart, TRes> 
-	extends KafkaStreamNodeBase<TRes, Void>{ // consume TRes & forward to none.
-	protected abstract String getStartTopic();
-
+public abstract class AbstractStreamRoot<TStart, TRes>{ 
 	protected static final int KEY_RANGE = 1000;
-	public AbstractStreamRoot() {
-		this.timeout=20000;
-	}
-	protected String getConsumeTopic() {
-		return this.getStartTopic()+KafkaHMSMeta.ReturnTopicSuffix;
-	}
+	private int timeout = 20000;
+	private int cleanupInterval = 5000;	
 	
-	protected String getForwardTopic() {
-		return null;
-	}
+	protected abstract Logger getLogger() ;
+	protected abstract String getStartTopic();
+	protected abstract String getReturnTopic();
+	protected abstract Class<? extends TRes> getTConsumeManifest();
+	protected abstract String getGroupid();
+	protected abstract Executor getPollingService();
+	protected abstract Executor getExecutorService();
 	
-	@Override
-	protected void ensureTopics() {
-		super.ensureTopics();
-		this.ensureTopic(this.getStartTopic());				
-	}	
+	protected Map<String, KafkaStreamRootNode> rootNodes = new HashMap<String, KafkaStreamRootNode>();
+	public abstract class KafkaStreamRootNode extends KafkaStreamNodeBase<TRes, Void>{ // consume TRes & forward to none.
+		
+		protected String getStartTopic() {
+			return AbstractStreamRoot.this.getStartTopic();
+		}
 	
-	protected Void processRequest(HMSMessage<TRes> response) {
-		handleResponse(response);
-		return null;
-	}		
-	
-	
-	protected abstract ArrayList<? extends LinkedHashMap<UUID,? extends StreamResponse<? extends TRes>>> getAllWaiters();
+		public KafkaStreamRootNode() {
+			this.timeout = AbstractStreamRoot.this.timeout;
+		}
+		
+		protected String getConsumeTopic() {
+			return AbstractStreamRoot.this.getReturnTopic();
+		}
+		
+		protected String getForwardTopic() {
+			return null;
+		}
+		
+		@Override
+		protected void ensureTopics() {
+			super.ensureTopics();
+			this.ensureTopic(this.getStartTopic());				
+		}	
+		
+		protected Void processRequest(HMSMessage<TRes> response) {
+			handleResponse(response);
+			return null;
+		}
 
+		@Override
+		protected Logger getLogger() {
+			return AbstractStreamRoot.this.getLogger();
+		}
+
+		@Override
+		protected Class<? extends TRes> getTConsumeManifest() {
+			return AbstractStreamRoot.this.getTConsumeManifest();
+		}
+
+		@Override
+		protected String getGroupid() {
+			return AbstractStreamRoot.this.getGroupid();
+		}
+
+		@Override
+		protected Executor getExecutorService() {
+			return AbstractStreamRoot.this.getExecutorService();
+		}
+
+		@Override
+		protected Executor getPollingService() {
+			return AbstractStreamRoot.this.getPollingService();
+		}		
+		
+		@Override
+			protected void intervalCleanup() {
+				super.intervalCleanup();
+				AbstractStreamRoot.this.intervalCleanup();
+			}
+		
+		@Override
+		protected String applyTemplateToRepForTopic(String topic, Object value) {
+			return AbstractStreamRoot.this.applyTemplateToRepForTopic(topic, value);
+		}	
+	}
+	
+	public void addZones(String zone, String kafkaServer) {
+		if(!this.rootNodes.containsKey(zone)) {
+			KafkaStreamRootNode existingServer = null; 
+			for(Map.Entry<String,KafkaStreamRootNode>z:this.rootNodes.entrySet()) {
+				if(z.getValue().getServer().equals(kafkaServer)) {
+					existingServer = z.getValue();
+					break;
+				}
+			};
+			if(existingServer == null) {
+				this.rootNodes.put(zone, new KafkaStreamRootNode() {			
+					@Override
+					protected String getServer() {
+						return kafkaServer;
+					}
+				});
+			}else {
+				this.rootNodes.put(zone, existingServer);
+			}
+		}
+	}	
+
+	protected String applyTemplateToRepForTopic(String topic, Object value) {
+		return topic;		
+	}
+	
+	public void run() {
+		this.rootNodes.forEach((key,value) -> {value.run();});
+	}
+	
+	public void shutDown() {
+		this.rootNodes.forEach((key,value) -> {value.shutDown();});
+	}
+	
+	protected abstract <TData> String getZone(TData data); 
+	protected abstract ArrayList<? extends LinkedHashMap<UUID,? extends StreamResponse<? extends TRes>>> getAllWaiters();
 	protected abstract StreamResponse<? extends TRes> removeWaiter(int keyrange, UUID id);
 	protected final LinkedHashMap<UUID,? extends  StreamResponse<? extends TRes>> getWaiters(int keyrange){
 		return this.getAllWaiters().get(keyrange);
@@ -73,37 +157,15 @@ public abstract class AbstractStreamRoot<TStart, TRes>
 	
 	public CompletableFuture<TRes> startStream(TStart data) {
 		return this.startStream(data, this.timeout);
-	}
-	
+	}	
 	
 	protected abstract StreamResponse<TRes> createReponseInstance(UUID id, int timeout) ;
 	
-	public CompletableFuture<TRes> startStream(TStart data, int timeout) {
-		UUID id = this.nextId();
-		StreamResponse<TRes> waiter = this.createReponseInstance(id,timeout);	
-		HMSMessage<TStart> request = new HMSMessage<TStart>(id, data);
-		request.addReponsePoint(this.getConsumeTopic());			
-		try {				
-			String startTopic = this.applyTemplateToRepForTopic(this.getStartTopic(), data); 			
-			ProducerRecord<UUID, byte[]> record = KafkaMessageUtils.getProcedureRecord(request, startTopic);
-			//this.getLogger().info("Start stream {} {}", startTopic, request.getRequestId());
-			this.producer.send(record,  (RecordMetadata metadata, Exception exception) -> {
-				if(exception!=null) {
-					this.getLogger().info("**** Request error..."+exception.getMessage());
-					this.handleRequestError(id, "Request error");
-				}
-			});
-		} catch (IOException e) {
-			this.handleRequestError(id, "Request error");
-		}
-		return waiter.getWaiterTask();
-	}	
+	public abstract CompletableFuture<TRes> startStream(TStart data, int timeout) ;
 	
 	private long previousClean = System.currentTimeMillis();
-	@Override
 	protected void intervalCleanup() { // clean up timeout.
-		super.intervalCleanup();
-		if(System.currentTimeMillis()-previousClean > 50000) {
+		if(System.currentTimeMillis()-previousClean > cleanupInterval) {
 			previousClean = System.currentTimeMillis();
 			for(int keyrange=0;keyrange<KEY_RANGE;keyrange++) {
 				synchronized (this.getWaiters(keyrange)) {

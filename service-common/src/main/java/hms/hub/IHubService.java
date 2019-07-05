@@ -10,7 +10,7 @@ public interface IHubService {
 
 	public UUID getHostingHubId(double latitude, double longitude);
 	public List<UUID> getConveringHubs(hms.dto.GeoQuery query);	
-	
+	public String getZone(UUID hubid);
 
 	void split(UUID id, int parts) ;	
 }

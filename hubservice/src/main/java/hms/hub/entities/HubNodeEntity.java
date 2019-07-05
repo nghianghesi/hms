@@ -9,6 +9,8 @@ public interface HubNodeEntity {
 	public void setHubid(UUID hubid);
 	public String getName();
 	public void setName(String name);
+	public String getZone();
+	public void setZone(String name);
 	public Point getLocation();
 	public void setLocation(Point location);
 	public double getLatitudeRange();

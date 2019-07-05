@@ -11,6 +11,7 @@ import xyz.morphia.geo.Point;
 public class HubSubEntity implements HubNodeEntity{
     private UUID hubid;
     private String name;
+    private String zone;
     private Point location;   
 
 	private double latitudeRange;  // provider in hub when in range
@@ -31,6 +32,12 @@ public class HubSubEntity implements HubNodeEntity{
 	}
 	public void setName(String name) {
 		this.name = name;
+	}	
+	public String getZone() {
+		return zone;
+	}
+	public void setZone(String zone) {
+		this.zone = zone;
 	}
 	public Point getLocation() {
 		return location;

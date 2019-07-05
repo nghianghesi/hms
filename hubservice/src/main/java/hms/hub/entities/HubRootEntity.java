@@ -27,6 +27,7 @@ public class HubRootEntity implements HubNodeEntity{
 	private ObjectId _id;
     private UUID hubid;
     private String name;
+    private String zone;
     private Point location;   
 
 	private double latitudeRange;  // provider in hub when in range
@@ -47,6 +48,12 @@ public class HubRootEntity implements HubNodeEntity{
 	}
 	public void setName(String name) {
 		this.name = name;
+	}	
+	public String getZone() {
+		return zone;
+	}
+	public void setZone(String zone) {
+		this.zone = zone;
 	}
 	public Point getLocation() {
 		return location;
@@ -74,8 +81,7 @@ public class HubRootEntity implements HubNodeEntity{
 	}
 	public List<HubSubEntity> getSubHubs() {
 		return subHubs;
-	}	
-	
+	}		
 	public void setSubHubs(List<HubSubEntity> val) {
 		this.subHubs.clear();
 		if(val!=null) {

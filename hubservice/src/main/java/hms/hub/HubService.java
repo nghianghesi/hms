@@ -1,6 +1,8 @@
 package hms.hub;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -21,10 +23,12 @@ public class HubService implements IHubService, IHubServiceProcessor {
 	private HubNodeModel rootNode;
 	private IHMSExecutorContext execContext;
 	private IHubNodeRepository repo;
+	private Map<UUID,HubNodeModel> hubMap = new HashMap<UUID,HubNodeModel>();
 	@Inject
 	public HubService(IHMSExecutorContext ec, IHubNodeRepository repo) {
 		this.rootNode = repo.getRootNode();
 		logger.info(this.rootNode.getDebugInfo());
+		this.rootNode.collectNodes(this.hubMap);
 		this.execContext = ec;
 		this.repo = repo;
 	}
@@ -57,5 +61,14 @@ public class HubService implements IHubService, IHubServiceProcessor {
 	public void split(UUID id, int parts) {
 		this.rootNode.split(id, parts);
 		this.repo.saveRootNode(this.rootNode);
+	}
+
+	@Override
+	public String getZone(UUID hubid) {
+		HubNodeModel hub = this.hubMap.getOrDefault(hubid, null);
+		if(hub!=null && hub.getZone() != null && !hub.getZone().equals("")) {
+			return hub.getZone();
+		}
+		return "none";
 	}
 }
