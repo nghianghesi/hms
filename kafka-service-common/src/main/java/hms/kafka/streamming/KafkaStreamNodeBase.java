@@ -179,7 +179,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 					for (TopicPartition part : records.partitions()) {
 						List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(part);
 						long seekOffset = partitionRecords.get(partitionRecords.size() - 1).offset()+1;
-						this.getLogger().info(this.getConsumeTopic() + seekOffset);
+						this.getLogger().info("Offset info{}@{}",this.getConsumeTopic(), seekOffset);
 						peekOffsets.put(part.partition(), seekOffset);
 					}
 					queueAction(()->{
