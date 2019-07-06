@@ -10,8 +10,7 @@ Hierarchical geo-based micro-services to overcome challenges of tracking-searchi
  * Hierarchical geo-based sharding by Mongodb
      * 2 machines for Netty Server + REST api server
      * 1 machine for master
-     * 2 machines for sharding nodes
-     * 2 machines to simulate clients
+     * 2 machines for sharding nodes     
  * Hierarchical geo-based sharding by Micro-services (memory storage)
      * 1 machine for REST api on Netty to handle tracking requests
      * 1 machine for REST api on Netty to handle searching requests
