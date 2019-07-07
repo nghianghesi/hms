@@ -1,7 +1,7 @@
 # hms
 Hierarchical geo-based micro-services to overcome challenges of tracking-searching problem
 1. Goals: Able to handle massive volume of requests
-2. Techniques: Java, Playframework, MongoDb, Kafka, asynchronous, parrallel programing, Akka, KSQL, DlsJson
+2. Techniques: Java, Playframework, MongoDb, Geo-indexing, Kafka, asynchronous, parrallel programing, Akka, KSQL, DlsJson
 3. Solutions: 
   * Hierarchical geo-based sharding by Mongodb
   * Hierarchical geo-based sharding by Micro-services (memory storage)
