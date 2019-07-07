@@ -2,6 +2,7 @@ package hms.hub.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
 
@@ -68,7 +69,13 @@ public class HubNodeModel {
 	public void setName(String name) {
 		this.entity.setName(name);
 	}	
-	
+    public String getZone() {
+		return this.entity.getZone();
+	}
+
+	public void setZone(String zone) {
+		this.entity.setZone(zone);
+	}	
 	public double getLatitude() {
 		return this.entity.getLocation().getLatitude();
 	}
@@ -233,6 +240,11 @@ public class HubNodeModel {
 		}
 	}
 	
+	public void collectNodes(Map<UUID,HubNodeModel> res) {
+		res.put(this.getHubid(), this);
+		this.subHubs.forEach((sub)->sub.collectNodes(res));
+	}
+	
 	public String getDebugInfo() {
 		StringJoiner str = new StringJoiner(",");
 		str.add(this.entity.getHubid().toString());
@@ -242,6 +254,7 @@ public class HubNodeModel {
 		str.add(""+this.getLongitudeRange());
 		str.add(""+this.getMargin());
 		str.add(this.getName());
+		str.add(this.getZone());
 		str.add("\n");
 		if(this.subHubs.size()>0) {
 			str.add("[");

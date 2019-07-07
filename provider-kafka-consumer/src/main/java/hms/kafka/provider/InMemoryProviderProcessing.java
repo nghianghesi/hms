@@ -226,7 +226,7 @@ public class InMemoryProviderProcessing implements Closeable{
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaProviderMeta.InMemTrackingMessage + trackingHubid.toString();
+				return KafkaProviderMeta.InMemTrackingMessage + trackingHubid.toString().replace('.', '_').replace('-', '_');
 			}		
 			
 			@Override
@@ -282,7 +282,7 @@ public class InMemoryProviderProcessing implements Closeable{
 
 			@Override
 			protected String getConsumeTopic() {
-				return KafkaProviderMeta.InMemQueryProvidersMessage+trackingHubid.toString();
+				return KafkaProviderMeta.InMemQueryProvidersMessage + trackingHubid.toString().replace('.', '_').replace('-', '_');
 			}		
 			
 			@Override
@@ -294,8 +294,6 @@ public class InMemoryProviderProcessing implements Closeable{
 			protected String getGroupid() {
 				return providerGroup + trackingHubid.toString();
 			}
-			
-
 			
 			private Executor myex = executors.get(trackingHubid);
 			private Executor myPollEx = pollingExs.get(trackingHubid);

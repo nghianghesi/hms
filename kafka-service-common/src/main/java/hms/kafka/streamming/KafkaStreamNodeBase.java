@@ -103,8 +103,12 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 				"org.apache.kafka.common.serialization.UUIDSerializer");
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.ByteArraySerializer");		
-		props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
-		
+		props.put(ProducerConfig.LINGER_MS_CONFIG, 0);
+        //Batch up to 64K buffer sizes.
+        //props.put(ProducerConfig.BATCH_SIZE_CONFIG,  16_384 * 4);
+
+        //Use Snappy compression for batch compression.
+        //props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
 		this.configProducer(props);
 		this.producer = new KafkaProducer<>(props);
 	}
@@ -140,22 +144,33 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 
 	private CompletableFuture<Void> previousTasks; // init an done task
 	private void queueAction(Runnable action) {
-		previousTasks= previousTasks.thenRunAsync(action, this.getExecutorService());
+		previousTasks= previousTasks.whenCompleteAsync((v,ex)->{
+			if(ex!=null) {
+				this.getLogger().error("Consummer error", ex);
+			}
+			action.run();
+		}, this.getExecutorService());
 	}
 
 	private CompletableFuture<Void> previousPolling; // init an done task
 	private void queueConsummerAction(Runnable action) {
-		previousPolling=previousPolling.thenRunAsync(action, this.getPollingService());
+		previousPolling=previousPolling.whenCompleteAsync((v,ex) -> {
+			if(ex!=null) {
+				this.getLogger().error("Consummer error",ex);
+			}
+			action.run();
+		}, this.getPollingService());
 	}
 	
 	private Map<Integer, Long> peekOffsets = new HashMap<>();
 	private Runnable pollRequestsFromConsummer = ()->{
 		if(!shutdownNode) {
 			if(this.pendingPolls<200) {
-				for(Map.Entry<Integer, Long> peek:peekOffsets.entrySet()) {
-					TopicPartition part = new TopicPartition(this.getConsumeTopic(), peek.getKey());
-					this.consumer.seek(part, peek.getValue());
-				}				
+				
+				for(Map.Entry<Integer, Long> seek:peekOffsets.entrySet()) {
+					TopicPartition part = new TopicPartition(this.getConsumeTopic(), seek.getKey());					
+					this.consumer.seek(part, seek.getValue());
+				}
 				final ConsumerRecords<UUID, byte[]> records = this.consumer.poll(Duration.ofMillis(5));
 				
 				
@@ -163,28 +178,34 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 					this.pendingPolls += records.count();
 					for (TopicPartition part : records.partitions()) {
 						List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(part);
-						long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset() + 1;
-						peekOffsets.put(part.partition(),lastOffset);
+						long seekOffset = partitionRecords.get(partitionRecords.size() - 1).offset()+1;
+						//this.getLogger().info("Offset info{}@{}-{}",this.getConsumeTopic(), seekOffset, partitionRecords.get(partitionRecords.size() - 1).key());
+						peekOffsets.put(part.partition(), seekOffset);
 					}
 					queueAction(()->{
 						if(!this.shutdownNode) {
-				            for (TopicPartition part : records.partitions()) {
-				            	final TopicPartition partition = part;
-				                List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
+				            for (TopicPartition partLoop : records.partitions()) {
+				            	final TopicPartition partition = partLoop;
+				                final List<ConsumerRecord<UUID, byte[]>> partitionRecords = records.records(partition);	
 				                if(partitionRecords.size()>0) {
 									for (ConsumerRecord<UUID, byte[]> record : partitionRecords) {
-										this.processSingleRecord(record);
+										try{
+											this.processSingleRecord(record);
+										}catch(Exception ex) {
+											this.getLogger().error("Consummer error",ex);
+										}
 									}
-									final long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+									final long commitOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
 					                
 					                queueConsummerAction(()->{
-						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)));
 										this.pendingPolls-=partitionRecords.size();
+						                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(commitOffset)));										
 					                });
 				                }
 				            }
 						}else {
 			                queueConsummerAction(()->{
+			                	// by pass processing on shutdown.
 								this.pendingPolls-= records.count();
 			                });							
 						}

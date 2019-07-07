@@ -5,10 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import javax.inject.Inject;
 import com.typesafe.config.Config;
 
@@ -32,7 +28,6 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 	
 	
 	IHMSExecutorContext ec;
-	private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
 	private abstract class ProviderStreamRoot<TStart,TRes> extends MonoStreamRoot<TStart,TRes>{
 		@Override
 		protected Logger getLogger() {
@@ -43,26 +38,7 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 		protected String getGroupid() {
 			return rootid;
 		}
-		
-		@Override
-		protected String getServer() {
-			return server;
-		}
 
-		@Override
-		protected String getForwardTopic() {
-			return null;
-		}	
-
-		@Override
-		protected Executor getExecutorService() {
-			return ec.getExecutor();
-		}
-		
-		@Override
-		protected Executor getPollingService() {
-			return pollingEx;
-		}			
 	}
 	
 	@Inject
@@ -81,15 +57,21 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 				}
 				
 				@Override
-				protected String getConsumeTopic() {
-					return rootid+super.getConsumeTopic();
-				}	
-
+				protected String getReturnTopic() {
+					return topicSettings.getTrackingTopic()+KafkaHMSMeta.ReturnTopicSuffix;
+				}
+				
 				@Override
 				protected Class<Boolean> getTConsumeManifest() {
 					return Boolean.class;
+				}
+
+				@Override
+				protected String getZone(hms.dto.ProviderTracking data) {
+					return "none";
 				}				
 			};
+			trackingProviderStream.addZones("none", this.server);
 			
 			queryProvidersStream = new ProviderStreamRoot<hms.dto.GeoQuery, List<hms.dto.Provider>>(){
 				@SuppressWarnings("unchecked")
@@ -97,18 +79,24 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 				@Override
 				protected String getStartTopic() {
 					return topicSettings.getQueryTopic();
+				}				
+
+				@Override
+				protected String getReturnTopic() {
+					return topicSettings.getQueryTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 				}
 				
-				@Override
-				protected String getConsumeTopic() {
-					return rootid+super.getConsumeTopic();
-				}					
-
 				@Override
 				protected Class<? extends List<hms.dto.Provider>> getTConsumeManifest() {
 					return template;
 				}
-			};				
+
+				@Override
+				protected  String getZone(hms.dto.GeoQuery data) {
+					return "none";
+				}
+			};			
+			queryProvidersStream.addZones("none", this.server);
 			trackingProviderStream.run();
 			queryProvidersStream.run();
 		}else {

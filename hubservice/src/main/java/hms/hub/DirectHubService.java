@@ -45,4 +45,9 @@ public class DirectHubService implements IHubService{
 		
 	}
 
+	@Override
+	public String getZone(UUID hubid) {
+		return "none";
+	}
+
 }

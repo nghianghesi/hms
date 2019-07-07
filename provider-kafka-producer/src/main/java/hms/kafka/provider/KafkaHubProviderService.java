@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 import com.typesafe.config.Config;
@@ -35,13 +32,14 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>  trackingProviderStream;
 	SplitStreamRoot<hms.dto.HubProviderGeoQuery, hms.dto.Provider>  queryProvidersStream;
 	String server, rootid;	
-	
-
 	IHMSExecutorContext ec;
-	private ExecutorService pollingEx = Executors.newFixedThreadPool(1);
 	
-	private static String applyHubIdTemplateToRepForTopic(String topic, Object value) {
-		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString() : "");
+	private String applyHubIdTemplateToRepForTopic(String topic, Object value) {
+		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString().replace('.', '_').replace('-', '_') : "");
+	}
+	
+	private String getZoneByHubid(UUID hubid) {
+		return this.hubservice.getZone(hubid);
 	}
 	
 	@Inject
@@ -53,7 +51,6 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				&& config.hasPath(KafkaHMSMeta.RootIdConfigKey)) {
 			server = config.getString(KafkaHMSMeta.ServerConfigKey);
 			rootid = config.getString(KafkaHMSMeta.RootIdConfigKey);
-						
 			trackingProviderStream = new MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>(){
 				@Override
 				protected Logger getLogger() {
@@ -64,26 +61,6 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				protected String getGroupid() {
 					return rootid;
 				}
-				
-				@Override
-				protected String getServer() {
-					return server;
-				}
-
-				@Override
-				protected String getForwardTopic() {
-					return null;
-				}	
-
-				@Override
-				protected Executor getExecutorService() {
-					return ec.getExecutor();
-				}						
-				
-				@Override
-				protected Executor getPollingService() {
-					return pollingEx;
-				}	
 
 				@Override
 				protected String applyTemplateToRepForTopic(String topic, Object value) {
@@ -93,16 +70,21 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				@Override
 				protected String getStartTopic() {
 					return topicSettings.getTrackingTopic()+"{hubid}";
+				}				
+
+				@Override
+				protected String getReturnTopic() {
+					return rootid + topicSettings.getTrackingTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 				}
 
 				@Override
 				protected Class<Boolean> getTConsumeManifest() {
 					return Boolean.class;
 				}
-				
+
 				@Override
-				protected String getConsumeTopic() {
-					return rootid+topicSettings.getTrackingTopic()+KafkaHMSMeta.ReturnTopicSuffix;
+				protected String getZone(hms.dto.HubProviderTracking data) {
+					return getZoneByHubid(data.getHubid());
 				}				
 			};
 			
@@ -120,26 +102,6 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				}
 				
 				@Override
-				protected String getServer() {
-					return server;
-				}
-
-				@Override
-				protected String getForwardTopic() {
-					return null;
-				}	
-
-				@Override
-				protected Executor getExecutorService() {
-					return ec.getExecutor();
-				}		
-				
-				@Override
-				protected Executor getPollingService() {
-					return pollingEx;
-				}	
-				
-				@Override
 				protected String applyTemplateToRepForTopic(String topic, Object value) {
 					return applyHubIdTemplateToRepForTopic(topic, ((hms.dto.HubProviderGeoQuery)value).getHubid());
 				}		
@@ -147,18 +109,30 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				@Override
 				protected String getStartTopic() {
 					return topicSettings.getQueryTopic()+"{hubid}";
-				}
+				}				
 				
 				@Override
-				protected String getConsumeTopic() {
-					return rootid+topicSettings.getQueryTopic()+KafkaHMSMeta.ReturnTopicSuffix;
+				protected String getReturnTopic() {
+					return rootid + topicSettings.getQueryTopic()+KafkaHMSMeta.ReturnTopicSuffix;
 				}
 				
 				@Override
 				protected Class<? extends ArrayList<Provider>> getTConsumeManifest() {
 					return template;
 				}
+
+				@Override
+				protected String getZone(hms.dto.HubProviderGeoQuery data) {
+					return getZoneByHubid(data.getHubid());
+				}
 			};
+			
+
+			config.getConfigList(KafkaHMSMeta.ZoneServerConfigKey).forEach((cf)->{
+				logger.info("Zone {} {}", cf.getString("name"), cf.getString("server"));				
+				trackingProviderStream.addZones(cf.getString("name"), cf.getString("server"));
+				queryProvidersStream.addZones(cf.getString("name"), cf.getString("server"));
+			});
 			
 			trackingProviderStream.run();
 			queryProvidersStream.run();
@@ -184,8 +158,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 		List<HubProviderGeoQuery> querydata = new ArrayList<HubProviderGeoQuery>();
 		for(UUID hid : hubids) {
 			querydata.add(new HubProviderGeoQuery(hid, query.getLatitude(), query.getLongitude(), query.getDistance()));
-		}
-		
+		}		
 		return queryProvidersStream.startStream(querydata);
 	}			
 

@@ -38,3 +38,17 @@ optimize Kafka throughtput by asyn sending/receiving messages & LINGER_MS_CONFIG
 separate thread for polling
 
 nginx/gobetween as load balancer proxy
+
+band width issue
+post/acknowledge/get
+
+non-blocking by sequence
+reduce colision by hash-locking
+scale out ability.
+sharding, decentralized
+stream to re-aggregate data
+analysis log file skill
+
+************** Future **********
+K8 for auto deploy/elastic
+Load balancer routing --> no need proxy (have to keep connections/scale up)
