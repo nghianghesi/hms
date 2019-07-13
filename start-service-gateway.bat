@@ -1,1 +1,0 @@
-sbt service-gateway/run

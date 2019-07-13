@@ -1,1 +1,0 @@
-mongod --shardsvr -dbpath D:/mongodbs/sharding1 --port 27118

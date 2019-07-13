@@ -1,6 +1,0 @@
-{"version":1,
-  "partitions":[
-     {"topic":"topic-to-increase","partition":0,"replicas":[0,1,2]},
-     {"topic":"topic-to-increase","partition":1,"replicas":[0,1,2]},
-     {"topic":"topic-to-increase","partition":2,"replicas":[0,1,2]}
-]}
