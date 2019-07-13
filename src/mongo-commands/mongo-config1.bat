@@ -1,0 +1,1 @@
+mongod --configsvr --port 27119 --dbpath D:/mongodbs/configdb1 --replSet hms

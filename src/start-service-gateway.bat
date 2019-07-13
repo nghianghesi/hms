@@ -1,0 +1,1 @@
+sbt "service-gateway/run 9001"
