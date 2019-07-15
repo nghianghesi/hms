@@ -1,6 +1,8 @@
 # hms - Hierarchical geo-based micro-services
 Hierarchical geo-based micro-services to overcome challenges of tracking-searching problem (like Uber).
-Slide of my MUM tech-talk about this project at https://github.com/nghianghesi/hms/blob/master/slide.pptx?raw=true
+* Slide of my MUM tech-talk about this project at https://github.com/nghianghesi/hms/blob/master/slide.pptx?raw=true
+* Presentation: https://www.youtube.com/watch?v=dz75B2VJdX0
+
 1. Goals: Able to handle massive volume of requests
 2. Techniques: Java, Playframework, MongoDb, Geo-indexing, Kafka, asynchronous, parrallel programing, Akka, KSQL, DlsJson
 3. Solutions: 
