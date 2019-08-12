@@ -1,0 +1,18 @@
+Need margin in/out hubnote to reduce provider's moving out of hubnote (change sharding key value)
+micro-service vs normal similar to asyn-js vs syn-js (observable pattern, parallel)
+start up: create topic if not existing
+setup producer, consumer.
+hub service handler before provider service, then place result message
+each service method is a kafka topic
+it's hard to use ksql for parallel --> use header with embeded data.
+The main idea of HMS streaming is use Kafka message headers to attach info, forward to dependencies services, 
+then receive back result with previous data in header, then now process it.
+For ex: tracking provider need hubservice.maphub
+
+split/accumulate nodes
+assign consumer to partition scaling
+
+using completefuture to chain --> sync processing
+
+key range of synchronized
+generic hell --> split read/write by abstract, descrete.
