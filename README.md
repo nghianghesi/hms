@@ -5,6 +5,7 @@
 
 # MUM technical talk:
   * Slide https://github.com/nghianghesi/hms/blob/master/slide.pptx?raw=true
+  * Video https://www.youtube.com/watch?v=dz75B2VJdX0
 
 # Solutions: 
   * Hierarchical geo-based sharding by Mongodb
