@@ -19,5 +19,7 @@ public interface HubNodeEntity {
 	public void setLongitudeRange(double longitudeRange);
 	public double getMargin();
 	public void setMargin(double margin);
+	public boolean getIsActive();
+	public void setIsActive(boolean isactive);
 	public List<HubSubEntity> getSubHubs();
 }

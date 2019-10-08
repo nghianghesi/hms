@@ -3,6 +3,7 @@ package hms.hub;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import hms.dto.HubDTO;
 
 public interface IHubService {
 	public CompletableFuture<UUID> asynGetHostingHubId(double latitude, double longitude);
@@ -13,4 +14,8 @@ public interface IHubService {
 	public String getZone(UUID hubid);
 
 	void split(UUID id, int parts) ;	
+	
+	public HubDTO getRootHub();
+	public void enable(UUID hubid);
+	public void disable(UUID hubid);
 }

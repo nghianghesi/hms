@@ -30,6 +30,7 @@ lazy val dependencies =
 	var playframwork="com.typesafe.play" %% "play" % "2.7"
 	var typesafeconfig="com.typesafe" % "config" % "1.2.1"
 	var gson = "com.google.code.gson" % "gson" % "2.8.5"
+	var cliparser = "commons-cli" % "commons-cli" % "1.4"
   }
   
 lazy val protocol = (project in file("./protocol"))
@@ -141,7 +142,8 @@ lazy val `service-gateway` = (project in file("./service-gateway"))
 		guice,
 		dependencies.mongodb,
 		dependencies.morphia,
-		dependencies.modelmapper
+		dependencies.modelmapper,
+		cliparser
 	))
 	.dependsOn(protocol, `service-common`,`kafka-serivce-common`,hubservice,`provider-service`, `provider-kafka-producer`, `hms-play`,`provider-kafka-producer`)	  
   
@@ -153,7 +155,8 @@ lazy val `processing-host` = (project in file("./processing-host"))
 		guice,
 		dependencies.mongodb,
 		dependencies.morphia,
-		dependencies.modelmapper
+		dependencies.modelmapper,
+		cliparser
 	))
 	.dependsOn(`provider-kafka-consumer`,`hub-kafka-consumer`, `hms-play`,`service-common`)	  
 	

@@ -1,0 +1,18 @@
+@(hub: hms.dto.HubDTO)
+
+@showHub(hub: hms.dto.HubDTO) = {
+    <div class="hub-block">
+        <div class="hub-metadata">
+            <span>@hub.zone</span> - <span>@hub.name</span> - <span>@hub.hubid</span> - <span>@hub.isActive</span>            
+        </div>
+        <div class="sub-hubs">
+	        @hub.subHubs { 
+	            sub => @showHub(sub)
+	        }
+        </div>
+    </div>
+}
+
+@main(){
+	@showHub(hub)
+}

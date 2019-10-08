@@ -1,5 +1,6 @@
 package hms.hub;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import hms.common.IHMSExecutorContext;
 import hms.dto.GeoQuery;
+import hms.dto.HubDTO;
+import hms.hub.entities.HubNodeEntity;
 import hms.hub.models.HubNodeModel;
 import hms.hub.repositories.IHubNodeRepository;
+import hms.dto.HubDTO;
 
 public class HubService implements IHubService, IHubServiceProcessor {		
 	private static final Logger logger = LoggerFactory.getLogger(HubService.class);
@@ -70,5 +74,60 @@ public class HubService implements IHubService, IHubServiceProcessor {
 			return hub.getZone();
 		}
 		return "none";
+	}
+	
+	public HubDTO getRootHub() {
+		return getHubTree(this.rootNode);
+	}
+	
+	private HubDTO getHubTree(HubNodeModel hub) {
+		List<HubDTO> subDTOs = new ArrayList<HubDTO>();
+		for(HubNodeModel subhub:hub.getSubHubs()) {
+			subDTOs.add(getHubTree(subhub));
+		}
+		return HubDTO.createByIdNameZoneActiveSubs(hub.getHubid(), hub.getName(), hub.getZone(), hub.getIsActive(), subDTOs);
+	}
+	
+	private boolean findAndEnable(HubNodeModel hub, UUID hubid) {
+		if(hub.getHubid().equals(hubid)) {
+			hub.setIsActive(true);
+			return true;
+		}			
+		
+		for(HubNodeModel sub : hub.getSubHubs()) {
+			if(this.findAndEnable(sub, hubid)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void enable(UUID hubid) {
+		if(this.rootNode.getHubid().equals(hubid)) {
+			return;
+		}
+
+		this.findAndEnable(this.rootNode, hubid);
+	}
+	
+	private void disable (HubNodeModel hub) {
+		if(!hub.getIsActive()) {
+			hub.setIsActive(true);
+			for(HubNodeModel sub : hub.getSubHubs()) {
+				this.disable(sub);
+			}
+		}
+	}
+	
+	public void disable(UUID hubid) {
+		if(this.rootNode.getHubid().equals(hubid)) {
+			return;
+		}		
+		
+		if(this.hubMap.containsKey(hubid)) {
+			HubNodeModel hub = this.hubMap.get(hubid);
+			this.disable(hub);
+			this.repo.saveRootNode(this.rootNode);
+		}
 	}
 }

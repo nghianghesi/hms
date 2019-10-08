@@ -114,7 +114,19 @@ public class HubNodeModel {
 
 	public void setMargin(double margin) {
 		this.entity.setMargin(margin);
+	}    	
+	
+	public boolean getIsActive() {
+		return this.entity.getIsActive();
+	}
+
+	public void setIsActive(boolean isActive) {
+		this.entity.setIsActive(isActive);
 	}    
+	
+	public List<HubNodeModel> getSubHubs(){
+		return this.subHubs;
+	}
 	
 	private double inRangeDistance = -1;
 	private double getInRangeDistance() {

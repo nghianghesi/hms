@@ -50,4 +50,10 @@ public class DirectHubService implements IHubService{
 		return "none";
 	}
 
+	public void enable(UUID hubid) {
+		return;
+	}
+	public void disable(UUID hubid) {
+		return;
+	}
 }

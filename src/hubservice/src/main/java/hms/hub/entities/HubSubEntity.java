@@ -17,6 +17,7 @@ public class HubSubEntity implements HubNodeEntity{
 	private double latitudeRange;  // provider in hub when in range
     private double longitudeRange;  // provider in hub when in range
     private double margin; // to reduce number of in/out hub. (moving out of hub when out of range + margin)
+    private double isactive;
     
     @Embedded("SubHubs")
     private final List<HubSubEntity> subHubs = new ArrayList<HubSubEntity>();
@@ -63,6 +64,14 @@ public class HubSubEntity implements HubNodeEntity{
 	public void setMargin(double margin) {
 		this.margin = margin;
 	}
+
+	public boolean getIsActive() {
+		return this.isactive;
+	}
+	public void setIsActive(boolean isactive) {
+		this.isactive = isactive;
+	}
+	
 	public List<HubSubEntity> getSubHubs() {
 		return subHubs;
 	}		

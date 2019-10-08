@@ -16,3 +16,8 @@ using completefuture to chain --> sync processing
 
 key range of synchronized
 generic hell --> split read/write by abstract, descrete.
+
+service-gateway --> k8 api to manage pods
+kafka api to manage topics
+- tracking: 1 partition, multiple groups
+- query: multiple partitions, 1 group.
