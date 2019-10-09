@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
 
 import hms.common.IHMSExecutorContext;
 import hms.dto.Provider;
@@ -14,7 +13,6 @@ import hms.provider.repositories.IProviderRepository;
 public class ProviderInitializer implements IProviderInitializingService{	 
 	private IProviderRepository repo;
 	protected IHMSExecutorContext execContext;
-	@Inject
 	public ProviderInitializer(IHMSExecutorContext ec, IProviderRepository repo){
 		this.repo = repo;
 		this.execContext = ec;

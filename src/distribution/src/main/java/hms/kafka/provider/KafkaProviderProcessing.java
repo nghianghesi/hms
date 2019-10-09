@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.typesafe.config.Config;
+import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
 
 import hms.KafkaHMSMeta;
 import hms.common.IHMSExecutorContext;
@@ -63,21 +63,20 @@ public class KafkaProviderProcessing implements Closeable {
 		}
 	}
 	
-	@Inject
-	public KafkaProviderProcessing(Config config, IProviderService providerService, IHMSExecutorContext ec) {
+	public KafkaProviderProcessing(Environment config, IProviderService providerService, IHMSExecutorContext ec) {
 		this.providerService = providerService;	
 		this.ec = ec;
 
-		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)) {
-			this.kafkaserver = config.getString(KafkaHMSMeta.ServerConfigKey);
+		if(!StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.ServerConfigKey))) {
+			this.kafkaserver = config.getProperty(KafkaHMSMeta.ServerConfigKey);
 		}else {
 			logger.error("Missing {} configuration",KafkaHMSMeta.ServerConfigKey);
 			throw new Error(String.format("Missing {} configuration",KafkaHMSMeta.ServerConfigKey));
 		}
 		
 		this.providerGroup = "hms.provider";
-		if(config.hasPath(KafkaProviderMeta.ProviderGroupConfigKey)) {
-			this.providerGroup = config.getString(KafkaProviderMeta.ProviderGroupConfigKey);
+		if(!StringUtils.isEmpty(config.getProperty(KafkaProviderMeta.ProviderGroupConfigKey))) {
+			this.providerGroup = config.getProperty(KafkaProviderMeta.ProviderGroupConfigKey);
 		}
 		
 		this.buildTrackingProviderHubProcessor();	

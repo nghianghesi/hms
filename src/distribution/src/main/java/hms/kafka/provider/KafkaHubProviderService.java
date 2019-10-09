@@ -125,11 +125,12 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				}
 			};
 			
-
-			config.getProperty(KafkaHMSMeta.ZoneServerConfigKey).forEach((cf)->{
-				logger.info("Zone {} {}", cf.getString("name"), cf.getString("server"));				
-				trackingProviderStream.addZones(cf.getString("name"), cf.getString("server"));
-				queryProvidersStream.addZones(cf.getString("name"), cf.getString("server"));
+			@SuppressWarnings("unchecked")
+			Class<ArrayList<ZoneConfigClass>> listclass = (Class<ArrayList<ZoneConfigClass>>) (new ArrayList<ZoneConfigClass>()).getClass();
+			config.getProperty(KafkaHMSMeta.ZoneServerConfigKey, listclass).forEach((cf)->{
+				logger.info("Zone {} {}", cf.getName(), cf.getServer());				
+				trackingProviderStream.addZones(cf.getName(), cf.getServer());
+				queryProvidersStream.addZones(cf.getName(), cf.getServer());
 			});
 			
 			trackingProviderStream.run();

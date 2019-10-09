@@ -25,6 +25,7 @@
   	<retrofit.verion>2.6.2</retrofit.verion>  	
   	<typesafe.verion>1.3.4</typesafe.verion>
   	<dsljson.version>1.9.3</dsljson.version>
+        <java.version>1.8</java.version>
   </properties>  
   <dependencies>
 	  <dependency>

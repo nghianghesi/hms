@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
 import hms.common.ExceptionWrapper;
 import hms.common.IHMSExecutorContext;
 import hms.dto.GeoQuery;
@@ -22,7 +19,6 @@ public class ProviderService implements IProviderService{
 	private IHubService hubservice;
 	protected IHMSExecutorContext execContext;
 	
-	@Inject
 	public ProviderService(IHMSExecutorContext ec,IHubService hubservice, IProviderRepository repo){
 		this.repo = repo;
 		this.hubservice = hubservice;

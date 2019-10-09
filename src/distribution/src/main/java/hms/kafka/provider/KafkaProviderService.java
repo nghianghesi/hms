@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import javax.inject.Inject;
-import com.typesafe.config.Config;
 
 import hms.KafkaHMSMeta;
 import hms.common.IHMSExecutorContext;
@@ -16,6 +14,8 @@ import hms.provider.IAsynProviderService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
 
 
 public class KafkaProviderService implements IAsynProviderService, Closeable{
@@ -41,14 +41,13 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 
 	}
 	
-	@Inject
-	public KafkaProviderService(Config config,IHMSExecutorContext ec, KafkaProviderTopics settings) {	
+	public KafkaProviderService(Environment config,IHMSExecutorContext ec, KafkaProviderTopics settings) {	
 		this.topicSettings = settings;
 		this.ec = ec;
-		if(config.hasPath(KafkaHMSMeta.ServerConfigKey)
-				&& config.hasPath(KafkaHMSMeta.RootIdConfigKey)) {
-			server = config.getString(KafkaHMSMeta.ServerConfigKey);
-			rootid = config.getString(KafkaHMSMeta.RootIdConfigKey);
+		if(!StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.ServerConfigKey))
+				&& !StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.RootIdConfigKey))) {
+			server = config.getProperty(KafkaHMSMeta.ServerConfigKey);
+			rootid = config.getProperty(KafkaHMSMeta.RootIdConfigKey);
 						
 			trackingProviderStream = new ProviderStreamRoot<hms.dto.ProviderTracking, Boolean>(){
 				@Override
