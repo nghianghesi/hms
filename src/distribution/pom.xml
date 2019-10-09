@@ -5,17 +5,18 @@
     <artifactId>hms</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>kafka-common</artifactId>
+  <artifactId>distribution</artifactId>
+  
   <dependencies>
-	  <dependency>
-		  <groupId>com.dslplatform</groupId>
-		  <artifactId>dsl-json-java8</artifactId>
-		  <version>${dsljson.version}</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>org.apache.kafka</groupId>
-		    <artifactId>kafka-clients</artifactId>
-		</dependency>
-  </dependencies>
+	<dependency>
+		<groupId>hms</groupId>
+		<artifactId>domain</artifactId>
+		<version>${hms.version}</version>
+	</dependency>	
+	<dependency>
+		<groupId>hms</groupId>
+		<artifactId>kafka-common</artifactId>
+		<version>${hms.version}</version>
+	</dependency>	
+ </dependencies>
 </project>
