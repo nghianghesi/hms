@@ -24,6 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaHubProviderService.class);
@@ -131,13 +134,20 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 				}
 			};
 			
-			@SuppressWarnings("unchecked")
-			Class<ArrayList<ZoneConfigClass>> listclass = (Class<ArrayList<ZoneConfigClass>>) (new ArrayList<ZoneConfigClass>()).getClass();
-			config.getProperty(KafkaHMSMeta.ZoneServerConfigKey, listclass).forEach((cf)->{
-				logger.info("Zone {} {}", cf.getName(), cf.getServer());				
-				trackingProviderStream.addZones(cf.getName(), cf.getServer());
-				queryProvidersStream.addZones(cf.getName(), cf.getServer());
-			});
+			ObjectMapper objectMapper = new ObjectMapper();
+			String zonesConfig = config.getProperty(KafkaHMSMeta.ZoneServerConfigKey);
+			List<ZoneConfigClass> zones;
+			try {
+				zones = objectMapper.readValue(zonesConfig, new TypeReference<List<ZoneConfigClass>>(){});
+				zones.forEach((cf)->{
+					logger.info("Zone {} {}", cf.getName(), cf.getServer());				
+					trackingProviderStream.addZones(cf.getName(), cf.getServer());
+					queryProvidersStream.addZones(cf.getName(), cf.getServer());
+				});				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			trackingProviderStream.run();
 			queryProvidersStream.run();

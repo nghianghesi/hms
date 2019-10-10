@@ -2,10 +2,12 @@ package hms.hub.controllers;
 
 import java.util.UUID;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import hms.hub.IHubService;
 
 @Controller
+@RequestMapping("/hub")
 public class HubController {
     /**
      * An action that renders an HTML page with a welcome message.

@@ -12,10 +12,20 @@
 		  <artifactId>dsl-json-java8</artifactId>
 		  <version>${dsljson.version}</version>
 		</dependency>
-		
+		<dependency>
+		    <groupId>org.apache.kafka</groupId>
+		    <artifactId>connect-runtime</artifactId>
+		</dependency>
 		<dependency>
 		    <groupId>org.apache.kafka</groupId>
 		    <artifactId>kafka-clients</artifactId>
+		    <version>${kafka.version}</version><!--$NO-MVN-MAN-VER$-->
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.kafka</groupId>
+		    <artifactId>kafka_2.12</artifactId>
+		    <version>${kafka.version}</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
   </dependencies>
 </project>
