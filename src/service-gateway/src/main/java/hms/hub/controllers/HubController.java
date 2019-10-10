@@ -1,7 +1,9 @@
-package hms.hub;
+package hms.hub.controllers;
 
 import java.util.UUID;
 import org.springframework.stereotype.Controller;
+
+import hms.hub.IHubService;
 
 @Controller
 public class HubController {

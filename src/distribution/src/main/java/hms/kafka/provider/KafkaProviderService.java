@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import hms.KafkaHMSMeta;
-import hms.common.IHMSExecutorContext;
 import hms.dto.GeoQuery;
 import hms.kafka.streamming.MonoStreamRoot;
 import hms.provider.IAsynProviderService;
@@ -27,7 +26,6 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 	String server, rootid;	
 	
 	
-	IHMSExecutorContext ec;
 	private abstract class ProviderStreamRoot<TStart,TRes> extends MonoStreamRoot<TStart,TRes>{
 		@Override
 		protected Logger getLogger() {
@@ -41,9 +39,8 @@ public class KafkaProviderService implements IAsynProviderService, Closeable{
 
 	}
 	
-	public KafkaProviderService(Environment config,IHMSExecutorContext ec, KafkaProviderTopics settings) {	
+	public KafkaProviderService(Environment config, KafkaProviderTopics settings) {	
 		this.topicSettings = settings;
-		this.ec = ec;
 		if(!StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.ServerConfigKey))
 				&& !StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.RootIdConfigKey))) {
 			server = config.getProperty(KafkaHMSMeta.ServerConfigKey);

@@ -8,11 +8,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import hms.common.IHMSExecutorContext;
 import hms.dto.GeoQuery;
 import hms.dto.HubDTO;
 import hms.hub.models.HubNodeModel;
@@ -22,30 +23,30 @@ public class HubService implements IHubService, IHubServiceProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(HubService.class);
 
 	private HubNodeModel rootNode;
-	private IHMSExecutorContext execContext;
-	private IHubNodeRepository repo;
 	private Map<UUID,HubNodeModel> hubMap = new HashMap<UUID,HubNodeModel>();
 
-	public HubService(IHMSExecutorContext ec, IHubNodeRepository repo) {
+	@Autowired
+	private IHubNodeRepository repo;
+
+	@PostConstruct
+	public void InitHubService() {
 		this.rootNode = repo.getRootNode();
 		logger.info(this.rootNode.getDebugInfo());
 		this.rootNode.collectNodes(this.hubMap);
-		this.execContext = ec;
-		this.repo = repo;
 	}
 
 	public CompletableFuture<UUID> asynGetHostingHubId(double latitude, double longitude)
 	{
 		return CompletableFuture.supplyAsync(()->{
 			return this.getHostingHubId(latitude, longitude);
-		}, this.execContext.getExecutor());
+		});
 	}
 	
 	public CompletableFuture<List<UUID>> asynGetConveringHubs(hms.dto.GeoQuery query)
 	{
 		return CompletableFuture.supplyAsync(()->{
 			return this.getConveringHubs(query);
-		}, this.execContext.getExecutor());	
+		});	
 	}
 
 	@Override

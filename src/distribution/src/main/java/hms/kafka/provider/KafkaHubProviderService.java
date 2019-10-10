@@ -8,7 +8,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import hms.KafkaHMSMeta;
-import hms.common.IHMSExecutorContext;
 import hms.dto.GeoQuery;
 import hms.dto.HubProviderGeoQuery;
 import hms.dto.Provider;
@@ -31,7 +30,6 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>  trackingProviderStream;
 	SplitStreamRoot<hms.dto.HubProviderGeoQuery, hms.dto.Provider>  queryProvidersStream;
 	String server, rootid;	
-	IHMSExecutorContext ec;
 	
 	private String applyHubIdTemplateToRepForTopic(String topic, Object value) {
 		return topic.replaceAll("\\{hubid\\}", value!=null ? value.toString().replace('.', '_').replace('-', '_') : "");
@@ -41,9 +39,8 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 		return this.hubservice.getZone(hubid);
 	}
 	
-	public KafkaHubProviderService(Environment config,IHMSExecutorContext ec, KafkaProviderTopics settings, IHubService hubservice) {	
+	public KafkaHubProviderService(Environment config, KafkaProviderTopics settings, IHubService hubservice) {	
 		this.topicSettings = settings;
-		this.ec = ec;
 		this.hubservice = hubservice;
 		if(!StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.ServerConfigKey))
 				&& !StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.RootIdConfigKey))) {

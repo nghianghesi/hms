@@ -19,6 +19,7 @@
   	<module>domain</module>
   	<module>kafka-common</module>
   	<module>distribution</module>
+  	<module>spring-common</module>
   </modules>
   <properties>
   	<hms.version>0.0.1-SNAPSHOT</hms.version>

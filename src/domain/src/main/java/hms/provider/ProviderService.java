@@ -6,7 +6,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import hms.common.ExceptionWrapper;
-import hms.common.IHMSExecutorContext;
 import hms.dto.GeoQuery;
 import hms.dto.Provider;
 import hms.dto.ProviderTracking;
@@ -17,12 +16,10 @@ import hms.provider.repositories.IProviderRepository;
 public class ProviderService implements IProviderService{    
 	private IProviderRepository repo;
 	private IHubService hubservice;
-	protected IHMSExecutorContext execContext;
 	
-	public ProviderService(IHMSExecutorContext ec,IHubService hubservice, IProviderRepository repo){
+	public ProviderService(IHubService hubservice, IProviderRepository repo){
 		this.repo = repo;
 		this.hubservice = hubservice;
-		this.execContext = ec;
 	}
 	
 	protected Boolean internalTrackingProviderHub(ProviderTracking trackingdto, UUID hubid) {		
@@ -41,7 +38,7 @@ public class ProviderService implements IProviderService{
 		return this.hubservice.asynGetHostingHubId(trackingdto.getLatitude(), trackingdto.getLongitude())
 					.thenApplyAsync((hubid) -> {
 						return this.internalTrackingProviderHub(trackingdto, hubid);			
-					}, this.execContext.getExecutor());
+					});
 	}
 	
 	
@@ -56,7 +53,7 @@ public class ProviderService implements IProviderService{
 		return this.hubservice.asynGetConveringHubs(query)
 			.thenApplyAsync((hubids) -> {
 				return this.internalQueryProviders(hubids, query);
-			},this.execContext.getExecutor());	
+			});	
 	}
 
 	@Override

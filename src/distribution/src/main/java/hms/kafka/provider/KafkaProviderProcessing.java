@@ -3,6 +3,7 @@ package hms.kafka.provider;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
@@ -12,7 +13,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 import hms.KafkaHMSMeta;
-import hms.common.IHMSExecutorContext;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;
 import hms.provider.IProviderService;
@@ -21,13 +21,13 @@ import hms.provider.KafkaProviderMeta;
 public class KafkaProviderProcessing implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderProcessing.class);
 	private IProviderService providerService;
-	IHMSExecutorContext ec;
 	
 	KafkaStreamNodeBase<hms.dto.ProviderTracking, Boolean>  trackingProviderHubProcessor;
 	KafkaStreamNodeBase<hms.dto.GeoQuery, List<hms.dto.Provider>>  queryProvidersHubProcessor;
 
 	private String kafkaserver;
 	private String providerGroup;
+	private ExecutorService ex = Executors.newFixedThreadPool(1);
 	
 	private abstract class ProviderProcessingNode<TCon,TRep> extends KafkaStreamNodeBase<TCon,TRep>{
 		
@@ -53,7 +53,7 @@ public class KafkaProviderProcessing implements Closeable {
 
 		@Override
 		protected Executor getExecutorService() {
-			return ec.getExecutor();
+			return ex;
 		}		
 		
 		private Executor pollingEx = Executors.newFixedThreadPool(1);
@@ -63,9 +63,8 @@ public class KafkaProviderProcessing implements Closeable {
 		}
 	}
 	
-	public KafkaProviderProcessing(Environment config, IProviderService providerService, IHMSExecutorContext ec) {
+	public KafkaProviderProcessing(Environment config, IProviderService providerService) {
 		this.providerService = providerService;	
-		this.ec = ec;
 
 		if(!StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.ServerConfigKey))) {
 			this.kafkaserver = config.getProperty(KafkaHMSMeta.ServerConfigKey);

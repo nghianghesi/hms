@@ -3,14 +3,13 @@ package hms.provider;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import hms.common.IHMSExecutorContext;
 import hms.dto.ProviderTracking;
 import hms.provider.repositories.IProviderRepository;
 
 public class ProviderServiceProcessor extends ProviderService implements IProviderServiceProcessor{
 
-	public ProviderServiceProcessor(IHMSExecutorContext ec, IProviderRepository repo) {
-		super(ec, null, repo);
+	public ProviderServiceProcessor(IProviderRepository repo) {
+		super(null, repo);
 	}	
 
 	@Override

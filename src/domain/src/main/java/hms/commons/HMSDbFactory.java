@@ -2,6 +2,9 @@ package hms.commons;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 
 import dev.morphia.Datastore;
@@ -15,7 +18,9 @@ public class HMSDbFactory{
 	
 	private Datastore datastore;
 
-	public HMSDbFactory() {		
+	
+	@PostConstruct
+	public void InitHMSDbFactory() {		
 		Morphia morphia = new Morphia();
 		if(models!=null && models.compareTo("")>0) {
 			for(String s : models.split(",")) {

@@ -4,18 +4,14 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-
-import hms.common.IHMSExecutorContext;
 import hms.dto.Provider;
 import hms.provider.models.ProviderModel;
 import hms.provider.repositories.IProviderRepository;
 
 public class ProviderInitializer implements IProviderInitializingService{	 
 	private IProviderRepository repo;
-	protected IHMSExecutorContext execContext;
-	public ProviderInitializer(IHMSExecutorContext ec, IProviderRepository repo){
+	public ProviderInitializer(IProviderRepository repo){
 		this.repo = repo;
-		this.execContext = ec;
 	}
 	
 	@Override
@@ -24,7 +20,7 @@ public class ProviderInitializer implements IProviderInitializingService{
 			return this.repo.getProvidersByZone(zone).stream()
 					.map(p->new hms.dto.Provider(p.getProviderid(), p.getZone(), p.getName()))
 					.collect(Collectors.toList());
-		}, this.execContext.getExecutor());
+		});
 	}
 
 	@Override
@@ -32,7 +28,7 @@ public class ProviderInitializer implements IProviderInitializingService{
 		return CompletableFuture.supplyAsync(()->{
 			this.repo.clearByZone(zone);
 			return true;
-		}, this.execContext.getExecutor());
+		});
 	}
 
 	@Override
@@ -45,7 +41,7 @@ public class ProviderInitializer implements IProviderInitializingService{
 			provider.load(providerdto);
 			this.repo.Save(provider);
 			return true;
-		}, this.execContext.getExecutor());
+		});
 	}
 
 }
