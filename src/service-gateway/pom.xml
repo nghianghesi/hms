@@ -17,6 +17,12 @@
 			<artifactId>domain</artifactId>
 			<version>${hms.version}</version>
 		</dependency>		
+
+		<dependency>
+			<groupId>hms</groupId>
+			<artifactId>distribution</artifactId>
+			<version>${hms.version}</version>
+		</dependency>		
 		
 
         <!-- Tomcat Embed -->

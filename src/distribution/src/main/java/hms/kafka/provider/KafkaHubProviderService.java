@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import javax.annotation.PostConstruct;
+
 import hms.KafkaHMSMeta;
 import hms.dto.GeoQuery;
 import hms.dto.HubProviderGeoQuery;
@@ -18,15 +20,22 @@ import hms.provider.IAsynProviderService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 
 public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaHubProviderService.class);
-
+	
+	@Autowired
+	private Environment config;
+	@Autowired
 	private KafkaProviderTopics topicSettings;
+	@Autowired
 	private IHubService hubservice;
+	
+	
 	MonoStreamRoot<hms.dto.HubProviderTracking, Boolean>  trackingProviderStream;
 	SplitStreamRoot<hms.dto.HubProviderGeoQuery, hms.dto.Provider>  queryProvidersStream;
 	String server, rootid;	
@@ -39,9 +48,9 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 		return this.hubservice.getZone(hubid);
 	}
 	
-	public KafkaHubProviderService(Environment config, KafkaProviderTopics settings, IHubService hubservice) {	
-		this.topicSettings = settings;
-		this.hubservice = hubservice;
+	
+	@PostConstruct
+	public void InitKafkaHubProviderService() {	
 		if(!StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.ServerConfigKey))
 				&& !StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.RootIdConfigKey))) {
 			server = config.getProperty(KafkaHMSMeta.ServerConfigKey);

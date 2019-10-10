@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,13 +20,15 @@ import hms.provider.IProviderInitializingService;
 public class ProviderController{	
 	private final int QueryDistance = 1000;
 	
+	@Autowired
     private IAsynProviderService providerserivce;
+	
+	@Autowired
     private IHubService hubservice;
+	
+	@Autowired
     private IProviderInitializingService initalizer;
 
-    public ProviderController(IAsynProviderService providerservice) {
-    	this.providerserivce = providerservice;
-    }
     
     public String index() {
         return "Provider services";
