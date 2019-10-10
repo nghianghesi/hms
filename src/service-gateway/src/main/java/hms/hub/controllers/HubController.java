@@ -1,10 +1,16 @@
 package hms.hub.controllers;
 
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import hms.hub.IHubService;
+import hms.hub.IKubernetesHub;
 
 @Controller
 @RequestMapping("/hub")
@@ -16,29 +22,34 @@ public class HubController {
      * <code>GET</code> request with a path of <code>/</code>.
      */
 	
+	@Autowired
 	private IHubService hubservice;
+	@Autowired
+	private IKubernetesHub kubernetesHub;
 	
-	public HubController(IHubService hubservice) {
-		this.hubservice = hubservice;
-	}
 	
 
-    public String index() {   
+	@GetMapping("/index")
+    public String index(Model model) {   
+		model.addAttribute("node", this.hubservice.getRootHub());
     	return "index";
     }
     
-    
-    public String enable(UUID hubid) {    	
-    	if(hubid!=null) {
-	        this.hubservice.disable(hubid);
-    	}
-    	return this.index();
-    }  
-    
-    public String disable(UUID hubid) {    	
+	@GetMapping("/enable/{hubid}")
+    public String enable(@PathVariable UUID hubid,Model model) {    	
     	if(hubid!=null) {
 	        this.hubservice.enable(hubid);
     	}
-    	return this.index();
-    } 
+    	this.kubernetesHub.syn(this.hubservice.getRootHub());
+    	return this.index(model);
+    }  
+    
+	@GetMapping("/disable/{hubid}")
+    public String disable(@PathVariable UUID hubid,Model model) {    	
+    	if(hubid!=null) {
+	        this.hubservice.disable(hubid);
+    	}
+    	this.kubernetesHub.syn(this.hubservice.getRootHub());
+    	return this.index(model);
+    }
 }

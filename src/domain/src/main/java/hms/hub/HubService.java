@@ -106,11 +106,12 @@ public class HubService implements IHubService, IHubServiceProcessor {
 		}
 
 		this.findAndEnable(this.rootNode, hubid);
+		this.repo.saveRootNode(this.rootNode);
 	}
 	
 	private void disable (HubNodeModel hub) {
-		if(!hub.getIsActive()) {
-			hub.setIsActive(true);
+		if(hub.getIsActive()) {
+			hub.setIsActive(false);
 			for(HubNodeModel sub : hub.getSubHubs()) {
 				this.disable(sub);
 			}
@@ -128,4 +129,5 @@ public class HubService implements IHubService, IHubServiceProcessor {
 			this.repo.saveRootNode(this.rootNode);
 		}
 	}
+	
 }

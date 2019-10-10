@@ -6,6 +6,8 @@ import dev.morphia.Datastore;
 import hms.commons.HMSDbFactory;
 import hms.hub.HubService;
 import hms.hub.IHubService;
+import hms.hub.IKubernetesHub;
+import hms.hub.KubernetesHub;
 import hms.hub.repositories.HubNodeRepository;
 import hms.hub.repositories.IHubNodeRepository;
 import hms.kafka.provider.InMemKafkaProviderSettings;
@@ -27,6 +29,7 @@ public class InMemMicroserviceMode {
 		context.registerBean(KafkaProviderTopics.class, () -> new InMemKafkaProviderSettings());
 		context.registerBean(IAsynProviderService.class, () -> new KafkaHubProviderService());
 		context.registerBean(IProviderInitializingService.class, ()-> new ProviderInitializer());
+		context.registerBean(IKubernetesHub.class, ()-> new KubernetesHub());
 	}
 	
 }

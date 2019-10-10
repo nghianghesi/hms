@@ -41,6 +41,12 @@
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
             <scope>provided</scope>
-        </dependency>			
+        </dependency>	
+        
+		<dependency>
+		    <groupId>io.fabric8</groupId>
+		    <artifactId>kubernetes-client</artifactId>
+		    <version>4.6.0</version>
+		</dependency>	
   </dependencies>
 </project>
