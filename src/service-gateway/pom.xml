@@ -46,7 +46,12 @@
 		<dependency>
 		    <groupId>io.fabric8</groupId>
 		    <artifactId>kubernetes-client</artifactId>
-		    <version>4.6.0</version>
+		    <version>${k8sclient.version}</version>
 		</dependency>	
+		
+		<dependency>
+		    <groupId>org.yaml</groupId>
+		    <artifactId>snakeyaml</artifactId>
+		</dependency>
   </dependencies>
 </project>

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor{hubid}
+  labels:
+    app: processor{hubid}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: processor{hubid}
+  template:
+    metadata:
+      labels:
+        app: processor{hubid}
+    spec:
+      restartPolicy: Always
+      hostname: processor{hubid}
+      containers:
+        - image: nghianghesi/hms:latest
+          tty: true
+          stdin: true
+          name: processor{hubid}
+          workingDir: /hms/processor
+          command: ["java"]
+          args: ["Rydell.Processors.dll", "/kafka:Server=kafkasrv:9092", "/ConnectionStrings:Mongo=mongodb://mongo:27017/test"]
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: hosting
+                operator: In
+                values:
+                - services

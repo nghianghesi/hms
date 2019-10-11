@@ -6,4 +6,23 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>processing-host</artifactId>
+  <dependencies>
+	  <dependency>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>hms</groupId>
+			<artifactId>domain</artifactId>
+			<version>${hms.version}</version>
+		</dependency>		
+
+		<dependency>
+			<groupId>hms</groupId>
+			<artifactId>distribution</artifactId>
+			<version>${hms.version}</version>
+		</dependency>				
+	</dependencies>
 </project>

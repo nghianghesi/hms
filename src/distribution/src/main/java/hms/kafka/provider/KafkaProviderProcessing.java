@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
@@ -18,9 +19,13 @@ import hms.kafka.streamming.KafkaStreamNodeBase;
 import hms.provider.IProviderService;
 import hms.provider.KafkaProviderMeta;
 
-public class KafkaProviderProcessing implements Closeable {
+public class KafkaProviderProcessing implements IProcessingService, Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(KafkaProviderProcessing.class);
+	
+	@Autowired
 	private IProviderService providerService;
+	@Autowired
+	private Environment config;
 	
 	KafkaStreamNodeBase<hms.dto.ProviderTracking, Boolean>  trackingProviderHubProcessor;
 	KafkaStreamNodeBase<hms.dto.GeoQuery, List<hms.dto.Provider>>  queryProvidersHubProcessor;
@@ -30,7 +35,6 @@ public class KafkaProviderProcessing implements Closeable {
 	private ExecutorService ex = Executors.newFixedThreadPool(1);
 	
 	private abstract class ProviderProcessingNode<TCon,TRep> extends KafkaStreamNodeBase<TCon,TRep>{
-		
 		@Override
 		protected Logger getLogger() {
 			return logger;
@@ -63,8 +67,7 @@ public class KafkaProviderProcessing implements Closeable {
 		}
 	}
 	
-	public KafkaProviderProcessing(Environment config, IProviderService providerService) {
-		this.providerService = providerService;	
+	public void start() {
 
 		if(!StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.ServerConfigKey))) {
 			this.kafkaserver = config.getProperty(KafkaHMSMeta.ServerConfigKey);

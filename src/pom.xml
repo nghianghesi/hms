@@ -10,7 +10,6 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
-  	<module>client</module>
   	<module>tracking</module>
   	<module>querying</module>
   	<module>service-gateway</module>
@@ -19,7 +18,6 @@
   	<module>domain</module>
   	<module>kafka-common</module>
   	<module>distribution</module>
-  	<module>spring-common</module>
   </modules>
   <properties>
   	<hms.version>0.0.1-SNAPSHOT</hms.version>
@@ -28,6 +26,7 @@
   	<dsljson.version>1.9.3</dsljson.version>
     <java.version>1.8</java.version>
     <kafka.version>2.3.0</kafka.version>
+    <k8sclient.version>4.6.0</k8sclient.version>
   </properties>  
   <dependencies>
 	  <dependency>
@@ -43,4 +42,31 @@
 		    <artifactId>commons-lang3</artifactId>
 		</dependency>
 	</dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+		<plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-dependency-plugin</artifactId>
+		        <executions>
+		          <execution>
+		            <id>copy-dependencies</id>
+		            <phase>package</phase>
+		            <goals>
+		              <goal>copy-dependencies</goal>
+		            </goals>
+		            <configuration>
+		              <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
+		              <overWriteReleases>false</overWriteReleases>
+		              <overWriteSnapshots>false</overWriteSnapshots>
+		              <overWriteIfNewer>true</overWriteIfNewer>
+		            </configuration>
+		          </execution>
+		        </executions>
+		      </plugin>            
+        </plugins>
+    </build>
 </project>

@@ -32,9 +32,7 @@ public class ProviderRepository implements IProviderRepository {
 	private Datastore datastore;
 	@Autowired
 	private Morphia morphia;
-	public ProviderRepository(Morphia morphia, Datastore datastore) {
-		this.datastore=datastore;
-		this.morphia = morphia;
+	public ProviderRepository() {
 	}	
 
 	@Override

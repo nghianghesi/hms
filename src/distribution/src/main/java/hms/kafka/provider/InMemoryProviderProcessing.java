@@ -14,9 +14,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
@@ -33,19 +33,23 @@ import hms.kafka.streamming.KafkaStreamNodeBase;
 import hms.provider.KafkaProviderMeta;
 import hms.provider.repositories.IProviderRepository;
 
-public class InMemoryProviderProcessing implements Closeable{
+public class InMemoryProviderProcessing implements IProcessingService, Closeable{
 	private static final Logger logger = LoggerFactory.getLogger(InMemoryProviderProcessing.class);
-	IProviderRepository repo;
+	
+	@Autowired
+	private IProviderRepository repo;
+	@Autowired
+	private Environment config;
 	
 	List<KafkaStreamNodeBase<hms.dto.HubProviderTracking, Boolean>>  trackingProviderHubProcessors
 	 = new ArrayList<KafkaStreamNodeBase<HubProviderTracking,Boolean>>();
 	List<KafkaStreamNodeBase<hms.dto.HubProviderGeoQuery, List<hms.dto.Provider>>>  queryProvidersHubProcessors
 	 = new ArrayList<>();
 
-	private final String kafkaserver;
-	private final String providerGroup;
-	private final int keepAliveDuration = 30000; // 30s;
-	private final List<UUID> hubids = new ArrayList<UUID>();
+	private String kafkaserver;
+	private String providerGroup;
+	private int keepAliveDuration = 30000; // 30s;
+	private List<UUID> hubids = new ArrayList<UUID>();
 	
 	private final Map<UUID,VPTree<LatLongLocation, InMemProviderTracking>> providerTrackingVPTrees =
 	        new HashMap<UUID,VPTree<LatLongLocation, InMemProviderTracking>>();
@@ -125,9 +129,7 @@ public class InMemoryProviderProcessing implements Closeable{
 		
 	}
 	
-	public InMemoryProviderProcessing(Environment config, IProviderRepository repo) {
-		this.repo = repo;
-
+	public void start() {
 		if(!StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.ServerConfigKey))) {
 			this.kafkaserver = config.getProperty(KafkaHMSMeta.ServerConfigKey);
 		}else {
