@@ -1,5 +1,7 @@
 package hms.kafka.provider;
 
-public interface IProcessingService {
+import java.io.Closeable;
+
+public interface IProcessingService extends Closeable{
 	public void start();
 }

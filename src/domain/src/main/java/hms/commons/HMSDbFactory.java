@@ -17,11 +17,12 @@ public class HMSDbFactory{
 	private String uri;
 	
 	private Datastore datastore;
+	private Morphia morphia;
 
 	
 	@PostConstruct
 	public void InitHMSDbFactory() {		
-		Morphia morphia = new Morphia();
+		morphia = new Morphia();
 		if(models!=null && models.compareTo("")>0) {
 			for(String s : models.split(",")) {
 				morphia.mapPackage(s);
@@ -33,8 +34,11 @@ public class HMSDbFactory{
 		}			
 	}
 	
-	public Datastore get() {
+	public Datastore getDatastore() {
 		return datastore;
 	}
 
+	public Morphia getMorfia() {
+		return morphia;
+	}
 }
