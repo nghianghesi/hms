@@ -324,8 +324,19 @@ public class InMemoryProviderProcessing implements IProcessingService, Closeable
 			q.shutDown();
 		}
 		
+		for(ExecutorService ex:this.pollingExs.values()) {
+			try {
+				ex.shutdown();
+				ex.awaitTermination(10, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		for(ExecutorService ex:this.executors.values()) {
 			try {
+				ex.shutdown();
 				ex.awaitTermination(10, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block

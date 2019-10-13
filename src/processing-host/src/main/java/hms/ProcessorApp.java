@@ -35,6 +35,8 @@ public class ProcessorApp implements CommandLineRunner{
 		while(!cmd.equals("exit")) {	
 			cmd=sc.nextLine();
 		}
+		sc.close();
 		this.context.getBean(IProcessingService.class).close();
+		//SpringApplication.exit(this.appContext);
 	}
 }

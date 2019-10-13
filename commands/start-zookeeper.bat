@@ -1,0 +1,1 @@
+zookeeper-server-start ./zookeeper.properties
