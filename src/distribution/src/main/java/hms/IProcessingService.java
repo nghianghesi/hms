@@ -1,4 +1,4 @@
-package hms.kafka.provider;
+package hms;
 
 import java.io.Closeable;
 

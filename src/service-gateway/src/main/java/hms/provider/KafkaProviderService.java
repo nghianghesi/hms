@@ -1,4 +1,4 @@
-package hms.kafka.provider;
+package hms.provider;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 
 import hms.KafkaHMSMeta;
 import hms.dto.GeoQuery;
+import hms.kafka.provider.KafkaProviderTopics;
 import hms.kafka.streamming.MonoStreamRoot;
 import hms.provider.IAsynProviderService;
 

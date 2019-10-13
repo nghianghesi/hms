@@ -1,4 +1,4 @@
-package hms.kafka.provider;
+package hms.provider;
 
 import java.io.Closeable;
 import java.util.List;
@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
+import hms.IProcessingService;
 import hms.KafkaHMSMeta;
 import hms.kafka.streamming.HMSMessage;
 import hms.kafka.streamming.KafkaStreamNodeBase;

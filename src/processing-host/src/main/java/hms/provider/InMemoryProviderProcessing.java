@@ -1,4 +1,4 @@
-package hms.kafka.provider;
+package hms.provider;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 import com.eatthepath.jvptree.DistanceFunction;
 import com.eatthepath.jvptree.VPTree;
 
+import hms.IProcessingService;
 import hms.KafkaHMSMeta;
 import hms.common.DistanceUtils;
 import hms.dto.HubProviderTracking;

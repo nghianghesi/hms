@@ -5,8 +5,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 import hms.commons.HMSDbFactory;
-import hms.kafka.provider.IProcessingService;
-import hms.kafka.provider.InMemoryProviderProcessing;
+import hms.provider.InMemoryProviderProcessing;
 import hms.provider.repositories.IProviderRepository;
 import hms.provider.repositories.ProviderRepository;
 

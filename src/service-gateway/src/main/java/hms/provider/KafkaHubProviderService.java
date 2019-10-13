@@ -1,20 +1,20 @@
-package hms.kafka.provider;
+package hms.provider;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import javax.annotation.PostConstruct;
-
+import hms.IProcessingService;
 import hms.KafkaHMSMeta;
 import hms.dto.GeoQuery;
 import hms.dto.HubProviderGeoQuery;
 import hms.dto.Provider;
 import hms.hub.IHubService;
 import hms.kafka.streamming.SplitStreamRoot;
+import hms.kafka.provider.KafkaProviderTopics;
+import hms.kafka.provider.ZoneConfigClass;
 import hms.kafka.streamming.MonoStreamRoot;
 import hms.provider.IAsynProviderService;
 
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-public class KafkaHubProviderService implements IAsynProviderService, Closeable{
+public class KafkaHubProviderService implements IAsynProviderService, IProcessingService{
 	private static final Logger logger = LoggerFactory.getLogger(KafkaHubProviderService.class);
 	
 	@Autowired
@@ -51,9 +51,7 @@ public class KafkaHubProviderService implements IAsynProviderService, Closeable{
 		return this.hubservice.getZone(hubid);
 	}
 	
-	
-	@PostConstruct
-	public void InitKafkaHubProviderService() {	
+	public void start() {	
 		if(!StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.ServerConfigKey))
 				&& !StringUtils.isEmpty(config.getProperty(KafkaHMSMeta.RootIdConfigKey))) {
 			server = config.getProperty(KafkaHMSMeta.ServerConfigKey);
