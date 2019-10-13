@@ -165,7 +165,6 @@ public class InMemoryProviderProcessing implements IProcessingService, Closeable
 			this.buildQueryProvidersHubProcessor(hubid);
 		}
 		logger.info("Provider processing is ready");
-
 		for(UUID hubid: this.hubids) {
 			logger.info("{}",hubid);
 		}

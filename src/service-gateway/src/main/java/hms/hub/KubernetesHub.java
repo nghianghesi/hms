@@ -25,8 +25,8 @@ public class KubernetesHub implements IKubernetesHub {
 	
 	@Value("${kubernetes.apiserver}")
 	private String apiserver;
-	@Value("${kubernetes.processorprefix}")
-	private String processorprefix;
+	@Value("${kubernetes.deploymentnametemplate}")
+	private String deploymentnametemplate;
 	@Value("${kubernetes.namespace}")
 	private String namespace;
 	private KubernetesClient client;
@@ -47,7 +47,7 @@ public class KubernetesHub implements IKubernetesHub {
 	}
 
 	private void syn(HubDTO root, DeploymentList deployments) {			
-		String devname = this.processorprefix+root.getHubid();
+		String devname = StringUtil.replace(this.deploymentnametemplate, "{hubid}", root.getHubid().toString());
 		if(root.getIsActive()) {
 			if(!deployments.getItems().stream().anyMatch(d -> d.getMetadata().getName().equals(devname))) {				
 				Yaml yaml = new Yaml();
