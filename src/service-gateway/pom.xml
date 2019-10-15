@@ -48,21 +48,17 @@
 		    <artifactId>kubernetes-client</artifactId>
 		    <version>${k8sclient.version}</version>
 		</dependency>	
-		
-		<dependency>
-		    <groupId>org.yaml</groupId>
-		    <artifactId>snakeyaml</artifactId>
-		</dependency>
   </dependencies>
   
     <build>
 	    <plugins>
 		    <plugin>
 		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-maven-plugin</artifactId>
+		    <artifactId>spring-boot-maven-plugin</artifactId>    
 		    <configuration>
 		      <fork>true</fork>
 		      <skip>false</skip>
+			  <outputDirectory>../../kubernetes/webservice</outputDirectory>		      
 		    </configuration>
 		    <executions>
 		      <execution>

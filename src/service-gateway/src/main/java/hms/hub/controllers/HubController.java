@@ -52,4 +52,9 @@ public class HubController {
     	this.kubernetesHub.syn(this.hubservice.getRootHub());
     	return this.index(model);
     }
+	
+	@GetMapping("/testapi")
+    public String testapi() {    	
+    	return this.kubernetesHub.testapi();
+    }
 }

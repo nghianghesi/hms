@@ -9,4 +9,8 @@ public class EmptyKubernetesHub implements IKubernetesHub{
 		return;
 	}
 
+	@Override
+	public String testapi() {
+		return "";
+	}
 }

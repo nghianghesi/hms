@@ -13,7 +13,6 @@ import hms.hub.repositories.HubNodeRepository;
 import hms.hub.repositories.IHubNodeRepository;
 import hms.kafka.provider.InMemKafkaProviderSettings;
 import hms.kafka.provider.KafkaProviderTopics;
-import hms.provider.IAsynProviderService;
 import hms.provider.IProviderInitializingService;
 import hms.provider.KafkaHubProviderService;
 import hms.provider.ProviderInitializer;

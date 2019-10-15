@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hmswebservice
+  labels:
+    app: hmswebservice
+spec:
+  ports:
+  - port: 8080
+    name: hmswebservice
+  clusterIP: None
+  selector:
+    app: hmswebservice
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: hmswebservice
+  labels:
+    app: hmswebservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hmswebservice
+  serviceName:  hmswebservice
+  template:
+    metadata:
+      labels:
+        app: hmswebservice
+    spec:
+      restartPolicy: Always
+      hostname: hmswebservice
+      containers:
+        - image: nghianghesi/hms:latest
+          tty: true
+          stdin: true
+          name: hmswebservice
+          workingDir: /hms/webservice
+          ports:
+          - name: hmswebservice
+            containerPort: 8080
+          command: ["java"]
+          args: ["-jar", "service-gateway-0.0.1-SNAPSHOT.jar", "--morphia.uri=mongodb://mongo:27017/hms"]
+      imagePullSecrets:
+        - name: nghianghesisec
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: hosting
+                operator: In
+                values:
+                - services

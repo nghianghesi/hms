@@ -34,6 +34,7 @@
 		    <configuration>
 		      <fork>true</fork>
 		      <skip>false</skip>
+			  <outputDirectory>../../kubernetes/processor</outputDirectory>		      	    
 		    </configuration>
 		    <executions>
 		      <execution>
