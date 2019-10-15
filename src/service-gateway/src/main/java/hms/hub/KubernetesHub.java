@@ -2,15 +2,17 @@ package hms.hub;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.jetty.util.StringUtil;
 import org.springframework.beans.factory.annotation.Value;
-import org.yaml.snakeyaml.Yaml;
 
 import hms.dto.HubDTO;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -30,6 +32,8 @@ public class KubernetesHub implements IKubernetesHub {
 	@Value("${kubernetes.namespace}")
 	private String namespace;
 	private KubernetesClient client;
+	@Value("${kubernetes.deploymentyaml}")
+	private String deploymentyaml;
 	
 	@PostConstruct 
 	public void initClient() {
@@ -39,9 +43,8 @@ public class KubernetesHub implements IKubernetesHub {
 	}
 	
 	private String readDeployYaml(UUID hubid) {
-		File file = new File(getClass().getClassLoader().getResource("processor-tpl.yaml").getFile());
 		try {
-			String yaml = FileUtils.fileRead(file);
+			String yaml = IOUtils.resourceToString(this.deploymentyaml, Charset.forName("UTF-8"));			
 			return StringUtil.replace(yaml, "{hubid}", hubid.toString());
 		} catch (IOException e) {
 			return null;

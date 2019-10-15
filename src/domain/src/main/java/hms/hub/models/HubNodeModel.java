@@ -186,7 +186,7 @@ public class HubNodeModel {
 		double minRange = -1.0, temptRangeDistance;
 		HubNodeModel res = null;
 		for(HubNodeModel node : this.subHubs) {
-			if(node.isRangeContains(latitude, longitude)) {
+			if(node.isRangeContains(latitude, longitude) && node.getIsActive()) {
 				temptRangeDistance = node.rangeEstimation(latitude, longitude);
 				if(minRange < 0 || minRange > temptRangeDistance) {
 					minRange = temptRangeDistance;
@@ -201,10 +201,12 @@ public class HubNodeModel {
 		List<HubNodeModel> res = new ArrayList<HubNodeModel>();
 		boolean needParent = true;
 		for(HubNodeModel node : this.subHubs) {
-			double nodeGeoDistance = node.geoDistance(latitude, longitude);
-			needParent = needParent && (nodeGeoDistance + distance > node.getInRangeDistance());
-			if((nodeGeoDistance - distance < node.getInMarginDistance())) {
-				res.addAll(node.getConveringHubIds(latitude, longitude, distance));
+			if(node.getIsActive()) {
+				double nodeGeoDistance = node.geoDistance(latitude, longitude);
+				needParent = needParent && (nodeGeoDistance + distance > node.getInRangeDistance());
+				if((nodeGeoDistance - distance < node.getInMarginDistance())) {
+					res.addAll(node.getConveringHubIds(latitude, longitude, distance));
+				}
 			}
 		}
 		if(needParent) {

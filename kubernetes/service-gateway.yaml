@@ -41,7 +41,7 @@ spec:
           - name: hmswebservice
             containerPort: 8080
           command: ["java"]
-          args: ["-jar", "service-gateway-0.0.1-SNAPSHOT.jar", "--morphia.uri=mongodb://mongo:27017/hms"]
+          args: ["-jar", "service-gateway-0.0.1-SNAPSHOT.war", "--morphia.uri=mongodb://mongo:27017/hms"]
       imagePullSecrets:
         - name: nghianghesisec
       affinity:
