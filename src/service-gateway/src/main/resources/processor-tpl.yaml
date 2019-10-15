@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hmsprocessor{hubid}
+  labels:
+    app: hmsprocessor{hubid}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hmsprocessor{hubid}
+  template:
+    metadata:
+      labels:
+        app: hmsprocessor{hubid}
+    spec:
+      restartPolicy: Always
+      hostname: hmsprocessor{hubid}
+      containers:
+        - image: nghianghesi/hms:latest
+          tty: true
+          stdin: true
+          name: hmsprocessor{hubid}
+          workingDir: /hms/processor
+          command: ["java"]
+          args: ["-jar", "processing-host-0.0.1-SNAPSHOT.jar", "--kafka.provider.inmem-hubid={hubid}"]
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: hosting
+                operator: In
+                values:
+                - services

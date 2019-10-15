@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>hms</groupId>
+    <artifactId>hms</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>processing-host</artifactId>
+  <dependencies>
+	  <dependency>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>hms</groupId>
+			<artifactId>domain</artifactId>
+			<version>${hms.version}</version>
+		</dependency>		
+
+		<dependency>
+			<groupId>hms</groupId>
+			<artifactId>distribution</artifactId>
+			<version>${hms.version}</version>
+		</dependency>				
+	</dependencies>
+	
+	<build>
+		<plugins>
+		 <plugin>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-maven-plugin</artifactId>
+		    <configuration>
+		      <fork>true</fork>
+		      <skip>false</skip>
+			  <outputDirectory>../../kubernetes/processor</outputDirectory>		      	    
+		    </configuration>
+		    <executions>
+		      <execution>
+		        <goals>
+		          <goal>repackage</goal>
+		        </goals>
+		      </execution>
+		    </executions>
+		  </plugin>
+		</plugins>
+	</build>
+</project>

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hmsprocessor
+  labels:
+    app: hmsprocessor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hmsprocessor
+  template:
+    metadata:
+      labels:
+        app: hmsprocessor
+    spec:
+      restartPolicy: Always
+      hostname: hmsprocessor
+      containers:
+        - image: nghianghesi/hms:latest
+          tty: true
+          stdin: true
+          name: hmsprocessor
+          workingDir: /hms/src 
+          command: ["sbt"]
+          args: ["processing-host/runMain hms.AppStart", "\"-Dkafka.provider.inmem-hubid={{hubid}}\""]
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: hosting
+                operator: In
+                values:
+                - services
