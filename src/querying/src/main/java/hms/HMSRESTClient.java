@@ -28,7 +28,7 @@ public class HMSRESTClient{
 	public interface HMSServiceIntegration{
 		@GET("/")
 		Call<ResponseBody> initRequest();
-		@POST("/provider/geoquery")
+		@POST("/api/provider/geoquery")
 		Call<ResponseBody> queryProviders(@Body Coordinate tracking);
 	}
 	

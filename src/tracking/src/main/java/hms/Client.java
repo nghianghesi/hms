@@ -20,7 +20,7 @@ import hms.dto.Provider;
 public class Client {
 	
 	private static String ZONE="";
-	private static final int UPDATE_INTERVAL = 30000;//30s;
+	private static final int UPDATE_INTERVAL = 5000;//30s;
 	private static int NUM_OF_PROVIDER = 500;
 	private static int POOL_SIZE = 50;
 	

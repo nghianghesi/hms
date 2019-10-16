@@ -16,10 +16,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
 public class Client {
-	private static int NUM_OF_CUSTOMERS = 20000;
+	private static int NUM_OF_CUSTOMERS = 100;
 
 	private static int POOL_SIZE = 500;
-	private static final int QUERY_INTERVAL = 30000;//30s;
+	private static final int QUERY_INTERVAL = 5000;//30s;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
