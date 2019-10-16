@@ -59,7 +59,7 @@ public class Client {
 	
 	private static void initProvider(HMSRESTClient client, List<ProviderTrackingBuilder> list, ForkJoinPool myPool) {		
 		logger.info("Init Providers:");
-		client.clearProvider();
+		client.clearProvider(ZONE);
 		for(int idx=0;idx<NUM_OF_PROVIDER;idx++){
 			list.add(null);
 		}

@@ -21,6 +21,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
+
 import java.lang.reflect.Type;
 import java.time.Duration;
 
@@ -33,14 +35,14 @@ public class HMSRESTClient{
 		@POST("/api/provider/tracking")
 		Call<ResponseBody> trackingProvider(@Body ProviderTracking tracking);
 		
-		@GET("/api/provider/clear")
-		Call<ResponseBody> clearProvider();
+		@GET("/api/provider/clear/{zone}")
+		Call<ResponseBody> clearProvider(@Path("zone") String zone);
 		
 		@POST("/api/provider/initprovider")
 		Call<ResponseBody> initProvider(@Body Provider provider);	
 		
-		@POST("/api/provider/get-by-zone")
-		Call<ResponseBody> loadByZone(@Body String zone);		
+		@GET("/api/provider/get-by-zone/{zone}")
+		Call<ResponseBody> loadByZone(@Path("zone") String zone);		
 	}
 	
 	public static class ClientStats{
@@ -115,11 +117,7 @@ public class HMSRESTClient{
 	}
 	
 	public void initRequest() {
-		try {			      
-			this.serviceIntegration.initRequest().execute().body().string();		    
-		} catch (Exception e) {
-			logger.error("Tracking Provider", e);
-		}	
+		return;
 	}
 	
 	public void trackingProvider(ProviderTracking tracking, ClientStats stats) {
@@ -160,9 +158,9 @@ public class HMSRESTClient{
 		}	
 	}	
 
-	public void clearProvider() {
+	public void clearProvider(String zone) {
 		try {			
-			this.serviceIntegration.clearProvider().execute().body().string();			
+			this.serviceIntegration.clearProvider(zone).execute().body().string();			
 		} catch (Exception e) {
 			logger.error("Tracking Provider", e);
 		}

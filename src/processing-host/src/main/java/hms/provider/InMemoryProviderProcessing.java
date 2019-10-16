@@ -192,6 +192,7 @@ public class InMemoryProviderProcessing implements IProcessingService, Closeable
 					}
 
 					providerTrackingVPTree.add(existingdata);
+					this.getLogger().info("tracking {}",request.getData().getProviderid());
 					return true;
 				}else {
 					return false;
@@ -268,6 +269,7 @@ public class InMemoryProviderProcessing implements IProcessingService, Closeable
 					List<InMemProviderTracking> nearTrackings = providerTrackingVPTree.getAllWithinDistance(querydto, querydto.getDistance());
 					if(nearTrackings!=null && nearTrackings.size()>0) {
 						List<UUID> providerids = nearTrackings.stream().map(t -> t.getProviderId()).collect(Collectors.toList());
+						this.getLogger().info("querying {}, {}, {}",request.getData().getLatitude(), request.getData().getLongitude(), providerids.size());
 						return repo.getProvidersByIds(providerids).stream()
 								.map(p -> new Provider(p.getProviderid(), p.getZone(), p.getName()))
 								.collect(Collectors.toList());

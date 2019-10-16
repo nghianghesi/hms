@@ -195,7 +195,7 @@ public abstract class KafkaStreamNodeBase<TCon, TRep>{
 											this.getLogger().error("Consummer error",ex);
 										}
 									}
-									final long commitOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+									final long commitOffset = partitionRecords.get(partitionRecords.size()-1).offset() + 1;
 					                
 					                queueConsummerAction(()->{
 										this.pendingPolls-=partitionRecords.size();

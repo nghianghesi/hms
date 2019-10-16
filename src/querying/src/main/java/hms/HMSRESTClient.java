@@ -105,11 +105,7 @@ public class HMSRESTClient{
 	}
 	
 	public void initRequest() {
-		try {			      
-			this.serviceIntegration.initRequest().execute().body().string();		    
-		} catch (Exception e) {
-			logger.error("Tracking Provider", e);
-		}	
+		return;
 	}
 	
 	public List<Provider> queryProviders(Coordinate coordinate, ClientStats stats) {
