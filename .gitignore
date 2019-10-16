@@ -27,3 +27,4 @@ target
 /sbt
 /kubernetes/webservice
 /kubernetes/processor
+/kubernetes/tracking
