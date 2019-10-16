@@ -29,16 +29,17 @@ public class HMSRESTClient{
 	public interface HMSServiceIntegration{
 		@GET("/")
 		Call<ResponseBody> initRequest();
-		@POST("/provider/tracking")
+		
+		@POST("/api/provider/tracking")
 		Call<ResponseBody> trackingProvider(@Body ProviderTracking tracking);
 		
-		@POST("/provider/clear")
+		@GET("/api/provider/clear")
 		Call<ResponseBody> clearProvider();
 		
-		@POST("/provider/init")
+		@POST("/api/provider/initprovider")
 		Call<ResponseBody> initProvider(@Body Provider provider);	
 		
-		@POST("/provider/get-by-zone")
+		@POST("/api/provider/get-by-zone")
 		Call<ResponseBody> loadByZone(@Body String zone);		
 	}
 	

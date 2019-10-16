@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 
 import hms.dto.Provider;
 import hms.provider.models.ProviderModel;
 import hms.provider.repositories.IProviderRepository;
 
 public class ProviderInitializer implements IProviderInitializingService{	 
+	@Autowired
 	private IProviderRepository repo;
 
 	

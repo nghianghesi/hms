@@ -16,6 +16,8 @@ import hms.kafka.provider.KafkaProviderTopics;
 import hms.provider.IProviderInitializingService;
 import hms.provider.KafkaHubProviderService;
 import hms.provider.ProviderInitializer;
+import hms.provider.repositories.IProviderRepository;
+import hms.provider.repositories.ProviderRepository;
 
 public class InMemMicroserviceMode {
 
@@ -27,6 +29,8 @@ public class InMemMicroserviceMode {
 		context.registerBean(Morphia.class, () -> {
 			return context.getBean(HMSDbFactory.class).getMorfia();
 		});
+		
+		context.registerBean(IProviderRepository.class, () -> new ProviderRepository());
 		context.registerBean(IHubNodeRepository.class, () -> new HubNodeRepository());
 		context.registerBean(IHubService.class, () -> new HubService());
 		context.registerBean(KafkaProviderTopics.class, () -> new InMemKafkaProviderSettings());

@@ -21,8 +21,8 @@ public class Client {
 	
 	private static String ZONE="";
 	private static final int UPDATE_INTERVAL = 30000;//30s;
-	private static int NUM_OF_PROVIDER = 15000;
-	private static int POOL_SIZE = 500;
+	private static int NUM_OF_PROVIDER = 500;
+	private static int POOL_SIZE = 50;
 	
 	private static final double MAX_LATITUDE = 90;		
 	private static final double MIN_LATITUDE = -90;	
