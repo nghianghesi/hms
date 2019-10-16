@@ -18,4 +18,5 @@ public interface IHubService {
 	public HubDTO getRootHub();
 	public void enable(UUID hubid);
 	public void disable(UUID hubid);
+	public HubDTO getHubsForActive(UUID hubid) ;
 }

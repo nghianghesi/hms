@@ -61,4 +61,8 @@ public class DirectHubService implements IHubService{
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public HubDTO getHubsForActive(UUID hubid) {
+		return null;
+	}
 }

@@ -38,17 +38,23 @@ public class HubController {
 	@GetMapping("/enable/{hubid}")
     public String enable(@PathVariable UUID hubid,Model model) {    	
     	if(hubid!=null) {
+        	this.kubernetesHub.syn(this.hubservice.getHubsForActive(hubid));
 	        this.hubservice.enable(hubid);
     	}
-    	this.kubernetesHub.syn(this.hubservice.getRootHub());
     	return this.index(model);
     }  
     
 	@GetMapping("/disable/{hubid}")
     public String disable(@PathVariable UUID hubid,Model model) {    	
-    	if(hubid!=null) {
+    	if(hubid != null) {
 	        this.hubservice.disable(hubid);
     	}
+    	//work around to wait for current request to disabled hubs done
+    	try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
     	this.kubernetesHub.syn(this.hubservice.getRootHub());
     	return this.index(model);
     }

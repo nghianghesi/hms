@@ -28,3 +28,4 @@ target
 /kubernetes/webservice
 /kubernetes/processor
 /kubernetes/tracking
+/kubernetes/querying

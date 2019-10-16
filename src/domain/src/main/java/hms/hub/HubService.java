@@ -129,5 +129,25 @@ public class HubService implements IHubService, IHubServiceProcessor {
 			this.repo.saveRootNode(this.rootNode);
 		}
 	}
+
+	private HubDTO getHubsForActive(HubNodeModel hub, UUID hubid) {
+		List<HubDTO> subDTOs = new ArrayList<HubDTO>();
+		
+		if(hub.getHubid().equals(hubid)) {
+			return HubDTO.createByIdNameZoneActiveSubs(hub.getHubid(), hub.getName(), hub.getZone(), true, subDTOs); 
+		}		
+		for(HubNodeModel subhub:hub.getSubHubs()) {
+			HubDTO subHubDTO = getHubsForActive(subhub, hubid);
+			if(subHubDTO!=null) {
+				subDTOs.add(subHubDTO);
+				return HubDTO.createByIdNameZoneActiveSubs(hub.getHubid(), hub.getName(), hub.getZone(), true, subDTOs);
+			}
+		}	
+		return null;
+	}
+	
+	public HubDTO getHubsForActive(UUID hubid) {
+		return this.getHubsForActive(this.rootNode, hubid);
+	}
 	
 }

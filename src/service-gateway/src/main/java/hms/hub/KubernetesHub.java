@@ -71,8 +71,10 @@ public class KubernetesHub implements IKubernetesHub {
 	
 	@Override
 	public void syn(HubDTO root) {
-		DeploymentList deployments = client.apps().deployments().inNamespace(this.namespace).list();
-		this.syn(root, deployments);
+		if(root!=null) {
+			DeploymentList deployments = client.apps().deployments().inNamespace(this.namespace).list();
+			this.syn(root, deployments);
+		}
 	}
 	
 	

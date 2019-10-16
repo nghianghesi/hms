@@ -30,13 +30,22 @@
   </dependencies>
 	<build>
 	  <plugins>
-	    <plugin>
-	      <groupId>org.apache.maven.plugins</groupId>
-	      <artifactId>maven-jar-plugin</artifactId>
-	      <configuration>
-			  <outputDirectory>../../kubernetes/tracking</outputDirectory>
-		  </configuration>
-	    </plugin>
+		    <plugin>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-maven-plugin</artifactId>    
+		    <configuration>
+		      <fork>true</fork>
+		      <skip>false</skip>
+			  <outputDirectory>../../kubernetes/tracking</outputDirectory>		      
+		    </configuration>
+		    <executions>
+		      <execution>
+		        <goals>
+		          <goal>repackage</goal>
+		        </goals>
+		      </execution>
+		    </executions>
+		  </plugin>
 	  </plugins>
 	</build>  
 </project>
