@@ -1,8 +1,6 @@
 package hms.hub;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,7 +8,6 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.IOUtils;
-import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.jetty.util.StringUtil;
 import org.springframework.beans.factory.annotation.Value;
 
